@@ -1,0 +1,19 @@
+{
+  "name": "单词小勇者 · Word Hero",
+  "short_name": "单词小勇者",
+  "description": "在故事冒险中学习、复习并掌握英语单词。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f2e9",
+  "theme_color": "#126147",
+  "orientation": "portrait-primary",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
