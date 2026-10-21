@@ -1,6 +1,6 @@
 # Feature 16 — Cloudflare Pages Deployment & CI
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review**
 > Depends on: 01, 04, 15
 
 ## Summary
@@ -25,41 +25,41 @@ manual upload. As a **parent**, the installed app updates from the same URL with
 - [ ] A Cloudflare Pages project (Free plan, **Direct Upload**) exists for `RhaegarC/words-wizard`;
       its production URL is the default `https://<project>.pages.dev` over HTTPS and its production
       branch is `master`.
-- [ ] `pnpm build` produces `src/dist/` with relative asset URLs (`base: "./"`), so the build also
+- [x] `pnpm build` produces `src/dist/` with relative asset URLs (`base: "./"`), so the build also
       works if served from a sub-path.
-- [ ] `src/public/_headers` is copied into `src/dist/_headers` and declares the cache classes.
+- [x] `src/public/_headers` is copied into `src/dist/_headers` and declares the cache classes.
       The path patterns do not overlap, so no response inherits two `Cache-Control` values
       (Cloudflare joins duplicate header names with a comma rather than overriding):
       - `/assets/*` → `public, max-age=31536000, immutable`;
       - `/icons/*`, `/art/*`, `/favicon.svg` → `public, max-age=604800`;
       - `/locales/*` → `public, max-age=3600`;
       - `/`, `/index.html`, `/sw.js`, `/registerSW.js`, `/manifest.webmanifest` → `no-cache`.
-- [ ] There is **no** `_redirects` file and no catch-all rewrite. Hash routing means the server only
+- [x] There is **no** `_redirects` file and no catch-all rewrite. Hash routing means the server only
       ever returns `/index.html`; a missing asset keeps a real 404, and no client route depends on a
       server rewrite.
-- [ ] `.github/workflows/ci.yml` runs on pull requests to `develop`: install (pnpm, frozen lockfile),
+- [x] `.github/workflows/ci.yml` runs on pull requests to `develop`: install (pnpm, frozen lockfile),
       `typecheck`, `test`, `validate:content`, `build`, and `check:dist`. All pnpm steps run with
       `working-directory: src`; the package manifest lives there.
-- [ ] `.github/workflows/deploy.yml` runs on push to `master` and on `workflow_dispatch`: the same
+- [x] `.github/workflows/deploy.yml` runs on push to `master` and on `workflow_dispatch`: the same
       checks, then uploads the **prebuilt** `src/dist/` by running
       `wrangler pages deploy dist --project-name words-wizard --branch master` with
       `working-directory: src`, so the deployment never re-runs a build. Wrangler is pinned as a
       dev dependency in `src/package.json`.
-- [ ] Deployment credentials come from the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+- [x] Deployment credentials come from the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
       repository secrets; the token is scoped to **Cloudflare Pages: Edit** for the account. No
       credential is committed and no runtime secret is used.
-- [ ] `src/scripts/check-dist.mjs` fails the build when `index.html`, the manifest, `sw.js`, hashed
+- [x] `src/scripts/check-dist.mjs` fails the build when `index.html`, the manifest, `sw.js`, hashed
       JS/CSS, locales, the icon set, or `_headers` are missing. It also asserts `sw.js` references a
       precache manifest, `_headers` parses with every cache class present and no path matching more
       than one rule, and `index.html` carries no absolute `/assets/` URLs.
-- [ ] A post-deploy smoke step fetches `/`, one hashed asset, and one `.webp` and asserts `200` with
+- [x] A post-deploy smoke step fetches `/`, one hashed asset, and one `.webp` and asserts `200` with
       the expected `Content-Type` and `Cache-Control`.
-- [ ] Rollback is a Cloudflare Pages deployment rollback (instant, from the project's deployment
+- [x] Rollback is a Cloudflare Pages deployment rollback (instant, from the project's deployment
       history) or re-running the deployment workflow on an older commit; the app holds no
       server-side state.
-- [ ] The README documents both repository secrets, the default URL, the `develop` → `master`
+- [x] The README documents both repository secrets, the default URL, the `develop` → `master`
       release flow, and the rollback path.
-- [ ] Custom domains are documented as a Cloudflare Pages project setting (automatic TLS), not part
+- [x] Custom domains are documented as a Cloudflare Pages project setting (automatic TLS), not part
       of this feature.
 
 ## Tasks (ordered)

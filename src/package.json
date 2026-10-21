@@ -11,6 +11,8 @@
     "validate:content": "tsx scripts/validate-content.ts",
     "prebuild": "pnpm validate:content",
     "build": "vite build",
+    "check:dist": "node scripts/check-dist.mjs",
+    "check:deploy": "node scripts/check-deploy.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -35,6 +37,7 @@
     "vite": "^8.0.5",
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "wrangler": "4.151.3"
   }
 }

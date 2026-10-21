@@ -133,19 +133,35 @@ component-test suite; UI is verified in the browser.
 
 ## Deployment
 
-Planned: **Cloudflare Pages** (Free plan, Direct Upload), deployed by GitHub Actions from
-`master`. The prebuilt `src/dist/` is deployed by running
-`wrangler pages deploy dist --project-name words-wizard --branch master` from `src/`, and
+The app is published to **Cloudflare Pages** (Free plan, **Direct Upload**). The project is
+`words-wizard`; its production URL is <https://words-wizard.pages.dev> over HTTPS, and its
+production branch is `master`.
+
+Pull requests to `develop` run `.github/workflows/ci.yml`: frozen pnpm install,
+`typecheck`, `test`, `validate:content`, `build`, and `check:dist`. `.github/workflows/deploy.yml`
+runs the same checks on a push to `master` or a manual `workflow_dispatch`, then uploads the
+prebuilt `src/dist/` by running
+`wrangler pages deploy dist --project-name words-wizard --branch master` from `src/`. The
+upload step does not rebuild.
+
 `src/public/_headers` — copied into the build — carries the cache policy. Hash routing means
 no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real
 404. Cloudflare serves MIME types itself, so no per-extension upload step is needed. The
-service worker precaches the shell, content, locales, and all illustrations.
+service worker precaches the shell, content, locales, and all illustrations. `check:dist`
+fails the build if the shell, worker, hashed assets, locales, icons, or `_headers` are
+missing; `check:deploy` then fetches `/`, a hashed asset, and one `.webp` and asserts their
+status, content type, and cache policy.
 
-The workflow reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from repository
-secrets; no credential is committed. Release flow: merge into `master`, which redeploys the
-production site. Rollback is a Cloudflare Pages deployment rollback, or re-running the
-workflow on an older commit. Custom domains are attached to the Pages project with automatic
-TLS and are not part of the deployment workflow.
+Required repository secrets:
+
+- `CLOUDFLARE_API_TOKEN` — an API token scoped to **Cloudflare Pages: Edit** for the account.
+- `CLOUDFLARE_ACCOUNT_ID` — the account that owns the Pages project.
+
+No credential is committed and the app uses no runtime secret. Release flow: merge into
+`master`, which redeploys the production site. Rollback is a Cloudflare Pages deployment
+rollback from the project's deployment history, or re-running the workflow on an older
+commit; the app holds no server-side state. Custom domains are attached to the Pages project
+with automatic TLS and are not part of the deployment workflow.
 
 ## Key decisions
 
