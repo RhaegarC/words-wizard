@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **Planning — all 17 features specced, none started.**
+> Status: **In progress — feature 01 in review; features 02–17 not started.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal

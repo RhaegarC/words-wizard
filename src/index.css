@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Nunito", "Avenir Next", "Segoe UI", sans-serif;
+  color: #302747;
+  background: #fbfaf7;
+  --ink: #302747;
+  --muted: #777180;
+  --purple: #7059dc;
+  --dark-purple: #5942c0;
+  --pale-purple: #eeeafd;
+  --line: #e9e5ed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.boot-screen {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.boot-mark {
+  display: grid;
+  width: 6rem;
+  height: 6rem;
+  place-items: center;
+  border-radius: 1.75rem;
+  background: var(--purple);
+  color: #fff;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1rem 2.5rem rgb(112 89 220 / 25%);
+}
+
+.boot-title {
+  margin: 0.5rem 0 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.boot-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.boot-note {
+  margin: 0;
+  margin-top: 1.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--pale-purple);
+  color: var(--dark-purple);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

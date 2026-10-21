@@ -4,8 +4,10 @@ A bilingual (English + 中文) offline-first PWA that helps Chinese-speaking chi
 aged 9–12 learn English vocabulary through short, game-like sessions with a virtual
 word buddy.
 
-**Status:** MVP requirements locked in [docs/PRD.md](docs/PRD.md) (v0.2). The UI in
-[figma/](figma/) is a working prototype; the production app will be promoted from it.
+**Status:** MVP requirements locked in [docs/PRD.md](docs/PRD.md) (v0.2). The production app is
+scaffolded at the repository root with **all application source under [src/](src/)**. The Figma Make
+export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
+and its toolchain is independent of the production app.
 
 ---
 
@@ -34,7 +36,11 @@ word buddy.
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1 sprint index, 17 ordered feature specs, and the backlog |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [figma/](figma/) | React 19 + Vite 8 + Tailwind 4 + Dexie 4 UI prototype |
+| [src/](src/) | **Production application source** — all app code lives here |
+| [public/](public/) | Static assets copied into the build (manifest, icons, favicon) |
+| [scripts/](scripts/) | Developer utilities (placeholder icon generator) |
+| `package.json`, `vite.config.ts`, `tsconfig.json`, `index.html` | Root production toolchain |
+| [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
 ## Current content state
 
@@ -58,9 +64,36 @@ Content is authored AI-assisted and then reviewed in full by a Chinese-speaking 
 teacher. Automated validation will enforce schema completeness, ID integrity, both
 languages, image existence, and the Cambridge allowlist.
 
-## Run the prototype
+## Run the app
 
-The prototype is the Figma Make app in `figma/`. From that directory:
+From the repository root:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+The dev server serves on **http://localhost:8443**. All application source lives under
+`src/`.
+
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Vite dev server on port 8443 |
+| `pnpm build` | Production build into `dist/` |
+| `pnpm preview` | Serve the built `dist/` on port 8443 |
+| `pnpm test` | Vitest, single run (`src/**/*.test.ts`) |
+| `pnpm test:watch` | Vitest in watch mode |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm format` | Format with oxfmt |
+
+### Prototype reference (read-only)
+
+The Figma Make export in `figma/` is kept **exactly as exported**, so it can be re-synced
+or compared at any time. Do not move files out of it, edit it, or import from it. Its
+toolchain is independent of the root app.
+
+To view the prototype, run it from its own directory (it also uses port 8443, so stop the
+root dev server first):
 
 ```bash
 cd figma
@@ -68,24 +101,16 @@ pnpm install
 pnpm dev
 ```
 
-The dev server uses port `8443` by default. Inside Figma Make, the preview server is
-already provided; `pnpm dev` is only needed for local development.
-
-Note: `figma/vite.config.ts` currently contains Figma Make-specific plugins. They will
-be stripped when the app is promoted to the production build.
-
 ## Testing
 
-Planned for the production app:
+The root app uses **Vitest** for pure domain logic — XP and stage derivation, vitality and
+sleep, streak grace, Care Token ledger, SM-2 scheduling, session building, Monthly Review
+selection, Collection selectors, i18n key completeness, and content integrity. Tests live
+beside the code as `src/**/*.test.ts` and run offline.
 
-- **Vitest** for pure domain logic: XP and stage derivation, vitality and sleep, streak
-  grace, Care Token ledger, SM-2 scheduling, session builder, Monthly Review selection,
-  Collection selectors, i18n key completeness, and content integrity.
-- **Manual end-to-end checks** on iPad Safari and Edge for install, offline behavior,
-  IndexedDB persistence, and Web Speech.
-
-There is no component-test suite; the UI is a design-exported frontend and is verified
-manually.
+**Manual end-to-end checks** on iPad Safari and Edge remain the tier for install, offline
+behavior, IndexedDB persistence, service-worker updates, and Web Speech. There is no
+component-test suite; UI is verified in the browser.
 
 ## Deployment
 
