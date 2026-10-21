@@ -1,6 +1,6 @@
 # Feature 14 — Settings, Export & Diagnostics
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #31**
 > Depends on: 03, 05, 06, 09, 10
 
 ## Summary
