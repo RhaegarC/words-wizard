@@ -1,6 +1,6 @@
 # Feature 15 — PWA Install, Offline & Updates
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #33**
 > Depends on: 02, 05, 14
 
 ## Summary
