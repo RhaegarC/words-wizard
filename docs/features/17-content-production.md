@@ -14,6 +14,10 @@ it, and flips `content-meta.json` to `dataset: "final"`.
 This is authoring work, not runtime code. Its tests are the content validator and the documented
 sign-off.
 
+The Cambridge allowlist is generated once from the source PDF and committed as
+`src/content/cambridge-allowlist.json` (`pnpm extract:wordlist`, 1,343 headwords with band, part of
+speech, variants, and notes). The PDF is never parsed at runtime or in CI.
+
 ## User story
 
 As a **child**, every word I meet has a picture, a Chinese meaning, a simple definition, and an
@@ -68,7 +72,8 @@ useful, and free of game-brand references.
 ## Tasks (ordered)
 
 1. Build the slot skeleton: 5 topics × 3 packs × 20 word ids, with cross-topic shared ids marked;
-   reserve ids before authoring so pack references never move.
+   reserve ids before authoring so pack references never move. Select each word from
+   `content/cambridge-allowlist.json` and keep its `level`.
 2. **Topic 1 — Craft & Build:** select 60 words (≈48 core, ≈12 flavour) from the allowlist, assign
    Cambridge levels, place abstract words at pack ends, and write 3 packs.
 3. Author the 20 bilingual records for each pack: IPA, part of speech, glosses, kid-friendly
