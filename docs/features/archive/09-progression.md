@@ -1,6 +1,6 @@
 # Feature 09 — Progression: Session Commit, XP, Streak, Care Tokens, Summary
 
-> Priority: Must · Mission 1 · **Status: In progress — implemented, pending merge**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #21**
 > Depends on: 05, 07, 08
 
 ## Summary
