@@ -22,6 +22,8 @@ import { SessionIntroScreen } from "./screens/SessionIntroScreen"
 import { SessionLandingScreen } from "./screens/SessionLandingScreen"
 import { SessionSummaryScreen } from "./screens/SessionSummaryScreen"
 import { TopicPickerScreen } from "./screens/TopicPickerScreen"
+import { WordDetailScreen } from "./screens/WordDetailScreen"
+import { WordsScreen } from "./screens/WordsScreen"
 import { SessionProvider } from "./session/SessionProvider"
 import { AppShell } from "./shell/AppShell"
 
@@ -157,6 +159,10 @@ export default function App() {
           navigate({ id: "home" })
         }}
       />
+    ) : route.id === "words" && profile ? (
+      <WordsScreen profile={profile} tab={route.tab} />
+    ) : route.id === "word-detail" && profile ? (
+      <WordDetailScreen profile={profile} wordId={route.wordId} />
     ) : route.id === "session" ? (
       <SessionLandingScreen />
     ) : route.id === "session-intro" ? (

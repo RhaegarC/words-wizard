@@ -1,6 +1,6 @@
 # Feature 12 — My Words: Collection & Word Book
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review — device/manual pass pending**
 > Depends on: 04, 05, 08, 09
 
 ## Summary
@@ -19,27 +19,27 @@ another visit — it is not taken away.
 
 ## Acceptance criteria
 
-- [ ] `#/words?tab=collection` is the default; `?tab=wordbook` opens the second tab; the tab is part
+- [x] `#/words?tab=collection` is the default; `?tab=wordbook` opens the second tab; the tab is part
       of the URL so back/forward and reloads land on the same tab.
-- [ ] Collection shows every word with `status` `learning` or `mastered`; words with no progress row
+- [x] Collection shows every word with `status` `learning` or `mastered`; words with no progress row
       are excluded.
-- [ ] Collection header shows the total ("You've collected 47 words!") and separate `learning` /
+- [x] Collection header shows the total ("You've collected 47 words!") and separate `learning` /
       `mastered` counts.
-- [ ] Filters: topic, status, recently learned (last 7 days). Filters combine and are clearable.
-- [ ] Each collection row shows the illustration (or placeholder), the word, the meaning in the active
+- [x] Filters: topic, status, recently learned (last 7 days). Filters combine and are clearable.
+- [x] Each collection row shows the illustration (or placeholder), the word, the meaning in the active
       locale, and a strength bar — never a numeric strength.
-- [ ] Word Book shows only `mastered` words as an illustrated grid; tapping opens Word Detail.
-- [ ] Word Detail shows: word, IPA, tap-to-hear, illustration, `meaning` + `definition` in the active
+- [x] Word Book shows only `mastered` words as an illustrated grid; tapping opens Word Detail.
+- [x] Word Detail shows: word, IPA, tap-to-hear, illustration, `meaning` + `definition` in the active
       locale, English example with Chinese translation, strength bar, status badge, and the topic(s).
-- [ ] A demoted word stays in Collection, moves from the mastered tally to the learning tally, and
+- [x] A demoted word stays in Collection, moves from the mastered tally to the learning tally, and
       leaves Word Book; the total collected count does not decrease.
-- [ ] Empty states match PRD Appendix A.3 and include a CTA: Collection 0 → start a session;
+- [x] Empty states match PRD Appendix A.3 and include a CTA: Collection 0 → start a session;
       Word Book 0 → start a session; Collection 1–4 → "You've collected X words. Keep going!"
-- [ ] Filters that produce no rows show a clear "nothing here yet" state, not a blank screen.
-- [ ] Speech is tap-to-hear only, with an IPA fallback when no English voice exists.
-- [ ] Collection and Word Book opens are recorded as local metrics (once per open, not per tap).
-- [ ] Selectors are pure and the screens render their output; no date math or status rules inline.
-- [ ] All copy is bilingual; the same word renders in the active locale without a reload.
+- [x] Filters that produce no rows show a clear "nothing here yet" state, not a blank screen.
+- [x] Speech is tap-to-hear only, with an IPA fallback when no English voice exists.
+- [x] Collection and Word Book opens are recorded as local metrics (once per open, not per tap).
+- [x] Selectors are pure and the screens render their output; no date math or status rules inline.
+- [x] All copy is bilingual; the same word renders in the active locale without a reload.
 
 ## Tasks (ordered)
 
