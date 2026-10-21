@@ -1,16 +1,14 @@
 {
-  "name": "单词小勇者 · Word Hero",
-  "short_name": "单词小勇者",
-  "description": "在故事冒险中学习、复习并掌握英语单词。",
-  "start_url": "/",
+  "name": "Words-Wizard",
+  "short_name": "WordsWizard",
+  "description": "A magical word-learning adventure for young learners.",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#f4f2e9",
-  "theme_color": "#126147",
-  "orientation": "portrait-primary",
-  "lang": "zh-CN",
+  "background_color": "#fbfaf7",
+  "theme_color": "#7059dc",
   "icons": [
     {
-      "src": "/app-icon.svg",
+      "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
