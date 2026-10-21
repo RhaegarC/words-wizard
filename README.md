@@ -25,7 +25,7 @@ and its toolchain is independent of the production app.
 - **Monthly Review:** a 20-word retention check every 28 days.
 - **Offline PWA:** IndexedDB via Dexie, no backend, no accounts, no sync, no telemetry.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
-- **Azure Static Web Apps** hosting, with hash routing.
+- **Cloudflare Pages** hosting, with hash routing.
 - **315 illustrations:** ~300 word images plus 3 avatars × 5 stages, AI-generated and
   human-reviewed.
 
@@ -59,8 +59,10 @@ content set:
 - No illustration assets exist yet.
 
 Content is authored AI-assisted and then reviewed in full by a Chinese-speaking English
-teacher. Automated validation will enforce schema completeness, ID integrity, both
-languages, image existence, and the Cambridge allowlist.
+teacher. `pnpm validate:content` enforces schema completeness, ID integrity, both
+languages, image existence, unlock values, and forbidden IP terms; it runs automatically
+before every build. Cambridge allowlist membership is verified during content review
+(feature 17) rather than by the validator.
 
 ## Run the app
 
@@ -81,10 +83,27 @@ The dev server serves on **http://localhost:8443**. Every app file — `package.
 | `pnpm dev` | Vite dev server on port 8443 |
 | `pnpm build` | Production build into `src/dist/` |
 | `pnpm preview` | Serve the built `src/dist/` on port 8443 |
+| `pnpm validate:content` | Check the bundled content JSON; runs before `pnpm build` |
 | `pnpm test` | Vitest, single run (`**/*.test.ts` under `src/`) |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm format` | Format with oxfmt |
+
+### Local data
+
+The app stores everything in IndexedDB under the database name `WordsWizardDB`. The
+Figma prototype used the same name on the same port with an incompatible version-1
+schema (`profiles` only). Dexie will not reinterpret a version it did not create, so if
+you ever ran the prototype in this browser, **clear site data for `localhost:8443` once**
+before running the app. Demo records from the prototype are deliberately not migrated.
+
+The dev-only route table at `#/__routes` can seed a profile with one committed session
+and can drop the database, which is the quickest way to check first-run routing and
+persistence before character creation (feature 06) exists.
+
+Progress is held in memory for the length of a session and written once at the end. A
+browser kill or force-quit mid-session therefore loses that session's answers; everything
+committed by earlier sessions survives. This is the accepted loss window, not a bug.
 
 ### Prototype reference (read-only)
 
@@ -114,18 +133,19 @@ component-test suite; UI is verified in the browser.
 
 ## Deployment
 
-Planned: **Azure Static Web Apps** (Free plan), deployed by GitHub Actions from `master`.
-The prebuilt `src/dist/` is uploaded with `Azure/static-web-apps-deploy`, and
-`src/public/staticwebapp.config.json` — copied into the build — carries the navigation
-fallback and cache headers. Static Web Apps serves MIME types itself, so no per-extension
-upload step is needed. The service worker precaches the shell, content, locales, and all
-illustrations.
+Planned: **Cloudflare Pages** (Free plan, Direct Upload), deployed by GitHub Actions from
+`master`. The prebuilt `src/dist/` is deployed by running
+`wrangler pages deploy dist --project-name words-wizard --branch master` from `src/`, and
+`src/public/_headers` — copied into the build — carries the cache policy. Hash routing means
+no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real
+404. Cloudflare serves MIME types itself, so no per-extension upload step is needed. The
+service worker precaches the shell, content, locales, and all illustrations.
 
-The workflow reads a deployment token from the `AZURE_STATIC_WEB_APPS_API_TOKEN` repository
-secret; no credential is committed. Release flow: merge into `master`, which redeploys the
-production site; re-running the workflow on an older commit is the rollback. Custom domains
-are managed inside Static Web Apps (free managed certificate) and are not part of the
-deployment workflow.
+The workflow reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from repository
+secrets; no credential is committed. Release flow: merge into `master`, which redeploys the
+production site. Rollback is a Cloudflare Pages deployment rollback, or re-running the
+workflow on an older commit. Custom domains are attached to the Pages project with automatic
+TLS and are not part of the deployment workflow.
 
 ## Key decisions
 

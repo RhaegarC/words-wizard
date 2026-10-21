@@ -8,6 +8,8 @@
   },
   "scripts": {
     "dev": "vite",
+    "validate:content": "tsx scripts/validate-content.ts",
+    "prebuild": "pnpm validate:content",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -28,6 +30,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "oxfmt": "^0.2.0",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.0",
     "vite": "^8.0.5",
     "vitest": "^5.0.5"

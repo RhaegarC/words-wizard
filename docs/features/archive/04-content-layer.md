@@ -1,6 +1,6 @@
 # Feature 04 — Content Layer & Validation
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #9**
 > Depends on: 01
 
 ## Summary
@@ -21,24 +21,24 @@ list of what is wrong with a pack before anyone plays it.
 
 ## Acceptance criteria
 
-- [ ] `src/content/topics.json`, `src/content/packs.json`, `src/content/words.json` exist in the
+- [x] `src/content/topics.json`, `src/content/packs.json`, `src/content/words.json` exist in the
       v0.2 schema (PRD §6.4, §6.5).
-- [ ] `src/content/avatars.json` declares 3 avatars (`luma`, `pippin`, `moss`) × 5 stages, each with
+- [x] `src/content/avatars.json` declares 3 avatars (`luma`, `pippin`, `moss`) × 5 stages, each with
       an image path.
-- [ ] `src/content/art/manifest.json` maps every word id to `{ "file": "art/<word>.webp",
+- [x] `src/content/art/manifest.json` maps every word id to `{ "file": "art/<word>.webp",
       "status": "approved" | "placeholder" }`.
-- [ ] `src/content/content-meta.json` declares `{ "schemaVersion": 1, "dataset": "dev" | "final",
+- [x] `src/content/content-meta.json` declares `{ "schemaVersion": 1, "dataset": "dev" | "final",
       "contentVersion": "x.y.z" }`.
-- [ ] The data-access module exports `getTopics`, `getTopic`, `getPacksByTopic`, `getPack`,
+- [x] The data-access module exports `getTopics`, `getTopic`, `getPacksByTopic`, `getPack`,
       `getWord`, `getWordsByIds`, `getWordsByTopic`, `getAvatarSet`, `getArtwork`, and
       `getContentMeta`. No screen imports a JSON file directly.
-- [ ] Content is imported statically (Vite bundles it) and never fetched at runtime.
-- [ ] `pnpm validate:content` checks every rule below and exits non-zero with file + id + rule on
+- [x] Content is imported statically (Vite bundles it) and never fetched at runtime.
+- [x] `pnpm validate:content` checks every rule below and exits non-zero with file + id + rule on
       failure.
-- [ ] A missing or `placeholder` artwork file and a `wordId` with no authored record are **warnings**
+- [x] A missing or `placeholder` artwork file and a `wordId` with no authored record are **warnings**
       in `dataset: "dev"` and **errors** in `dataset: "final"`.
-- [ ] Pack unlock values are exactly `0`, `15`, `30`.
-- [ ] The dev dataset contains **20 fully bilingual words** in topic 1, pack 1, with images (real or
+- [x] Pack unlock values are exactly `0`, `15`, `30`.
+- [x] The dev dataset contains **20 fully bilingual words** in topic 1, pack 1, with images (real or
       placeholder) and paired examples, and is enough to run a 9-word session plus reviews.
 
 ### Validation rules
@@ -82,23 +82,47 @@ list of what is wrong with a pack before anyone plays it.
 9. Wire `validate:content` into `pnpm build` (prebuild) and CI (feature 16).
 10. Add a fixture-based test for every rule (one failing fixture per rule, plus one valid bundle).
 
+## Implementation notes
+
+- `src/domain/content/types.ts` — `ContentBundle`, `Avatar`, `ArtworkEntry`, `ContentMeta`, and
+  the issue-code union.
+- `src/domain/content/validate.ts` — the pure validator. It returns every issue (file, id, code,
+  severity); severity for unresolved slots and artwork follows the dataset.
+- `src/domain/content/artwork.ts` — `resolveArtwork`, which prefers approved art and otherwise
+  returns an emoji or initial placeholder.
+- `src/content/index.ts` — the only module that imports content JSON; every collection is
+  deep-frozen and returned as `readonly`.
+- `src/content/forbidden-terms.json` — the IP term list is data.
+- `src/scripts/validate-content.ts` — CLI runner; injects filesystem checks for art and prints a
+  grouped report. `tsx` is a dev dependency.
+- `package.json` — `validate:content` and a `prebuild` hook, so `pnpm build` cannot package invalid
+  content.
+- `src/components/WordArtwork.tsx` — renders approved art or the placeholder tile.
+- Level range (`1 | 2 | 3`) is executable; matching each word to its Cambridge band is part of the
+  authoring review (feature 17), because the allowlist is a PDF.
+
 ## Tests
 
-**Unit (Vitest), each rule driven by fixtures:**
+**Unit (Vitest):** 89 tests pass across 12 files; 40 are new for this feature.
 
-- Valid bundle produces zero issues.
-- Each rule produces exactly its issue code for the failing fixture: slot count, duplicate id,
-  dangling reference, bad level, empty bilingual field, unpaired example, example missing the word,
-  missing image, forbidden term, bad unlock value, placeholder art in `final`, missing abstract word.
-- Data access: lookup by id, packs by topic in `order`, words by topic, unknown id returns
-  `undefined` rather than throwing.
-- Artwork resolver: approved file wins; placeholder is returned for a missing file in `dev`.
+- `domain/content/validate.test.ts` — 24 fixture-driven tests: a valid dev and a valid final
+  bundle produce zero issues; each rule's failing fixture produces its code (topic/pack/slot
+  counts, duplicate id, unresolved references, level, empty field, missing/unpaired examples,
+  example omitting the target, manifest and file gaps, forbidden term, unlock, order, >300 words,
+  abstract mix, avatar count and stages). Severity is asserted for unresolved slots and artwork in
+  both datasets.
+- `content/index.test.ts` — topic and pack lookup, pack order, word lookup by id and by topic,
+  unknown ids returning `undefined`, avatars, artwork, metadata, and frozen collections.
+- `domain/content/artwork.test.ts` — approved art wins; placeholder entries, missing entries, and
+  missing emoji fall back correctly; absolute paths are untouched.
 
 **Verification:**
 
-- `pnpm validate:content` on the dev dataset reports the expected incompleteness for the 14 packs
-  that are not authored, and exits 0 for the dev dataset.
-- Set `dataset` to `final` and confirm the command fails with the missing-slot count.
+- `pnpm validate:content` on the dev dataset exits 0 with 300 warnings: 280 unresolved slots across
+  the 14 unauthored packs and 20 missing placeholder art files.
+- Temporarily setting `dataset` to `final` makes the same command exit 1 with 300 errors,
+  including every unresolved slot; the file was restored afterwards.
+- `pnpm typecheck`, `pnpm test`, and `pnpm build` pass; `prebuild` runs the validator.
 
 ## Non-goals
 

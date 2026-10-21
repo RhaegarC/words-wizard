@@ -27,7 +27,7 @@ which stress-tests it into a real spec.
 | **Speaking practice / pronunciation scoring** | Needs a speech-recognition model and raises offline-size and privacy questions. |
 | **Phrases and sentences** | The word schema supports `examples`, but the session modes assume a single word; packs of phrases need a new mode contract. |
 | **Native packaging** | PWA is the delivery model (PRD §4.4); Capacitor adds stores, signing, and review. |
-| **Custom domain** | Static Web Apps supports custom domains with a free managed certificate; deferred until a domain name exists, not blocked by deployment (feature 16). |
+| **Custom domain** | Cloudflare Pages attaches a custom domain with automatic TLS; deferred until a domain name exists, not blocked by deployment (feature 16). |
 
 ## Future
 

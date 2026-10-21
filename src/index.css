@@ -106,6 +106,24 @@ body {
   }
 }
 
+/* The art slot shared by word cards and practice modes. An approved image and
+   an emoji placeholder occupy the same box, so layout never shifts. */
+.word-artwork {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  object-fit: cover;
+}
+
+.word-artwork-placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--pale-purple);
+  font-size: clamp(2rem, 12vw, 4rem);
+  line-height: 1;
+}
+
 .placeholder-screen {
   display: flex;
   max-width: 32rem;
@@ -148,6 +166,232 @@ body {
 
 .route-table-note {
   color: var(--muted);
+}
+
+.boot-screen {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 2rem;
+  color: var(--muted);
+}
+
+.dev-action {
+  min-height: 44px;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dark-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dev-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.create-form,
+.topic-picker {
+  display: flex;
+  max-width: 40rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 auto;
+}
+
+.field-label {
+  font-weight: 800;
+}
+
+.name-input {
+  min-height: 52px;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--line);
+  border-radius: 0.875rem;
+  background: #fff;
+  font: inherit;
+  font-size: 1.125rem;
+}
+
+.name-input:focus-visible {
+  border-color: var(--purple);
+  outline: 3px solid var(--pale-purple);
+}
+
+.field-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.suggestion-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.suggestion-chip {
+  min-height: 36px;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dark-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.avatar-fieldset {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.avatar-fieldset .field-label {
+  margin-bottom: 0.5rem;
+  padding: 0;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.avatar-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.avatar-option[data-selected] {
+  border-color: var(--purple);
+  background: var(--pale-purple);
+}
+
+.avatar-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.avatar-option:has(input:focus-visible) {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+}
+
+.avatar-tile {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1.75rem;
+  font-weight: 900;
+}
+
+.avatar-name {
+  font-weight: 700;
+}
+
+.form-error {
+  margin: 0;
+  color: #b3261e;
+  font-weight: 700;
+}
+
+.primary-button {
+  min-height: 52px;
+  margin-top: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--purple);
+  color: #fff;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.topic-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topic-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 1rem;
+  border: 2px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topic-card:hover {
+  border-color: var(--pale-purple);
+}
+
+.topic-card[data-selected] {
+  border-color: var(--purple);
+}
+
+.topic-icon {
+  grid-row: span 4;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.topic-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.topic-title-alt {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.topic-description {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.topic-meta {
+  color: var(--dark-purple);
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 .route-table-toggle {

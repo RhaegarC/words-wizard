@@ -84,7 +84,8 @@ export interface Profile {
   name: string
   characterName: string
   avatar: string
-  currentTopicId: string
+  /** Null until the topic picker completes (feature 06). */
+  currentTopicId: string | null
   xp: number
   createdAt: number
   lastPracticeAt: number

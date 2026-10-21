@@ -1,0 +1,44 @@
+[
+  {
+    "id": "luma",
+    "name": "Luma",
+    "nameZh": "露玛",
+    "color": "#7562df",
+    "pale": "#ded9ff",
+    "stages": {
+      "egg": "art/avatars/luma-egg.webp",
+      "hatchling": "art/avatars/luma-hatchling.webp",
+      "juvenile": "art/avatars/luma-juvenile.webp",
+      "adult": "art/avatars/luma-adult.webp",
+      "legendary": "art/avatars/luma-legendary.webp"
+    }
+  },
+  {
+    "id": "pippin",
+    "name": "Pippin",
+    "nameZh": "皮平",
+    "color": "#e9825d",
+    "pale": "#ffe0d2",
+    "stages": {
+      "egg": "art/avatars/pippin-egg.webp",
+      "hatchling": "art/avatars/pippin-hatchling.webp",
+      "juvenile": "art/avatars/pippin-juvenile.webp",
+      "adult": "art/avatars/pippin-adult.webp",
+      "legendary": "art/avatars/pippin-legendary.webp"
+    }
+  },
+  {
+    "id": "moss",
+    "name": "Moss",
+    "nameZh": "苔苔",
+    "color": "#55a57a",
+    "pale": "#cfeedd",
+    "stages": {
+      "egg": "art/avatars/moss-egg.webp",
+      "hatchling": "art/avatars/moss-hatchling.webp",
+      "juvenile": "art/avatars/moss-juvenile.webp",
+      "adult": "art/avatars/moss-adult.webp",
+      "legendary": "art/avatars/moss-legendary.webp"
+    }
+  }
+]

@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–03 done and archived; features 04–17 not started.**
+> Status: **In progress — features 01–05 done and archived; features 06–17 not started.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
@@ -26,7 +26,7 @@ parallel from feature 04 because it is authoring work, not code.
 - [ ] Settings covers locale, re-customization, topic change, JSON export, and diagnostics.
 - [ ] The app installs, works fully offline after first load, and shows an update prompt instead of
       silently swapping the service worker.
-- [ ] `pnpm build` + CI deploy the app to Azure Static Web Apps; the deployed site passes the smoke check.
+- [ ] `pnpm build` + CI deploy the app to Cloudflare Pages; the deployed site passes the smoke check.
 - [ ] Final content: 300 slots across 5 topics × 3 packs × 20, bilingual, Cambridge-allowlisted,
       with one reviewed illustration per distinct word plus 15 avatar-stage images (≈315);
       `pnpm validate:content` passes.
@@ -40,8 +40,8 @@ parallel from feature 04 because it is authoring work, not code.
 | 01 | [App foundation & test harness](archive/01-app-foundation.md) | Done | — |
 | 02 | [App shell & hash routing](archive/02-app-shell-routing.md) | Done | 01 |
 | 03 | [Bilingual UI (i18n)](archive/03-i18n.md) | Done | 01, 02 |
-| 04 | [Content layer & validation](04-content-layer.md) | Not started | 01 |
-| 05 | [Persistence layer (Dexie)](05-persistence.md) | Not started | 01 |
+| 04 | [Content layer & validation](archive/04-content-layer.md) | Done | 01 |
+| 05 | [Persistence layer (Dexie)](archive/05-persistence.md) | Done | 01 |
 | 06 | [First run: character creation & topic picker](06-first-run.md) | Not started | 02, 03, 04, 05 |
 | 07 | [Session engine](07-session-engine.md) | Not started | 04, 05, 06 |
 | 08 | [Five practice modes](08-practice-modes.md) | Not started | 03, 04, 07 |
@@ -52,7 +52,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 13 | [Monthly Review](13-monthly-review.md) | Not started | 07, 08, 09, 11 |
 | 14 | [Settings, export & diagnostics](14-settings.md) | Not started | 03, 05, 06, 09, 10 |
 | 15 | [PWA install, offline & updates](15-pwa-offline.md) | Not started | 02, 05, 14 |
-| 16 | [Azure deployment & CI](16-azure-deployment.md) | Not started | 01, 04, 15 |
+| 16 | [Cloudflare Pages deployment & CI](16-cloudflare-pages.md) | Not started | 01, 04, 15 |
 | 17 | [Content production: 300 words & 315 illustrations](17-content-production.md) | Not started | 04 (authoring runs in parallel) |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
@@ -75,7 +75,7 @@ Completed feature files move to [`archive/`](archive/); the table keeps the row 
                                              └─► 13 Monthly Review
                                                   14 Settings
                                                    └─► 15 PWA / offline
-                                                        └─► 16 Azure CI/CD
+                                                        └─► 16 Cloudflare CI/CD
 17 Content production ── parallel from 04 ── must land before release
 ```
 
@@ -98,7 +98,7 @@ Completed feature files move to [`archive/`](archive/); the table keeps the row 
 13. **13** — 28-day trigger, 20-word selector, review runner, review summary.
 14. **14** — Locale toggle, re-customize, change topic, JSON export, diagnostics.
 15. **15** — Manifest/icons, Workbox precache, update prompt, install detection and strong prompt.
-16. **16** — GitHub Actions build/test/validate/deploy to Azure Static Web Apps, cache headers, dist smoke check.
+16. **16** — GitHub Actions build/test/validate/deploy to Cloudflare Pages, cache headers, dist smoke check.
 17. **17** — Author and review 300 bilingual slots and 315 illustrations; flip the dataset to `final`.
 
 ## Sequencing caveats
