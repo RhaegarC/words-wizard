@@ -1,5 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react"
 
+import { useLocale } from "../i18n/LocaleProvider"
+
 export type AppShellProps = {
   title: string
   /** Changes whenever the screen changes, driving scroll and focus reset. */
@@ -13,6 +15,7 @@ export type AppShellProps = {
  * title (which receives focus after navigation), and the content slot.
  */
 export function AppShell({ title, routeKey, onBack, children }: AppShellProps) {
+  const { t } = useLocale()
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -28,7 +31,7 @@ export function AppShell({ title, routeKey, onBack, children }: AppShellProps) {
             type="button"
             className="shell-back"
             onClick={onBack}
-            aria-label="Back"
+            aria-label={t("common.back")}
           >
             <span aria-hidden="true">←</span>
           </button>

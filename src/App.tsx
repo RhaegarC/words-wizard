@@ -2,9 +2,10 @@ import { useState } from "react"
 
 import { RouteTable } from "./dev/RouteTable"
 import { readDevProfile, writeDevProfile } from "./dev/devProfile"
+import { useLocale } from "./i18n/LocaleProvider"
 import { resolveRoute } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
-import { buildHash, parentOf, titleFor } from "./router/routes"
+import { buildHash, parentOf, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
 import { AppShell } from "./shell/AppShell"
@@ -12,6 +13,7 @@ import { AppShell } from "./shell/AppShell"
 const DEV_ROUTE_TABLE_HASH = "#/__routes"
 
 export default function App() {
+  const { t } = useLocale()
   const {
     hash,
     route: requested,
@@ -43,7 +45,7 @@ export default function App() {
   return (
     <RouterProvider value={router}>
       <AppShell
-        title={titleFor(route)}
+        title={t(titleKeyFor(route))}
         routeKey={buildHash(route)}
         onBack={parent ? () => navigate(parent) : undefined}
       >
