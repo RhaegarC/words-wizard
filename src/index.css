@@ -706,6 +706,175 @@ body {
   font-weight: 700;
 }
 
+/* Character screen and the sleepy/sleeping nudge. Stage art is drawn by
+   feature 17; the placeholder keeps the same box and the avatar's colours. */
+.character-screen {
+  display: flex;
+  max-width: 32rem;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0 auto;
+}
+
+.avatar-stage {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 1.5rem;
+  object-fit: cover;
+}
+
+.avatar-stage-placeholder {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.25rem;
+}
+
+.avatar-stage-mark {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.avatar-stage-label {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.character-identity {
+  display: grid;
+  justify-items: center;
+  gap: 0.375rem;
+}
+
+.character-name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.character-state {
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--pale-purple);
+  color: var(--dark-purple);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.character-state-sleepy {
+  background: #fff3d6;
+  color: #8a5a00;
+}
+
+.character-state-sleeping {
+  background: #e6e9f7;
+  color: #454e7a;
+}
+
+.character-block {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.character-inline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.character-label {
+  font-weight: 800;
+}
+
+.character-value {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.character-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.character-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.character-error {
+  margin: 0;
+  color: #a3282f;
+  font-weight: 700;
+}
+
+.vitality-bar {
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f1eef5;
+}
+
+.vitality-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f2b45c, #7cc48f);
+}
+
+.sleep-overlay {
+  display: flex;
+  max-width: 32rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 auto 1rem;
+  padding: 1rem;
+  border: 1px solid #f0d9a8;
+  border-radius: 1.25rem;
+  background: #fff8e6;
+}
+
+.sleep-overlay-sleeping {
+  border-color: #cfd4ee;
+  background: #eef0fb;
+}
+
+.sleep-overlay-emoji {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.sleep-overlay-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.sleep-overlay-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.sleep-overlay-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
 /* Practice modes: choice grids, spelling tiles, and the blank sentence. */
 .exercise-prompt,
 .exercise-meaning,

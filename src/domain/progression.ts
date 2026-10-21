@@ -6,7 +6,12 @@ import type {
   SessionProgressWrite,
 } from "../db/provider"
 
-import { localDateKey } from "./session"
+import { deriveCondition, deriveEffectiveDaysIdle } from "./dormancy"
+import {
+  daysSinceLocal,
+  localDateKey,
+  startOfLocalDayKey,
+} from "./time"
 import type {
   Profile,
   Progress,
@@ -216,9 +221,7 @@ export function calcStreak(
 
 /** Whole local days from one `YYYY-MM-DD` key to another. */
 export function daysBetweenLocalDates(from: string, to: string): number {
-  return Math.round(
-    (startOfLocalDay(to) - startOfLocalDay(from)) / DAY_MS,
-  )
+  return daysSinceLocal(startOfLocalDayKey(from), startOfLocalDayKey(to))
 }
 
 /**
@@ -350,6 +353,14 @@ export function buildSessionCommit(
     metrics[METRIC_NAMES.stageUp] = stageUps
   }
 
+  // Completing a session is the free revival path (PRD §7.5): the character
+  // was asleep before this commit moved `lastPracticeAt`.
+  if (
+    deriveCondition(deriveEffectiveDaysIdle(profile, now)) === "sleeping"
+  ) {
+    metrics[METRIC_NAMES.revivalSession] = 1
+  }
+
   const profilePatch: ProfilePatch = {
     xp: profile.xp + xp.total,
     lastPracticeAt: now,
@@ -396,12 +407,6 @@ function clampStrength(value: number): number {
 
 function stageIndex(stage: StageId): number {
   return config.stages.findIndex((candidate) => candidate.id === stage)
-}
-
-function startOfLocalDay(key: string): number {
-  const [year, month, day] = key.split("-").map(Number)
-
-  return new Date(year, month - 1, day).getTime()
 }
 
 function toProgressWrite(row: Progress): SessionProgressWrite {

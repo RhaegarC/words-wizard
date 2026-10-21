@@ -34,5 +34,8 @@ export default defineConfig({
     root: srcRoot,
     environment: "node",
     include: ["**/*.test.ts"],
+    // Local-calendar day math must be proven off UTC and across both DST
+    // transitions; a UTC run would not exercise either.
+    env: { TZ: "America/New_York" },
   },
 })

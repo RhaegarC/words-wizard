@@ -1,6 +1,6 @@
 # Feature 10 — Character State & Character Screen
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In progress — implemented, pending merge**
 > Depends on: 04, 05, 09
 
 ## Summary
@@ -20,35 +20,35 @@ wake it. As a **parent**, the app never punishes a child for missing a week.
 
 ## Acceptance criteria
 
-- [ ] `deriveCharacterState(profile, now)` returns `{ effectiveDaysIdle, vitality, state, stage }`
+- [x] `deriveCharacterState(profile, now)` returns `{ effectiveDaysIdle, vitality, state, stage }`
       with no reads or writes; it is the only source of those values.
-- [ ] Day counts use **local calendar days** (`startOfLocalDay` + rounded day difference), matching
+- [x] Day counts use **local calendar days** (`startOfLocalDay` + rounded day difference), matching
       the streak, including across a DST change.
-- [ ] `anchor = max(createdAt, lastPracticeAt, lastWakeAt ?? 0)`;
+- [x] `anchor = max(createdAt, lastPracticeAt, lastWakeAt ?? 0)`;
       `effectiveDaysIdle = max(0, daysSince(anchor, now) - frozenDays)`.
-- [ ] `vitality = clamp(100 - 15 × effectiveDaysIdle, 0, 100)`.
-- [ ] State: `effectiveDaysIdle >= 7` → `sleeping`; `>= 4` → `sleepy`; otherwise `awake`.
-- [ ] Stage: `Egg 0`, `Hatchling 50`, `Juvenile 300`, `Adult 900`, `Legendary 2000`, derived from XP.
-- [ ] The character screen shows the avatar at its stage, stage progress, vitality bar, state, Care
+- [x] `vitality = clamp(100 - 15 × effectiveDaysIdle, 0, 100)`.
+- [x] State: `effectiveDaysIdle >= 7` → `sleeping`; `>= 4` → `sleepy`; otherwise `awake`.
+- [x] Stage: `Egg 0`, `Hatchling 50`, `Juvenile 300`, `Adult 900`, `Legendary 2000`, derived from XP.
+- [x] The character screen shows the avatar at its stage, stage progress, vitality bar, state, Care
       Token count, and the two spend options when legal.
-- [ ] Stage art resolves `avatar × stage` from `content/avatars.json`; a missing asset renders the
+- [x] Stage art resolves `avatar × stage` from `content/avatars.json`; a missing asset renders the
       styled placeholder, never a broken image.
-- [ ] **Sleepy / Sleeping overlay** appears on Home when `state !== 'awake'`: in-app only, never
+- [x] **Sleepy / Sleeping overlay** appears on Home when `state !== 'awake'`: in-app only, never
       blocking practice, with both wake paths visible ("Practice to wake" and "Use a Care Token").
-- [ ] **Freeze** — allowed only when `awake` or `sleepy`; costs 1 token; `frozenDays += 1`; extends
+- [x] **Freeze** — allowed only when `awake` or `sleepy`; costs 1 token; `frozenDays += 1`; extends
       dormancy by one day. If the most recent missed day sits within the 7-day streak grace, it also
       counts as a streak day: `streakCount += 1` and `lastStreakDate = coveredDay`. If the child
       practiced today, there is no missed day and the streak is unchanged.
-- [ ] **Quick wake** — allowed only when `sleeping`; costs 1 token; sets `lastWakeAt = now` and
+- [x] **Quick wake** — allowed only when `sleeping`; costs 1 token; sets `lastWakeAt = now` and
       `frozenDays = 0`. It does **not** change `lastPracticeAt`, XP, streak, session count,
       monthly-review clock, or `completedSessions`.
-- [ ] Spending the last token, spending with zero tokens, and spending while `sleeping` (freeze) are
+- [x] Spending the last token, spending with zero tokens, and spending while `sleeping` (freeze) are
       all rejected with a typed reason and no state change.
-- [ ] At the token cap with `sessionsSinceLastToken === 5`, spending immediately re-grants the queued
+- [x] At the token cap with `sessionsSinceLastToken === 5`, spending immediately re-grants the queued
       token (net 3, counter 0), per PRD §7.5.
-- [ ] Free revival: completing any session sets `lastPracticeAt`, which clears the sleep state at the
+- [x] Free revival: completing any session sets `lastPracticeAt`, which clears the sleep state at the
       next render; no token is consumed.
-- [ ] All copy is bilingual and encouraging; the sleeping state never uses "dead", "lost", or
+- [x] All copy is bilingual and encouraging; the sleeping state never uses "dead", "lost", or
       "punish" language.
 
 ## Tasks (ordered)

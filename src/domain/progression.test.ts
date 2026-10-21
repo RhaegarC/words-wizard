@@ -830,6 +830,30 @@ describe("buildSessionCommit", () => {
     expect(payload.metrics[METRIC_NAMES.stageUp]).toBeUndefined()
   })
 
+  it("records a revival when a sleeping character completes a session", () => {
+    const result = makeResult([], 0)
+    const { payload } = buildSessionCommit(
+      result,
+      makeProfile({ lastPracticeAt: NOW - 8 * DAY, frozenDays: 0 }),
+      [],
+      NOW,
+    )
+
+    expect(payload.metrics[METRIC_NAMES.revivalSession]).toBe(1)
+  })
+
+  it("records no revival for an awake character", () => {
+    const result = makeResult([], 0)
+    const { payload } = buildSessionCommit(
+      result,
+      makeProfile({ lastPracticeAt: NOW - DAY, frozenDays: 0 }),
+      [],
+      NOW,
+    )
+
+    expect(payload.metrics[METRIC_NAMES.revivalSession]).toBeUndefined()
+  })
+
   it("marks a monthly review as completed", () => {
     const result = makeResult([], 0, "monthly")
     const { payload } = buildSessionCommit(
