@@ -1,0 +1,614 @@
+import { config } from "../config"
+
+import { createRng, hashString, shuffle } from "./random"
+import {
+  PRACTICE_MODES,
+  type Pack,
+  type PracticeMode,
+  type Profile,
+  type Progress,
+  type SessionAttempt,
+  type SessionKind,
+  type SessionResult,
+  type SessionWordResult,
+  type Word,
+} from "./types"
+
+/**
+ * The daily session: a pure builder plus a pure reducer.
+ *
+ * Nothing in this module reads IndexedDB or touches React. The screens render
+ * the reducer's state and hand answers back; feature 09 turns the completed
+ * `SessionResult` into one transaction.
+ */
+
+export type SessionWordKind = "review" | "new"
+
+export interface SessionWord {
+  wordId: string
+  kind: SessionWordKind
+  /** One mode for a review, two distinct modes for a new word. */
+  modes: PracticeMode[]
+}
+
+export interface SessionPlan {
+  words: SessionWord[]
+  caughtUp: boolean
+}
+
+export interface SessionPreview {
+  reviewCount: number
+  newCount: number
+  caughtUp: boolean
+}
+
+/** Deterministic inputs to mode assignment, per PRD §5.2. */
+export interface SessionSeed {
+  profileId: number
+  /** Local calendar day, `YYYY-MM-DD`. */
+  localDate: string
+  kind: SessionKind
+  contentVersion: string
+}
+
+export interface BuildSessionInput {
+  profile: Pick<Profile, "id" | "currentTopicId">
+  progress: readonly Progress[]
+  packs: readonly Pack[]
+  words: readonly Word[]
+  now: number
+  seed: SessionSeed
+  speechAvailable: boolean
+}
+
+export type AttemptFeedback = "correct" | "hint" | "reveal"
+
+export interface AttemptState {
+  wrongTaps: number
+  hintLevel: 0 | 1 | 2
+  revealed: boolean
+  solved: boolean
+  xp: number
+  firstTry: boolean
+}
+
+export const INITIAL_ATTEMPT: AttemptState = {
+  wrongTaps: 0,
+  hintLevel: 0,
+  revealed: false,
+  solved: false,
+  xp: 0,
+  firstTry: false,
+}
+
+export type SessionPhase = "idle" | "intro" | "exercise" | "feedback" | "complete"
+
+export interface SessionState {
+  phase: SessionPhase
+  plan: SessionPlan
+  seed: SessionSeed
+  wordIndex: number
+  exerciseIndex: number
+  attempt: AttemptState
+  attempts: SessionAttempt[]
+  feedback: AttemptFeedback | null
+  startedAt: number | null
+  completedAt: number | null
+}
+
+export type SessionAction =
+  | { type: "start"; now: number }
+  | { type: "continueIntro" }
+  | { type: "answer"; correct: boolean }
+  | { type: "continueFeedback"; now: number }
+  | { type: "confirmReveal"; now: number }
+  | { type: "abandon" }
+
+/** The local day the child is in, independent of the device's UTC offset. */
+export function localDateKey(now: number): string {
+  const date = new Date(now)
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+export function sessionSeed(
+  profileId: number,
+  now: number,
+  kind: SessionKind,
+  contentVersion: string,
+): SessionSeed {
+  return {
+    profileId,
+    localDate: localDateKey(now),
+    kind,
+    contentVersion,
+  }
+}
+
+/** Listen and choose is dropped when no English voice exists. */
+export function availableModes(
+  speechAvailable: boolean,
+): readonly PracticeMode[] {
+  return speechAvailable
+    ? PRACTICE_MODES
+    : PRACTICE_MODES.filter((mode) => mode !== "listenChoose")
+}
+
+/**
+ * Choose up to five due reviews and four new words, then assign modes.
+ *
+ * Reviews are global (any topic) and ordered by `nextReviewAt`; new words come
+ * from one pack only — the lowest-order unlocked pack that still has a word
+ * with no progress row.
+ */
+export function buildSession(input: BuildSessionInput): SessionPlan {
+  const entries = selectEntries(input)
+  const rng = createRng(hashString(seedKey(input.seed)))
+  const words = assignModes(entries, availableModes(input.speechAvailable), rng)
+
+  return {
+    words: words.slice(0, config.session.maxWords),
+    caughtUp: words.length === 0,
+  }
+}
+
+/** Counts for Home and the session landing, without assigning modes. */
+export function previewSession(input: BuildSessionInput): SessionPreview {
+  const entries = selectEntries(input)
+
+  return {
+    reviewCount: entries.filter((entry) => entry.kind === "review").length,
+    newCount: entries.filter((entry) => entry.kind === "new").length,
+    caughtUp: entries.length === 0,
+  }
+}
+
+/** 4 × (intro + 2 exercises) + 5 reviews = 17. */
+export function screenCount(plan: SessionPlan): number {
+  return plan.words.reduce(
+    (total, word) =>
+      total + (word.kind === "new" ? 1 : 0) + word.modes.length,
+    0,
+  )
+}
+
+export function answerAttempt(
+  state: AttemptState,
+  correct: boolean,
+): { state: AttemptState; feedback: AttemptFeedback } {
+  // The answer is already on screen; only the confirming tap may complete it.
+  if (state.revealed) {
+    return { state, feedback: "reveal" }
+  }
+
+  if (state.solved) {
+    return { state, feedback: "correct" }
+  }
+
+  if (!correct) {
+    const wrongTaps = state.wrongTaps + 1
+
+    if (wrongTaps >= 3) {
+      return {
+        state: {
+          ...state,
+          wrongTaps,
+          hintLevel: 2,
+          revealed: true,
+          xp: 0,
+        },
+        feedback: "reveal",
+      }
+    }
+
+    return {
+      state: {
+        ...state,
+        wrongTaps,
+        hintLevel: wrongTaps === 1 ? 1 : 2,
+      },
+      feedback: "hint",
+    }
+  }
+
+  const firstTry = state.wrongTaps === 0 && state.hintLevel === 0
+
+  return {
+    state: {
+      ...state,
+      solved: true,
+      firstTry,
+      xp: firstTry ? config.xp.firstTry : config.xp.afterHint,
+    },
+    feedback: "correct",
+  }
+}
+
+/** The third miss reveals the answer; a deliberate tap completes the attempt. */
+export function confirmRevealAnswer(state: AttemptState): AttemptState {
+  if (!state.revealed) {
+    return state
+  }
+
+  return {
+    ...state,
+    solved: true,
+    firstTry: false,
+    xp: 0,
+  }
+}
+
+export function toSessionAttempt(
+  wordId: string,
+  mode: PracticeMode,
+  state: AttemptState,
+): SessionAttempt {
+  return {
+    wordId,
+    mode,
+    correct: state.solved && !state.revealed,
+    hintLevel: state.hintLevel,
+    revealed: state.revealed,
+    wrongTaps: state.wrongTaps,
+    xp: state.xp,
+  }
+}
+
+export function createSessionState(
+  plan: SessionPlan,
+  seed: SessionSeed,
+): SessionState {
+  return {
+    phase: "idle",
+    plan,
+    seed,
+    wordIndex: 0,
+    exerciseIndex: 0,
+    attempt: { ...INITIAL_ATTEMPT },
+    attempts: [],
+    feedback: null,
+    startedAt: null,
+    completedAt: null,
+  }
+}
+
+export function hasIntro(state: SessionState): boolean {
+  return state.plan.words[state.wordIndex]?.kind === "new"
+}
+
+export function isLastExercise(state: SessionState): boolean {
+  const word = state.plan.words[state.wordIndex]
+  const isLastWord = state.wordIndex >= state.plan.words.length - 1
+
+  return (
+    word !== undefined &&
+    isLastWord &&
+    state.exerciseIndex >= word.modes.length - 1
+  )
+}
+
+export function sessionReducer(
+  state: SessionState,
+  action: SessionAction,
+): SessionState {
+  switch (action.type) {
+    case "start": {
+      const first = state.plan.words[0]
+
+      if (state.phase !== "idle" || first === undefined) {
+        return state
+      }
+
+      return {
+        ...state,
+        phase: first.kind === "new" ? "intro" : "exercise",
+        wordIndex: 0,
+        exerciseIndex: 0,
+        attempt: { ...INITIAL_ATTEMPT },
+        attempts: [],
+        feedback: null,
+        startedAt: action.now,
+        completedAt: null,
+      }
+    }
+
+    case "continueIntro":
+      return state.phase === "intro"
+        ? {
+            ...state,
+            phase: "exercise",
+            attempt: { ...INITIAL_ATTEMPT },
+            feedback: null,
+          }
+        : state
+
+    case "answer": {
+      if (state.phase !== "exercise") {
+        return state
+      }
+
+      const result = answerAttempt(state.attempt, action.correct)
+
+      return {
+        ...state,
+        phase: "feedback",
+        attempt: result.state,
+        feedback: result.feedback,
+      }
+    }
+
+    case "continueFeedback": {
+      if (state.phase !== "feedback" || state.feedback === null) {
+        return state
+      }
+
+      // A hint is "try the same exercise again"; the attempt keeps its state.
+      if (state.feedback === "hint") {
+        return { ...state, phase: "exercise", feedback: null }
+      }
+
+      // The reveal is completed only by the confirming tap.
+      if (state.feedback === "reveal") {
+        return state
+      }
+
+      return advance(state, action.now)
+    }
+
+    case "confirmReveal": {
+      if (
+        state.phase !== "feedback" ||
+        state.feedback !== "reveal" ||
+        !state.attempt.revealed
+      ) {
+        return state
+      }
+
+      return advance(
+        { ...state, attempt: confirmRevealAnswer(state.attempt) },
+        action.now,
+      )
+    }
+
+    case "abandon":
+      return createSessionState({ words: [], caughtUp: true }, state.seed)
+  }
+}
+
+/** One completion row per planned word, in session order. */
+export function buildSessionResult(state: SessionState): SessionResult | null {
+  if (
+    state.phase !== "complete" ||
+    state.startedAt === null ||
+    state.completedAt === null
+  ) {
+    return null
+  }
+
+  const words: SessionWordResult[] = state.plan.words.map((word) => {
+    const attempts = state.attempts.filter(
+      (attempt) => attempt.wordId === word.wordId,
+    )
+    const first = attempts[0]
+
+    return {
+      wordId: word.wordId,
+      firstAttemptCorrect:
+        first !== undefined &&
+        first.correct &&
+        first.wrongTaps === 0 &&
+        first.hintLevel === 0,
+      attempts,
+    }
+  })
+
+  return {
+    id: `${state.seed.profileId}:${state.seed.kind}:${state.seed.localDate}:${state.startedAt}`,
+    kind: state.seed.kind,
+    startedAt: state.startedAt,
+    completedAt: state.completedAt,
+    words,
+    xpEarned: state.attempts.reduce(
+      (total, attempt) => total + attempt.xp,
+      0,
+    ),
+  }
+}
+
+interface SessionEntry {
+  wordId: string
+  kind: SessionWordKind
+}
+
+function selectEntries(input: BuildSessionInput): SessionEntry[] {
+  const profileId = input.profile.id
+  const progress =
+    profileId === undefined
+      ? []
+      : input.progress.filter((row) => row.profileId === profileId)
+  const wordsById = new Map(input.words.map((word) => [word.id, word]))
+  const progressByWord = new Map(
+    progress.map((row) => [row.wordId, row] as const),
+  )
+
+  const reviews: SessionEntry[] = progress
+    .filter(
+      (row) =>
+        (row.status === "learning" || row.status === "mastered") &&
+        row.nextReviewAt <= input.now,
+    )
+    .filter((row) => wordsById.has(row.wordId))
+    .sort(
+      (left, right) =>
+        left.nextReviewAt - right.nextReviewAt ||
+        left.wordId.localeCompare(right.wordId),
+    )
+    .slice(0, config.session.reviewCap)
+    .map((row) => ({ wordId: row.wordId, kind: "review" }))
+
+  const reviewIds = new Set(reviews.map((entry) => entry.wordId))
+  const newIds = selectNewWordIds(input, progressByWord)
+    .filter((wordId) => !reviewIds.has(wordId))
+    .slice(0, config.session.newWords)
+    .map((wordId): SessionEntry => ({ wordId, kind: "new" }))
+
+  return [...reviews, ...newIds]
+}
+
+function selectNewWordIds(
+  input: BuildSessionInput,
+  progressByWord: ReadonlyMap<string, Progress>,
+): string[] {
+  const topicId = input.profile.currentTopicId
+
+  if (topicId === null) {
+    return []
+  }
+
+  const wordsById = new Map(input.words.map((word) => [word.id, word]))
+  const masteredInTopic = [...progressByWord.values()].filter(
+    (row) =>
+      row.status === "mastered" &&
+      wordsById.get(row.wordId)?.topicIds.includes(topicId) === true,
+  ).length
+
+  const unlocked = input.packs
+    .filter((pack) => pack.topicId === topicId)
+    .sort((left, right) => left.order - right.order)
+    .filter((pack) => masteredInTopic >= pack.unlockRule.value)
+
+  for (const pack of unlocked) {
+    const unlearned = [
+      ...new Set(
+        pack.wordIds.filter(
+          (wordId) =>
+            wordsById.has(wordId) && !progressByWord.has(wordId),
+        ),
+      ),
+    ]
+
+    if (unlearned.length > 0) {
+      return unlearned
+    }
+  }
+
+  return []
+}
+
+function assignModes(
+  entries: readonly SessionEntry[],
+  available: readonly PracticeMode[],
+  rng: () => number,
+): SessionWord[] {
+  if (available.length === 0) {
+    return entries.map((entry) => ({ ...entry, modes: [] }))
+  }
+
+  const order = shuffle(available, rng)
+  let cursor = 0
+  let previous: PracticeMode | null = null
+  const words: SessionWord[] = []
+
+  for (const entry of entries) {
+    const count =
+      entry.kind === "new" ? config.session.newWordExercises : 1
+    const modes: PracticeMode[] = []
+
+    for (let index = 0; index < count; index += 1) {
+      const picked = nextMode(order, cursor, modes, previous)
+      modes.push(picked.mode)
+      cursor = picked.cursor
+      previous = picked.mode
+    }
+
+    words.push({ ...entry, modes })
+  }
+
+  return words
+}
+
+/**
+ * Walk the shuffled mode order, skipping modes already used by this word and
+ * the immediately previous exercise while an alternative remains.
+ */
+function nextMode(
+  order: readonly PracticeMode[],
+  cursor: number,
+  taken: readonly PracticeMode[],
+  previous: PracticeMode | null,
+): { mode: PracticeMode; cursor: number } {
+  const untaken = order.filter((mode) => !taken.includes(mode))
+
+  if (untaken.length === 0) {
+    return {
+      mode: order[cursor % order.length],
+      cursor: (cursor + 1) % order.length,
+    }
+  }
+
+  const withoutPrevious = untaken.filter((mode) => mode !== previous)
+  const pool = withoutPrevious.length > 0 ? withoutPrevious : untaken
+
+  for (let offset = 0; offset < order.length; offset += 1) {
+    const index = (cursor + offset) % order.length
+    const mode = order[index]
+
+    if (pool.includes(mode)) {
+      return { mode, cursor: (index + 1) % order.length }
+    }
+  }
+
+  return { mode: pool[0], cursor }
+}
+
+function advance(state: SessionState, now: number): SessionState {
+  const word = state.plan.words[state.wordIndex]
+  const mode = word.modes[state.exerciseIndex]
+  const attempts = [
+    ...state.attempts,
+    toSessionAttempt(word.wordId, mode, state.attempt),
+  ]
+
+  if (state.exerciseIndex + 1 < word.modes.length) {
+    return {
+      ...state,
+      phase: "exercise",
+      exerciseIndex: state.exerciseIndex + 1,
+      attempt: { ...INITIAL_ATTEMPT },
+      attempts,
+      feedback: null,
+    }
+  }
+
+  const nextIndex = state.wordIndex + 1
+  const nextWord = state.plan.words[nextIndex]
+
+  if (nextWord === undefined) {
+    return {
+      ...state,
+      phase: "complete",
+      attempt: { ...INITIAL_ATTEMPT },
+      attempts,
+      feedback: null,
+      completedAt: now,
+    }
+  }
+
+  return {
+    ...state,
+    phase: nextWord.kind === "new" ? "intro" : "exercise",
+    wordIndex: nextIndex,
+    exerciseIndex: 0,
+    attempt: { ...INITIAL_ATTEMPT },
+    attempts,
+    feedback: null,
+  }
+}
+
+function seedKey(seed: SessionSeed): string {
+  return [seed.profileId, seed.localDate, seed.kind, seed.contentVersion].join(
+    "|",
+  )
+}

@@ -85,6 +85,16 @@ export function getWordsByTopic(topicId: string): readonly Word[] {
   return wordsByTopic.get(topicId) ?? EMPTY
 }
 
+/** Every word, for the session builder (reviews may come from any topic). */
+export function getAllWords(): readonly Word[] {
+  return words
+}
+
+/** Every pack, for the session builder's unlock rules. */
+export function getAllPacks(): readonly Pack[] {
+  return packs
+}
+
 export function getAvatarSet(): readonly Avatar[] {
   return avatars
 }

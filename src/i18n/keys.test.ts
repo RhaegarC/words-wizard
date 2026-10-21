@@ -78,4 +78,17 @@ describe("locale files", () => {
       }
     }
   })
+
+  it("never says wrong in session or feedback copy", () => {
+    for (const [locale, dictionary] of [
+      ["en", en],
+      ["zh", zh],
+    ] as const) {
+      for (const [key, value] of Object.entries(dictionary)) {
+        if (key.startsWith("session.") || key.startsWith("feedback.")) {
+          expect(value, `${locale}:${key}`).not.toMatch(/\bwrong\b/i)
+        }
+      }
+    }
+  })
 })
