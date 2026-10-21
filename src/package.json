@@ -11,6 +11,8 @@
     "validate:content": "tsx scripts/validate-content.ts",
     "prebuild": "pnpm validate:content",
     "build": "vite build",
+    "check:dist": "node scripts/check-dist.mjs",
+    "check:deploy": "node scripts/check-deploy.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
