@@ -59,8 +59,10 @@ content set:
 - No illustration assets exist yet.
 
 Content is authored AI-assisted and then reviewed in full by a Chinese-speaking English
-teacher. Automated validation will enforce schema completeness, ID integrity, both
-languages, image existence, and the Cambridge allowlist.
+teacher. `pnpm validate:content` enforces schema completeness, ID integrity, both
+languages, image existence, unlock values, and forbidden IP terms; it runs automatically
+before every build. Cambridge allowlist membership is verified during content review
+(feature 17) rather than by the validator.
 
 ## Run the app
 
@@ -81,6 +83,7 @@ The dev server serves on **http://localhost:8443**. Every app file — `package.
 | `pnpm dev` | Vite dev server on port 8443 |
 | `pnpm build` | Production build into `src/dist/` |
 | `pnpm preview` | Serve the built `src/dist/` on port 8443 |
+| `pnpm validate:content` | Check the bundled content JSON; runs before `pnpm build` |
 | `pnpm test` | Vitest, single run (`**/*.test.ts` under `src/`) |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm typecheck` | `tsc --noEmit` |
