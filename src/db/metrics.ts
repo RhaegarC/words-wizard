@@ -13,6 +13,7 @@ export const METRIC_NAMES = {
   wordLearned: "word.learned",
   wordMastered: "word.mastered",
   stageUp: "stage.up",
+  xpEarned: "xp.earned",
   collectionOpened: "collection.opened",
   wordBookOpened: "wordBook.opened",
   monthlyReviewOffered: "monthlyReview.offered",
