@@ -1,0 +1,90 @@
+import { describe, expect, it } from "vitest"
+
+import { config } from "./config"
+
+describe("config", () => {
+  it("opens the stage ladder at 0 XP and ascends strictly", () => {
+    expect(config.stages[0].minXp).toBe(0)
+
+    for (let index = 1; index < config.stages.length; index += 1) {
+      expect(config.stages[index].minXp).toBeGreaterThan(
+        config.stages[index - 1].minXp,
+      )
+    }
+
+    expect(config.stages.map((stage) => stage.id)).toEqual([
+      "egg",
+      "hatchling",
+      "juvenile",
+      "adult",
+      "legendary",
+    ])
+    expect(config.stages.map((stage) => stage.minXp)).toEqual([
+      0, 50, 300, 900, 2000,
+    ])
+  })
+
+  it("matches the PRD §7.2 XP awards", () => {
+    expect(config.xp).toEqual({
+      firstTry: 2,
+      afterHint: 1,
+      mastered: 10,
+      sessionComplete: 5,
+    })
+  })
+
+  it("matches the PRD §5 session caps", () => {
+    expect(config.session).toEqual({
+      reviewCap: 5,
+      newWords: 4,
+      newWordExercises: 2,
+      maxWords: 9,
+    })
+    expect(config.session.reviewCap + config.session.newWords).toBe(
+      config.session.maxWords,
+    )
+  })
+
+  it("matches the PRD §7.1 streak and §7.2 dormancy rules", () => {
+    expect(config.streak).toEqual({ graceDays: 7, tokenCoversDays: 1 })
+    expect(config.dormancy).toEqual({
+      sleepyDay: 4,
+      sleepDay: 7,
+      vitalityPerDay: 15,
+    })
+  })
+
+  it("matches the PRD §7.5 Care Token cadence and cap", () => {
+    expect(config.careTokens).toEqual({ sessionsPerToken: 5, cap: 3 })
+  })
+
+  it("matches the PRD §9 scheduler", () => {
+    expect(config.scheduler).toEqual({
+      correctDelta: 0.2,
+      wrongDelta: -0.3,
+      masteredStrength: 0.8,
+      masteredCorrect: 3,
+      demoteStrength: 0.5,
+      intervals: [1, 2, 4, 7, 14, 30],
+    })
+  })
+
+  it("matches the PRD §7.4 Monthly Review values", () => {
+    expect(config.monthlyReview).toEqual({
+      intervalDays: 28,
+      minLearned: 5,
+      cap: 20,
+      highStrengthConfirmations: 3,
+    })
+  })
+
+  it("unlocks pack 2 at 15 mastered words and pack 3 at 30", () => {
+    expect(config.unlock).toEqual({ pack2: 15, pack3: 30 })
+    expect(config.unlock.pack2).toBeGreaterThan(0)
+    expect(config.unlock.pack3).toBeGreaterThan(config.unlock.pack2)
+  })
+
+  it("matches the PRD §12 speech settings", () => {
+    expect(config.speech).toEqual({ rate: 0.85, pitch: 1 })
+  })
+})

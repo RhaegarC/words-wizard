@@ -1,0 +1,10 @@
+{
+  "description": "Words-Wizard enhances vocabulary and language skills through engaging word games and quizzes, making learning fun for students and language enthusiasts.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

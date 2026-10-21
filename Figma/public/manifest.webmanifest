@@ -1,0 +1,17 @@
+{
+  "name": "Words-Wizard",
+  "short_name": "WordsWizard",
+  "description": "A magical word-learning adventure for young learners.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbfaf7",
+  "theme_color": "#7059dc",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
