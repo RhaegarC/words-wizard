@@ -15,7 +15,7 @@ export async function seedDevProfile(
   }
 
   const now = Date.now()
-  const profileId = await provider.createProfile({
+  const profile = await provider.createProfile({
     name: "",
     characterName: "Luma",
     avatar: "luma",
@@ -35,8 +35,12 @@ export async function seedDevProfile(
     locale: "en",
   })
 
+  if (profile.id === undefined) {
+    throw new Error("The dev profile was created without an id")
+  }
+
   await provider.commitSession({
-    profileId,
+    profileId: profile.id,
     now,
     xpEarned: 2,
     profile: { xp: 2, lastPracticeAt: now },

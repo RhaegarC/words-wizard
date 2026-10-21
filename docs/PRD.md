@@ -541,7 +541,7 @@ Profile {
   name: string
   characterName: string
   avatar: string
-  currentTopicId: string
+  currentTopicId: string | null // null until the topic picker completes
   xp: number
   createdAt: number
   lastPracticeAt: number        // set to createdAt at character creation
