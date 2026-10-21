@@ -1,6 +1,6 @@
 # Feature 09 — Progression: Session Commit, XP, Streak, Care Tokens, Summary
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In progress — implemented, pending merge**
 > Depends on: 05, 07, 08
 
 ## Summary
@@ -21,42 +21,42 @@ mid-session never leaves a half-updated record.
 
 ### Per word
 
-- [ ] Each attempt applies its scheduler delta immediately in the computed result: correct
+- [x] Each attempt applies its scheduler delta immediately in the computed result: correct
       `strength += 0.2` (cap 1.0), wrong `strength -= 0.3` (floor 0). A wrong then correct exercise
       therefore nets `-0.1`, per PRD §5.3/§9.
-- [ ] `wrongCount` increments once per wrong tap; `correctCount` increments on a correct answer even
+- [x] `wrongCount` increments once per wrong tap; `correctCount` increments on a correct answer even
       after hints.
-- [ ] `nextReviewAt = now + intervalDays(finalStrength)`, where intervals are
+- [x] `nextReviewAt = now + intervalDays(finalStrength)`, where intervals are
       **1 / 2 / 4 / 7 / 14 / 30** days.
-- [ ] `status` becomes `mastered` when `strength >= 0.8 && correctCount >= 3`; it reverts to `learning`
+- [x] `status` becomes `mastered` when `strength >= 0.8 && correctCount >= 3`; it reverts to `learning`
       at `strength < 0.5`. There is no `0.3` "needs practice" state.
-- [ ] A word is learned when it has a `Progress` row; the row is created for every word attempted in a
+- [x] A word is learned when it has a `Progress` row; the row is created for every word attempted in a
       session that completes, including a revealed word.
-- [ ] `firstSeenAt` is preserved on update; `lastSeenAt = now`.
-- [ ] Mastery XP **+10** is awarded only on the first transition to mastered;
+- [x] `firstSeenAt` is preserved on update; `lastSeenAt = now`.
+- [x] Mastery XP **+10** is awarded only on the first transition to mastered;
       `masteryXpAwarded` is set and never cleared by demotion or re-mastery.
 
 ### Session
 
-- [ ] XP in memory: first-try correct **+2**, correct after hint **+1**, revealed **0**; plus **+5**
+- [x] XP in memory: first-try correct **+2**, correct after hint **+1**, revealed **0**; plus **+5**
       for completing the session.
-- [ ] Stage is derived from cumulative XP with thresholds `0 / 50 / 300 / 900 / 2000`; no stage is
+- [x] Stage is derived from cumulative XP with thresholds `0 / 50 / 300 / 900 / 2000`; no stage is
       stored.
-- [ ] Streak uses the **local calendar day**: same day → unchanged; a gap of 1–7 days → `streakCount + 1`
+- [x] Streak uses the **local calendar day**: same day → unchanged; a gap of 1–7 days → `streakCount + 1`
       (missed days pause, they do not add); a gap greater than 7 days or no previous date → `1`.
       `bestStreak = max(bestStreak, streakCount)`.
-- [ ] `lastPracticeAt = now`, `frozenDays = 0`, and `completedSessions += 1` on every completed
+- [x] `lastPracticeAt = now`, `frozenDays = 0`, and `completedSessions += 1` on every completed
       session (daily or monthly).
-- [ ] Care Tokens: `sessionsSinceLastToken += 1`; at 5, if `careTokens < 3` then `careTokens += 1`
+- [x] Care Tokens: `sessionsSinceLastToken += 1`; at 5, if `careTokens < 3` then `careTokens += 1`
       and the counter resets to 0; at the cap the counter holds at 5. See feature 10 for spending.
-- [ ] The whole commit is one Dexie transaction: all progress rows, the profile patch, metrics, and
+- [x] The whole commit is one Dexie transaction: all progress rows, the profile patch, metrics, and
       device flags succeed or none do.
-- [ ] The summary shows words practiced, words mastered this session, XP earned, stage before/after
+- [x] The summary shows words practiced, words mastered this session, XP earned, stage before/after
       with a progress bar, streak, and Care Token progress (`sessionsSinceLastToken` of 5).
-- [ ] A double submit cannot commit twice; the commit button disables on first activation and an
+- [x] A double submit cannot commit twice; the commit button disables on first activation and an
       in-memory guard rejects a second payload for the same session id.
-- [ ] Metrics recorded: session completed, words learned, words mastered, stage-ups, XP earned.
-- [ ] Abandoned sessions record `abandon` only (a session-start metric) and commit no progress.
+- [x] Metrics recorded: session completed, words learned, words mastered, stage-ups, XP earned.
+- [x] Abandoned sessions record `abandon` only (a session-start metric) and commit no progress.
 
 ## Tasks (ordered)
 

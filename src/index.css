@@ -654,6 +654,58 @@ body {
   font-weight: 900;
 }
 
+.session-summary-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding-left: 1.25rem;
+  font-weight: 700;
+}
+
+.session-stage {
+  display: grid;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.session-stage-names {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.session-stage-up {
+  margin: 0;
+  color: var(--dark-purple);
+  font-weight: 800;
+}
+
+.stage-progress {
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--pale-purple);
+}
+
+.stage-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--dark-purple);
+}
+
+.session-save-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.session-error {
+  margin: 0;
+  color: #a3282f;
+  font-weight: 700;
+}
+
 /* Practice modes: choice grids, spelling tiles, and the blank sentence. */
 .exercise-prompt,
 .exercise-meaning,

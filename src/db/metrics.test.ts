@@ -14,6 +14,7 @@ const PRD_15_COUNTERS = [
   "word.learned",
   "word.mastered",
   "stage.up",
+  "xp.earned",
   "collection.opened",
   "wordBook.opened",
   "monthlyReview.offered",

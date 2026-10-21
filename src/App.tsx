@@ -178,7 +178,14 @@ export default function App() {
   return (
     <RouterProvider value={router}>
       {inSession && profile ? (
-        <SessionProvider profile={profile} route={route}>
+        <SessionProvider
+          profile={profile}
+          route={route}
+          onProfileUpdated={(next) =>
+            setBoot({ status: "present", profile: next })
+          }
+          onProfileLost={() => setBoot({ status: "absent" })}
+        >
           {shell}
         </SessionProvider>
       ) : (
