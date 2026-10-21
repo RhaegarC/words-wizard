@@ -1,6 +1,6 @@
 # Feature 14 — Settings, Export & Diagnostics
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review**
 > Depends on: 03, 05, 06, 09, 10
 
 ## Summary
@@ -16,28 +16,28 @@ export a backup and check whether the app is installed and has persistent storag
 
 ## Acceptance criteria
 
-- [ ] **Language:** an EN / 中文 toggle updates `Profile.locale`, re-renders immediately, persists
+- [x] **Language:** an EN / 中文 toggle updates `Profile.locale`, re-renders immediately, persists
       across reloads, and updates `<html lang>` and speech language.
-- [ ] **Re-customize:** edit `characterName` and `avatar` with the same validation as creation
+- [x] **Re-customize:** edit `characterName` and `avatar` with the same validation as creation
       (1–16 code points, avatar allowlist). It never resets `createdAt`, `lastPracticeAt`, progress,
       streak, or tokens.
-- [ ] **Change topic:** opens the Topic Picker; selecting a topic updates `currentTopicId`. Progress
+- [x] **Change topic:** opens the Topic Picker; selecting a topic updates `currentTopicId`. Progress
       and pack unlocks are per topic and are not reset.
-- [ ] **Export JSON:** downloads one file named `words-wizard-backup-YYYY-MM-DD.json` containing
+- [x] **Export JSON:** downloads one file named `words-wizard-backup-YYYY-MM-DD.json` containing
       `{ schemaVersion, contentVersion, appVersion, exportedAt, profile, progress, metrics, device }`.
       No network request is made.
-- [ ] The export includes enough to inspect progress (per-word status, strength, counts, timestamps)
+- [x] The export includes enough to inspect progress (per-word status, strength, counts, timestamps)
       and local metrics; it is a backup, not an import format (import is Phase 3).
-- [ ] **Diagnostics:** installed status, `persist()` result, `navigator.storage.estimate()` usage and
+- [x] **Diagnostics:** installed status, `persist()` result, `navigator.storage.estimate()` usage and
       quota, speech availability, profile count, progress row count, and the local counters from
       PRD §15.
-- [ ] Diagnostics never displays a raw word list or a child's name in a shareable format beyond the
+- [x] Diagnostics never displays a raw word list or a child's name in a shareable format beyond the
       explicit export action.
-- [ ] **Install status / update:** shows "Installed" or "Browser tab"; a pending service-worker update
+- [x] **Install status / update:** shows "Installed" or "Browser tab"; a pending service-worker update
       (feature 15) surfaces here as well as on Home.
-- [ ] No destructive controls: no delete profile, no clear progress, no reset.
-- [ ] Every setting works offline and survives a reload.
-- [ ] Copy is bilingual; settings labels are short enough for a 390 px width.
+- [x] No destructive controls: no delete profile, no clear progress, no reset.
+- [x] Every setting works offline and survives a reload.
+- [x] Copy is bilingual; settings labels are short enough for a 390 px width.
 
 ## Tasks (ordered)
 

@@ -82,6 +82,25 @@ describe("parseHash / buildHash", () => {
     expect(parentOf({ id: "review-exercise" })).toEqual({ id: "review" })
   })
 
+  it("carries the settings origin through the topic picker", () => {
+    expect(buildHash({ id: "topics", from: "settings" })).toBe(
+      "#/topics?from=settings",
+    )
+    expect(parseHash("#/topics?from=settings")).toEqual({
+      id: "topics",
+      from: "settings",
+    })
+    expect(parentOf({ id: "topics", from: "settings" })).toEqual({
+      id: "settings",
+    })
+  })
+
+  it("keeps the first-run topic picker returning home", () => {
+    expect(buildHash({ id: "topics" })).toBe("#/topics")
+    expect(parseHash("#/topics")).toEqual({ id: "topics" })
+    expect(parentOf({ id: "topics" })).toEqual({ id: "home" })
+  })
+
   it("accepts a single trailing slash on known paths", () => {
     expect(parseHash("#/home/")).toEqual({ id: "home" })
     expect(parseHash("#/session/intro/")).toEqual({ id: "session-intro" })

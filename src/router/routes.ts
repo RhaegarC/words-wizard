@@ -19,15 +19,28 @@ export type WordDetailRoute = {
   tab?: WordsTab
 }
 
-export type Route = { id: "home" } | { id: "topics" } | { id: "session" } | {
-  id: "session-intro"
-} | { id: "session-exercise" } | {
-  id: "session-summary"
-} | WordsRoute | WordDetailRoute | { id: "character" } | { id: "review" } | {
-  id: "review-exercise"
-} | {
-  id: "review-summary"
-} | { id: "settings" } | { id: "create" } | { id: "install" }
+/** The topic picker can be reached from Settings, where back returns there. */
+export type TopicsRoute = {
+  id: "topics"
+  from?: "settings"
+}
+
+export type Route =
+  | { id: "home" }
+  | TopicsRoute
+  | { id: "session" }
+  | { id: "session-intro" }
+  | { id: "session-exercise" }
+  | { id: "session-summary" }
+  | WordsRoute
+  | WordDetailRoute
+  | { id: "character" }
+  | { id: "review" }
+  | { id: "review-exercise" }
+  | { id: "review-summary" }
+  | { id: "settings" }
+  | { id: "create" }
+  | { id: "install" }
 
 export type RouteId = Route["id"]
 
@@ -35,6 +48,7 @@ export type RouteId = Route["id"]
 export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "home" },
   { id: "topics" },
+  { id: "topics", from: "settings" },
   { id: "session" },
   { id: "session-intro" },
   { id: "session-exercise" },
@@ -96,6 +110,12 @@ export function buildHash(route: Route): string {
     return route.tab === undefined ? base : `${base}?tab=${route.tab}`
   }
 
+  if (route.id === "topics") {
+    return route.from === "settings"
+      ? "#/topics?from=settings"
+      : SIMPLE_HASHES.topics
+  }
+
   return SIMPLE_HASHES[route.id]
 }
 
@@ -115,8 +135,17 @@ export function parseHash(hash: string): Route | null {
   switch (segments[0]) {
     case "home":
       return onlyOneSegment(segments) ? { id: "home" } : null
-    case "topics":
-      return onlyOneSegment(segments) ? { id: "topics" } : null
+    case "topics": {
+      if (!onlyOneSegment(segments)) {
+        return null
+      }
+
+      const from = new URLSearchParams(split.query).get("from")
+
+      return from === "settings"
+        ? { id: "topics", from: "settings" }
+        : { id: "topics" }
+    }
     case "character":
       return onlyOneSegment(segments) ? { id: "character" } : null
     case "review":
@@ -175,6 +204,9 @@ export function parentOf(route: Route): Route | null {
     case "review-exercise":
       return { id: "review" }
     case "topics":
+      return route.from === "settings"
+        ? { id: "settings" }
+        : { id: "home" }
     case "session":
     case "session-summary":
     case "words":

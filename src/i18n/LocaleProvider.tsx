@@ -23,8 +23,9 @@ type LocaleContextValue = {
 const LocaleContext = createContext<LocaleContextValue | null>(null)
 
 /**
- * Stand-in until feature 05 stores `locale` on the profile in Dexie. Reading
- * the stored value first keeps a manual verification choice across reloads.
+ * The pre-profile language (creation, boot) and the persistence layer for the
+ * toggle. Once the profile is read, App treats `Profile.locale` as the
+ * authority and calls `setLocale` when the two disagree.
  */
 function storedLocale(): Locale | null {
   try {
