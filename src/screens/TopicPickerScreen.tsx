@@ -13,9 +13,12 @@ import { useLocale } from "../i18n/LocaleProvider"
  */
 export function TopicPickerScreen({
   profile,
+  fromSettings = false,
   onChosen,
 }: {
   profile: Profile
+  /** True when Settings opened the picker, which changes where back goes. */
+  fromSettings?: boolean
   onChosen: (profile: Profile) => void
 }) {
   const { locale, t } = useLocale()
@@ -50,6 +53,10 @@ export function TopicPickerScreen({
 
   return (
     <section className="topic-picker">
+      {fromSettings ? (
+        <p className="settings-copy">{t("settings.changeTopicHint")}</p>
+      ) : null}
+
       <ul className="topic-grid">
         {topics.map((topic) => {
           const packCount = getPacksByTopic(topic.id).length

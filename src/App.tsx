@@ -23,6 +23,7 @@ import { SessionExerciseScreen } from "./screens/SessionExerciseScreen"
 import { SessionIntroScreen } from "./screens/SessionIntroScreen"
 import { SessionLandingScreen } from "./screens/SessionLandingScreen"
 import { SessionSummaryScreen } from "./screens/SessionSummaryScreen"
+import { SettingsScreen } from "./screens/SettingsScreen"
 import { TopicPickerScreen } from "./screens/TopicPickerScreen"
 import { WordDetailScreen } from "./screens/WordDetailScreen"
 import { WordsScreen } from "./screens/WordsScreen"
@@ -44,7 +45,7 @@ function readBootOnce(): Promise<BootResult> {
 }
 
 export default function App() {
-  const { t } = useLocale()
+  const { locale, setLocale, t } = useLocale()
   const {
     hash,
     route: requested,
@@ -81,6 +82,19 @@ export default function App() {
       active = false
     }
   }, [])
+
+  // The stored profile is the authority on language. The localStorage value
+  // only gives the pre-profile screen a sensible language, and the Settings
+  // toggle updates both.
+  useEffect(() => {
+    if (
+      boot !== null &&
+      boot.status === "present" &&
+      boot.profile.locale !== locale
+    ) {
+      setLocale(boot.profile.locale)
+    }
+  }, [boot, locale, setLocale])
 
   // The guard decides the screen; the fragment must agree with it. An absent
   // profile lands on `#/create`, and a profile without a topic on `#/topics`.
@@ -156,11 +170,16 @@ export default function App() {
     ) : route.id === "topics" && profile ? (
       <TopicPickerScreen
         profile={profile}
+        fromSettings={route.from === "settings"}
         onChosen={(next) => {
           setBoot({ status: "present", profile: next })
-          navigate({ id: "home" })
+          navigate(
+            route.from === "settings" ? { id: "settings" } : { id: "home" },
+          )
         }}
       />
+    ) : route.id === "settings" && profile ? (
+      <SettingsScreen profile={profile} onProfileUpdated={updateProfile} />
     ) : route.id === "words" && profile ? (
       <WordsScreen profile={profile} tab={route.tab} />
     ) : route.id === "word-detail" && profile ? (
