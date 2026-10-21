@@ -1,6 +1,6 @@
 # Feature 05 — Persistence Layer (Dexie)
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: Done — pending merge**
 > Depends on: 01
 
 ## Summary
@@ -21,31 +21,31 @@ goes through one interface, and a session commits as one transaction or not at a
 
 ## Acceptance criteria
 
-- [ ] `src/db/db.ts` opens `WordsWizardDB` with the PRD §8.3 schema:
+- [x] `src/db/db.ts` opens `WordsWizardDB` with the PRD §8.3 schema:
       `profiles: '++id, name, createdAt'`,
       `progress: '++id, profileId, wordId, status, nextReviewAt, &[profileId+wordId]'`,
       `metrics: '++id, profileId, name, updatedAt'`,
       `device: 'key'`.
-- [ ] `Profile`, `Progress`, `Metric`, and `Device` records match PRD §8.3 exactly, including
+- [x] `Profile`, `Progress`, `Metric`, and `Device` records match PRD §8.3 exactly, including
       `lastPracticeAt: number` (set at creation), `lastWakeAt: number | null`,
       `masteryXpAwarded: boolean`, and `locale`.
-- [ ] `ProgressProvider` exposes: `getProfile`, `createProfile`, `updateProfile`, `getProgress`,
+- [x] `ProgressProvider` exposes: `getProfile`, `createProfile`, `updateProfile`, `getProgress`,
       `getAllProgress`, `commitSession(payload)`, `incrementMetric`, `getMetrics`, `getDevice`,
       `setDevice`.
-- [ ] `getProfile()` returns the single profile (lowest id) or `null`. There is no profile switcher.
-- [ ] `commitSession(payload)` writes progress rows, profile fields, metrics, and device flags in
+- [x] `getProfile()` returns the single profile (lowest id) or `null`. There is no profile switcher.
+- [x] `commitSession(payload)` writes progress rows, profile fields, metrics, and device flags in
       **one** `db.transaction('rw', ...)`; a throw rolls back every write.
-- [ ] `getProgress(profileId, wordId)` uses the compound index; `getAllProgress(profileId)` returns
+- [x] `getProgress(profileId, wordId)` uses the compound index; `getAllProgress(profileId)` returns
       only that profile's rows.
-- [ ] `navigator.storage.persist()` is called once on first launch; the boolean result is stored in
+- [x] `navigator.storage.persist()` is called once on first launch; the boolean result is stored in
       `device.storagePersisted`. A previously recorded result is not re-requested every boot.
-- [ ] Boot check: a profile with `characterName` present → normal flow; absent → `#/create` and a
+- [x] Boot check: a profile with `characterName` present → normal flow; absent → `#/create` and a
       `profileAbsentAtBoot` increment when running installed.
-- [ ] Post-session check: after a commit, re-read the profile; if it is gone, route to the graceful
+- [x] Post-session check: after a commit, re-read the profile; if it is gone, route to the graceful
       recovery entry point rather than showing a broken summary.
-- [ ] `localStorage` is used for nothing except a version probe (if needed); no progress, profile,
+- [x] `localStorage` is used for nothing except a version probe (if needed); no progress, profile,
       or metrics value lives there.
-- [ ] Metric names are constants, not string literals at call sites.
+- [x] Metric names are constants, not string literals at call sites.
 
 ## Tasks (ordered)
 
@@ -85,6 +85,84 @@ goes through one interface, and a session commits as one transaction or not at a
   copy as first use.
 - On iPad Safari: first launch calls `persist()`; the result appears in diagnostics (feature 14).
 - Confirm there is no `localStorage` progress entry (DevTools → Application).
+
+## Implementation notes
+
+- `src/db/db.ts` — `WordsWizardDB` v1 with the four PRD §8.3 tables and the unique
+  `&[profileId+wordId]` index; `defaultDb` is the single instance.
+- `src/db/provider.ts` — `ProgressProvider`, `SessionCommitPayload`, and the
+  `ProfilePatch`/`SessionProgressWrite` shapes feature 09 will build against.
+- `src/db/dexieProvider.ts` — the Dexie implementation. `commitSession` validates the
+  payload first, then writes progress, profile, metrics, and device in one `rw`
+  transaction. A profile update that matches no row throws, which rolls back every row
+  written earlier in the same transaction. Progress rows are upserted through the
+  compound index, so a repeated commit updates rather than duplicates.
+- `src/db/payload.ts` — pure validator for profile id, word ids, review timestamps,
+  strength bounds, and XP.
+- `src/db/metrics.ts` / `src/db/device.ts` — counter and device-key constants.
+- `src/db/lifecycle.ts` — `profileAtBoot`, `verifyProfileAfterSession`,
+  `checkProfileAtBoot`, `checkProfileAfterSession`, `ensureStoragePersistence`, and
+  `isInstalled`. A profile whose `characterName` is empty is treated as absent, so
+  creation repairs it.
+- `src/db/diagnostics.ts` — row counts for feature 14.
+- `src/db/index.ts` — exports `progressProvider`, the app's only store handle.
+- `src/App.tsx` — the feature 02 stub is gone. Boot reads the profile once (shared across
+  StrictMode's double mount so `profileAbsentAtBoot` cannot double-count), routes an
+  absent profile to the canonical `#/create`, and requests persistence without blocking
+  the render. A storage failure shows `errors.storageUnavailable`.
+- `src/dev/RouteTable.tsx` + `src/dev/devStore.ts` — dev-only seed and reset buttons,
+  writing through the real provider. They replace the sessionStorage profile stub.
+
+### Prototype database
+
+The Figma prototype created `WordsWizardDB` v1 with a `profiles`-only, demo-shaped
+schema. It is not a migration source: Dexie refuses to open a version it did not create,
+so a developer who ran the prototype must clear site data for the origin once. This is
+documented in the README; no migration code exists for demo records.
+
+### Accepted loss window
+
+A session lives in memory until `commitSession` runs at its end. A browser kill or
+force-quit mid-session loses that session; every previously committed session survives.
+No partial commit is possible: validation happens before the transaction and any throw
+inside it rolls back all four tables.
+
+### Local storage
+
+No profile, progress, or metric value is written to `localStorage`. The one key still
+present is the feature 03 locale preference (`words-wizard.locale`), a display fallback
+used before a profile exists; feature 06 will hydrate locale from `Profile.locale`, and
+feature 14 owns the setting.
+
+## Tests
+
+**Unit (Vitest, pure only — no fake IndexedDB):** 109 tests pass across 15 files; 20 are
+new for this feature.
+
+- `db/metrics.test.ts` — the constants cover the PRD §15 counters exactly once, are
+  unique, and use the dotted naming scheme.
+- `db/payload.test.ts` — a complete payload and a minimal one validate; missing profile
+  id, empty and duplicate word ids, a review timestamp before the commit, strength
+  outside `0..1` (including `NaN`), and negative XP (earned or total) are rejected; the
+  strength and review-time bounds are accepted; all issues are reported at once.
+- `db/lifecycle.test.ts` — boot presence from a record, `null`, and an empty character
+  name; post-session `present` and `lost` mapping.
+
+**Verification (real IndexedDB in headless Edge, no fake):**
+
+- A fresh database routes `#/home` to `#/create`; `storagePersisted` is recorded as a
+  boolean, and `navigator.storage.persist()` is not called again once a result is
+  recorded.
+- Seeding a profile plus one commit through the dev route table survives a reload: the
+  profile reads back, `getProgress` finds the row through the compound index, and the
+  session metrics were written once.
+- Committing the same word twice leaves one row with the newer strength.
+- A commit whose profile is missing throws and leaves no progress row and no metric
+  change — the transaction rolled back.
+- An emulated standalone display mode makes an absent profile increment
+  `profileAbsentAtBoot` once per boot.
+- Clearing the database returns the app to `#/create`; `localStorage` holds no store
+  data; `getProfile` returns the lowest id when a second row is inserted.
 
 ## Non-goals
 

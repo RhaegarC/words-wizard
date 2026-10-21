@@ -1,19 +1,36 @@
+import { useState } from "react"
+
+import { progressProvider } from "../db"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 import { buildHash, ROUTE_SAMPLES, titleKeyFor } from "../router/routes"
+import { resetDevDatabase, seedDevProfile } from "./devStore"
 
 export type RouteTableProps = {
   hasProfile: boolean
-  onToggleProfile: (present: boolean) => void
 }
 
 /**
  * Dev-only screen at `#/__routes`. The production build replaces
  * `import.meta.env.DEV` with `false`, so this branch and its import are removed.
+ *
+ * Profile presence now comes from the real store; the buttons write through the
+ * same provider the app uses, then reload so the boot guard runs again.
  */
-export function RouteTable({ hasProfile, onToggleProfile }: RouteTableProps) {
+export function RouteTable({ hasProfile }: RouteTableProps) {
   const { navigate } = useRouter()
   const { locale, setLocale, t } = useLocale()
+  const [busy, setBusy] = useState(false)
+
+  const run = (action: () => Promise<void>) => {
+    setBusy(true)
+    void action()
+      .then(() => window.location.reload())
+      .catch((error) => {
+        console.error("[dev] store action failed", error)
+        setBusy(false)
+      })
+  }
 
   return (
     <main className="route-table">
@@ -22,14 +39,29 @@ export function RouteTable({ hasProfile, onToggleProfile }: RouteTableProps) {
         Dev only. Every route is listed with the screen it will become.
       </p>
 
-      <label className="route-table-toggle">
-        <input
-          type="checkbox"
-          checked={hasProfile}
-          onChange={(event) => onToggleProfile(event.target.checked)}
-        />
-        Simulate a profile with a character
-      </label>
+      <p className="route-table-note" role="status">
+        Stored profile: {hasProfile ? "present" : "absent"}
+      </p>
+
+      {hasProfile ? (
+        <button
+          type="button"
+          className="dev-action"
+          disabled={busy}
+          onClick={() => run(resetDevDatabase)}
+        >
+          Clear site database and reload
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="dev-action"
+          disabled={busy}
+          onClick={() => run(() => seedDevProfile(progressProvider))}
+        >
+          Seed a dev profile and one commit
+        </button>
+      )}
 
       <label className="route-table-toggle">
         <input

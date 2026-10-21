@@ -168,6 +168,32 @@ body {
   color: var(--muted);
 }
 
+.boot-screen {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 2rem;
+  color: var(--muted);
+}
+
+.dev-action {
+  min-height: 44px;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dark-purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dev-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .route-table-toggle {
   display: flex;
   align-items: center;

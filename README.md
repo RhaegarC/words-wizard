@@ -89,6 +89,22 @@ The dev server serves on **http://localhost:8443**. Every app file — `package.
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm format` | Format with oxfmt |
 
+### Local data
+
+The app stores everything in IndexedDB under the database name `WordsWizardDB`. The
+Figma prototype used the same name on the same port with an incompatible version-1
+schema (`profiles` only). Dexie will not reinterpret a version it did not create, so if
+you ever ran the prototype in this browser, **clear site data for `localhost:8443` once**
+before running the app. Demo records from the prototype are deliberately not migrated.
+
+The dev-only route table at `#/__routes` can seed a profile with one committed session
+and can drop the database, which is the quickest way to check first-run routing and
+persistence before character creation (feature 06) exists.
+
+Progress is held in memory for the length of a session and written once at the end. A
+browser kill or force-quit mid-session therefore loses that session's answers; everything
+committed by earlier sessions survives. This is the accepted loss window, not a bug.
+
 ### Prototype reference (read-only)
 
 The Figma Make export in `figma/` is kept **exactly as exported**, so it can be re-synced
