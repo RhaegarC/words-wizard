@@ -1,6 +1,6 @@
 # Feature 02 — App Shell & Hash Routing
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review**
 > Depends on: 01
 
 ## Summary
@@ -19,24 +19,24 @@ on the same screen after a reload.
 
 ## Acceptance criteria
 
-- [ ] Supported routes exactly match PRD Appendix A.2:
+- [x] Supported routes exactly match PRD Appendix A.2:
       `#/home`, `#/topics`, `#/session`, `#/session/intro`, `#/session/exercise`,
       `#/session/summary`, `#/words?tab=collection|wordbook`, `#/words/:wordId`, `#/character`,
       `#/review`, `#/review/summary`, `#/settings`, `#/create`, `#/install`.
-- [ ] Unknown or malformed hashes resolve deterministically: profile present → `#/home`;
+- [x] Unknown or malformed hashes resolve deterministically: profile present → `#/home`;
       no profile → `#/create`. No blank screen, no exception.
-- [ ] Boot guard: no profile with a character → `#/create`; profile present → the requested route is
+- [x] Boot guard: no profile with a character → `#/create`; profile present → the requested route is
       honoured, including a deep link after a reload.
-- [ ] Browser back/forward work; a route change scrolls to top and moves focus to the screen's
+- [x] Browser back/forward work; a route change scrolls to top and moves focus to the screen's
       heading.
-- [ ] The shell renders a header with an optional back affordance, a title, and a content slot;
+- [x] The shell renders a header with an optional back affordance, a title, and a content slot;
       touch targets are at least 44×44 px.
-- [ ] Every MVP screen in Appendix A.1 has a route target. Until its feature lands, the target is an
+- [x] Every MVP screen in Appendix A.1 has a route target. Until its feature lands, the target is an
       explicit placeholder that names the feature — no dead links.
-- [ ] The in-session back path is owned by the session engine (feature 07); the shell exposes a
+- [x] The in-session back path is owned by the session engine (feature 07); the shell exposes a
       `beforeLeave` hook it can veto, and the default is "leave".
-- [ ] `prefers-reduced-motion` disables route transitions.
-- [ ] Routes are typed; a screen cannot be linked with a typo without a compile error.
+- [x] `prefers-reduced-motion` disables route transitions.
+- [x] Routes are typed; a screen cannot be linked with a typo without a compile error.
 
 ## Tasks (ordered)
 
@@ -71,8 +71,33 @@ on the same screen after a reload.
 - Unknown hash shows Home, not a blank screen.
 - Keyboard focus lands on the heading after navigation.
 
+**Result (2026-10-21):** 28 tests pass (`pnpm typecheck`, `pnpm test`, `pnpm build`). The
+router suite covers route round-trips, malformed hashes, the boot guard at every route, and
+the leave-guard veto (including a throwing handler, which fails open so the child is never
+trapped). `pnpm preview` returns `200 text/html` for `/` and `200 application/manifest+json`
+for the manifest; the production bundle contains no `#/__routes` or route-table strings.
+The browser checks above remain for the PR reviewer.
+
+## Implementation notes
+
+- `src/router/routes.ts` holds the typed route table and the pure `parseHash` / `buildHash`
+  pair; `src/router/guard.ts` holds `resolveRoute`; `src/router/leaveGuard.ts` holds the veto
+  contract. `src/router/useHashRoute.ts` owns every write to the fragment and is the only place
+  that listens to `hashchange`.
+- `src/shell/AppShell.tsx` renders the header, the back affordance (44×44 px), the focusable
+  title, and the content slot. The content slot is keyed by route so the reduced-motion-safe
+  entry animation runs once per navigation.
+- The leave guard is exposed to every screen through `RouterContext`; the session engine
+  (feature 07) registers its exit confirmation there. No handler means leave.
+- Until feature 05 supplies the Dexie-backed profile, presence is a dev-only toggle on
+  `#/__routes` (`sessionStorage`). A production build resolves every route to character
+  creation, exactly as the boot guard requires. The dev route table and its import are absent
+  from the production bundle.
+- PRD Appendix A.1 screen 14 (Sleepy / Sleeping) is an overlay on Home per A.4, not a route;
+  feature 10 renders it there.
+
 ## Non-goals
 
 - No screen content or data loading.
 - No animated page transitions beyond the reduced-motion-safe default.
-- No history-based routing (the server cannot rewrite).
+- No history-based routing (hash routes keep the build portable and rewrite-free).

@@ -28,55 +28,142 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-.boot-screen {
+.app-shell {
   display: flex;
   min-height: 100dvh;
   flex-direction: column;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 2rem;
-  text-align: center;
+  gap: 0.5rem;
+  min-height: 4rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: rgb(251 250 247 / 92%);
+  backdrop-filter: blur(8px);
 }
 
-.boot-mark {
+.shell-back {
   display: grid;
-  width: 6rem;
-  height: 6rem;
+  min-width: 44px;
+  min-height: 44px;
   place-items: center;
-  border-radius: 1.75rem;
-  background: var(--purple);
-  color: #fff;
-  font-size: 3rem;
-  font-weight: 800;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pale-purple);
+  color: var(--dark-purple);
+  font-size: 1.25rem;
   line-height: 1;
-  box-shadow: 0 1rem 2.5rem rgb(112 89 220 / 25%);
+  cursor: pointer;
 }
 
-.boot-title {
-  margin: 0.5rem 0 0;
-  font-size: clamp(2rem, 6vw, 3rem);
+.shell-back:active {
+  background: #e2dcfb;
+}
+
+.shell-back-spacer {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.shell-title {
+  margin: 0;
+  font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
-.boot-subtitle {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
+/* Focus is moved here after navigation for screen-reader users; the heading is
+   not keyboard reachable, so no visible ring is needed. */
+.shell-title:focus {
+  outline: none;
 }
 
-.boot-note {
+.shell-content {
+  flex: 1;
+  padding: 1.5rem 1rem 2.5rem;
+  animation: screen-in 180ms ease-out;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.placeholder-screen {
+  display: flex;
+  max-width: 32rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 1px dashed var(--line);
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.placeholder-badge {
   margin: 0;
-  margin-top: 1.5rem;
-  padding: 0.35rem 0.75rem;
+  padding: 0.25rem 0.625rem;
   border-radius: 999px;
   background: var(--pale-purple);
   color: var(--dark-purple);
   font-size: 0.75rem;
   font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+}
+
+.placeholder-copy,
+.placeholder-detail {
+  margin: 0;
+  color: var(--muted);
+}
+
+.placeholder-detail {
+  font-size: 0.875rem;
+}
+
+.route-table {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.route-table-note {
+  color: var(--muted);
+}
+
+.route-table-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-weight: 700;
+}
+
+.route-table-list {
+  display: grid;
+  gap: 0.25rem;
+  padding-left: 1.25rem;
+}
+
+.route-table-list a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  color: var(--dark-purple);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -86,5 +173,9 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .shell-content {
+    animation: none;
   }
 }
