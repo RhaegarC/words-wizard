@@ -36,10 +36,8 @@ and its toolchain is independent of the production app.
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1 sprint index, 17 ordered feature specs, and the backlog |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [src/](src/) | **Production application source** — all app code lives here |
-| [public/](public/) | Static assets copied into the build (manifest, icons, favicon) |
-| [scripts/](scripts/) | Developer utilities (placeholder icon generator) |
-| `package.json`, `vite.config.ts`, `tsconfig.json`, `index.html` | Root production toolchain |
+| [src/](src/) | **All application source**: `index.html`, React code, `src/public/` static assets, and `src/scripts/` developer utilities |
+| `package.json`, `vite.config.ts`, `tsconfig.json`, lockfile | Root toolchain only — the root folder stays free of app files |
 | [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
 ## Current content state
@@ -74,7 +72,8 @@ pnpm dev
 ```
 
 The dev server serves on **http://localhost:8443**. All application source lives under
-`src/`.
+`src/`, including `src/index.html` and `src/public/`; the repository root contains only the
+toolchain.
 
 | Command | What it does |
 |---|---|

@@ -5,10 +5,11 @@
 
 ## Summary
 
-Scaffold the production app at the repository root with **all application source under `src/`**.
-The Figma Make export in `figma/` is a **read-only visual reference and must not be modified** — no
-file moved out of it, no generated file written into it. The production toolchain is independent of
-the prototype's toolchain.
+Scaffold the production app with **all application source under `src/`** — `src/index.html`,
+`src/public/`, and `src/scripts/` included. The repository root holds only the toolchain: package
+manifest, lockfile, TypeScript config, and Vite config. The Figma Make export in `figma/` is a
+**read-only visual reference and must not be modified** — no file moved out of it, no generated file
+written into it. The production toolchain is independent of the prototype's toolchain.
 
 This feature creates the build, the test harness, and the two files every later feature imports:
 `src/config.ts` (all tunables from PRD §12) and `src/domain/types.ts` (the canonical records from
@@ -23,12 +24,14 @@ any time.
 
 ## Acceptance criteria
 
-- [x] `package.json`, `index.html`, `src/`, `public/`, `vite.config.ts`, `tsconfig.json`, and the
-      lockfile live at the repository root.
+- [x] `package.json`, `vite.config.ts`, `tsconfig.json`, and the lockfile live at the repository
+      root. **Every app file lives under `src/`**, including `src/index.html`, `src/public/`, and
+      `src/scripts/`.
 - [x] **`figma/` is untouched**: `git status --short figma` is empty after the feature lands, and no
       production file imports from `figma/`.
-- [x] `vite.config.ts` contains only React, Tailwind 4, and the `@` alias — no `.figma/` imports,
-      no Figma site-configuration, error-overlay, refresh-boundary, or Make-kit plugins.
+- [x] `vite.config.ts` contains only React, Tailwind 4, and the `@` alias, with `root: "src"`,
+      `publicDir: "public"`, and `build.outDir: "../dist"` — no `.figma/` imports, no Figma
+      site-configuration, error-overlay, refresh-boundary, or Make-kit plugins.
 - [x] `pnpm dev` serves on port 8443; `pnpm build` emits `dist/`; `pnpm preview` serves it.
 - [x] `pnpm test` runs Vitest; `pnpm test:watch` watches; `pnpm typecheck` runs `tsc --noEmit`.
 - [x] TypeScript is `strict`; no `any` in new code without a written reason.
@@ -38,10 +41,10 @@ any time.
       `PRACTICE_MODES` constants so exhaustiveness can be tested.
 - [x] `src/main.tsx`, `src/App.tsx`, and `src/index.css` render a minimal production boot screen that
       uses the prototype's color tokens; screens themselves are built in features 02–17.
-- [x] `public/manifest.webmanifest` names the product, uses `start_url: "./"`, `display: standalone`,
-      and declares 192 px and 512 px icons (PNG) plus a maskable icon.
-- [x] `index.html` has the correct title, description, theme color, and `<html lang>` placeholder
-      that feature 03 will drive at runtime.
+- [x] `src/public/manifest.webmanifest` names the product, uses `start_url: "./"`,
+      `display: standalone`, and declares 192 px and 512 px icons (PNG) plus a maskable icon.
+- [x] `src/index.html` has the correct title, description, theme color, and `<html lang>`
+      placeholder that feature 03 will drive at runtime.
 - [x] A root `.gitignore` excludes `node_modules/`, `dist/`, `coverage/`, and local env files.
 - [x] `README.md` run instructions match the root layout and note that `figma/` is read-only.
 - [x] `pnpm typecheck`, `pnpm test`, and `pnpm build` pass from a clean install.
@@ -53,9 +56,11 @@ any time.
    Vitest, oxfmt; scripts `dev`, `build`, `preview`, `test`, `test:watch`, `typecheck`, `format`.
 3. Add `tsconfig.json`: `strict`, `jsx: react-jsx`, `moduleResolution: bundler`, `noEmit`,
    `types: ["node"]`, `paths` for `@/*`; include `src` and `vite.config.ts`.
-4. Add `vite.config.ts`: React + Tailwind plugins, `@` alias, `server.port = 8443`, `strictPort`,
-   `base: "./"`, and the Vitest block (`environment: "node"`, `include: ["src/**/*.test.ts"]`).
-5. Add `index.html` with the product title, description, theme color, manifest link, and root mount.
+4. Add `vite.config.ts`: `root: "src"`, `publicDir: "public"`, `build.outDir: "../dist"`,
+   React + Tailwind plugins, `@` alias, `server.port = 8443`, `strictPort`, `base: "./"`, and the
+   Vitest block (`environment: "node"`, `include: ["src/**/*.test.ts"]`).
+5. Add `src/index.html` with the product title, description, theme color, manifest link, and root
+   mount.
 6. Add `src/main.tsx`, `src/App.tsx`, and `src/index.css`: Tailwind import, the prototype's color
    tokens and base resets, and a minimal boot screen naming the production app.
 7. Run `pnpm install` and commit the lockfile.
@@ -63,7 +68,8 @@ any time.
    scheduler, monthly review, unlock, speech).
 9. Add `src/domain/types.ts`, with `StageId` derived from the config's stage list and runtime
    `STAGE_IDS` / `PRACTICE_MODES` constants.
-10. Add `public/manifest.webmanifest` and 192/512/maskable placeholder icons under `public/icons/`.
+10. Add `src/public/manifest.webmanifest` and 192/512/maskable placeholder icons under
+    `src/public/icons/`.
 11. Update `README.md`: root commands, port, `/src` layout, and "`figma/` is read-only reference".
 12. Verify: `git status --short figma` empty; `pnpm typecheck`, `pnpm test`, `pnpm build`; `pnpm dev`
     serves the boot screen on 8443.

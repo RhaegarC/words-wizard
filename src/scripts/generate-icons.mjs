@@ -2,7 +2,7 @@
 // Replaced by the approved brand artwork in feature 17 (content production).
 //
 // Run with: node scripts/generate-icons.mjs
-// Writes public/icons/icon-192.png, icon-512.png, and maskable-512.png.
+// Writes src/public/icons/icon-192.png, icon-512.png, and maskable-512.png.
 
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
