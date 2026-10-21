@@ -14,7 +14,12 @@ import { buildHash, parentOf, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
 import { CreateScreen } from "./screens/CreateScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
+import { SessionExerciseScreen } from "./screens/SessionExerciseScreen"
+import { SessionIntroScreen } from "./screens/SessionIntroScreen"
+import { SessionLandingScreen } from "./screens/SessionLandingScreen"
+import { SessionSummaryScreen } from "./screens/SessionSummaryScreen"
 import { TopicPickerScreen } from "./screens/TopicPickerScreen"
+import { SessionProvider } from "./session/SessionProvider"
 import { AppShell } from "./shell/AppShell"
 
 const DEV_ROUTE_TABLE_HASH = "#/__routes"
@@ -127,29 +132,58 @@ export default function App() {
     )
   }
 
+  const screen =
+    route.id === "create" ? (
+      <CreateScreen
+        onCreated={(created) => setBoot({ status: "present", profile: created })}
+      />
+    ) : route.id === "topics" && profile ? (
+      <TopicPickerScreen
+        profile={profile}
+        onChosen={(next) => {
+          setBoot({ status: "present", profile: next })
+          navigate({ id: "home" })
+        }}
+      />
+    ) : route.id === "session" ? (
+      <SessionLandingScreen />
+    ) : route.id === "session-intro" ? (
+      <SessionIntroScreen />
+    ) : route.id === "session-exercise" ? (
+      <SessionExerciseScreen />
+    ) : route.id === "session-summary" ? (
+      <SessionSummaryScreen />
+    ) : (
+      <PlaceholderScreen route={route} />
+    )
+
+  const shell = (
+    <AppShell
+      title={t(titleKeyFor(route))}
+      routeKey={buildHash(route)}
+      onBack={parent ? () => navigate(parent) : undefined}
+    >
+      {screen}
+    </AppShell>
+  )
+
+  const inSession =
+    route.id === "session" ||
+    route.id === "session-intro" ||
+    route.id === "session-exercise" ||
+    route.id === "session-summary"
+
+  // The provider sits outside the shell so its exit dialog covers the whole
+  // frame, and stays mounted as the session moves between its own routes.
   return (
     <RouterProvider value={router}>
-      <AppShell
-        title={t(titleKeyFor(route))}
-        routeKey={buildHash(route)}
-        onBack={parent ? () => navigate(parent) : undefined}
-      >
-        {route.id === "create" ? (
-          <CreateScreen
-            onCreated={(created) => setBoot({ status: "present", profile: created })}
-          />
-        ) : route.id === "topics" && profile ? (
-          <TopicPickerScreen
-            profile={profile}
-            onChosen={(next) => {
-              setBoot({ status: "present", profile: next })
-              navigate({ id: "home" })
-            }}
-          />
-        ) : (
-          <PlaceholderScreen route={route} />
-        )}
-      </AppShell>
+      {inSession && profile ? (
+        <SessionProvider profile={profile} route={route}>
+          {shell}
+        </SessionProvider>
+      ) : (
+        shell
+      )}
     </RouterProvider>
   )
 }

@@ -1,6 +1,6 @@
 # Feature 07 — Session Engine
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: Implemented — in review**
 > Depends on: 04, 05, 06
 
 ## Summary
@@ -20,36 +20,36 @@ progress behind.
 
 ## Acceptance criteria
 
-- [ ] A session is at most **9 words**: up to **5 due reviews**, one exercise each, plus up to **4 new
+- [x] A session is at most **9 words**: up to **5 due reviews**, one exercise each, plus up to **4 new
       words**, each with an introduction card and **two exercises in different modes**.
-- [ ] Reviews are words with `status` `learning` or `mastered` and `nextReviewAt <= now`, ordered by
+- [x] Reviews are words with `status` `learning` or `mastered` and `nextReviewAt <= now`, ordered by
       `nextReviewAt` ascending, capped at 5; reviews may come from any topic.
-- [ ] New words come from the **lowest-order unlocked pack** in `Profile.currentTopicId` with
+- [x] New words come from the **lowest-order unlocked pack** in `Profile.currentTopicId` with
       unlearned words; pack 1 is always unlocked, pack 2 at 15 mastered in the topic, pack 3 at 30.
-- [ ] A word is "unlearned" when it has no `Progress` row; a word from an abandoned session is still
+- [x] A word is "unlearned" when it has no `Progress` row; a word from an abandoned session is still
       new.
-- [ ] The builder dedupes by `wordId`, caps at 9, and returns an empty result when there is nothing
+- [x] The builder dedupes by `wordId`, caps at 9, and returns an empty result when there is nothing
       due and nothing new; the caller shows the caught-up state.
-- [ ] Mode assignment is deterministic for the same `(profileId, local date, kind, content version)`:
+- [x] Mode assignment is deterministic for the same `(profileId, local date, kind, content version)`:
       two distinct modes for each new word, one mode for each review word, no same mode on back-to-back
       words where an alternative exists.
-- [ ] The **feedback ladder** is exact: first miss → hint 1 (remove a distractor or show the first
+- [x] The **feedback ladder** is exact: first miss → hint 1 (remove a distractor or show the first
       letter); second miss → hint 2 (word shape or meaning); third miss → reveal the answer and require
       a confirming tap. The word "wrong" never appears in copy.
-- [ ] Every wrong tap is counted per exercise; a later correct answer still counts as correct for
+- [x] Every wrong tap is counted per exercise; a later correct answer still counts as correct for
       `correctCount`, per PRD §5.3.
-- [ ] XP accrues in memory only: first-try correct **+2**, correct after any hint **+1**, revealed
+- [x] XP accrues in memory only: first-try correct **+2**, correct after any hint **+1**, revealed
       **0**. Nothing is written to Dexie during the session.
-- [ ] The intro card appears for new words only and shows word, IPA, image, part of speech, meaning
+- [x] The intro card appears for new words only and shows word, IPA, image, part of speech, meaning
       and definition in the active locale, and the paired example; pronunciation is tap-to-hear, never
       autoplay.
-- [ ] Leaving mid-session shows a confirmation; confirming discards the entire session and writes
+- [x] Leaving mid-session shows a confirmation; confirming discards the entire session and writes
       nothing. Browser-kill loss is accepted and documented.
-- [ ] The session host exposes a `beforeLeave` veto to the router so browser back and the header back
+- [x] The session host exposes a `beforeLeave` veto to the router so browser back and the header back
       arrow both hit the same confirmation.
-- [ ] If no English voice exists, the mode assignment excludes *listen & choose* in favour of
+- [x] If no English voice exists, the mode assignment excludes *listen & choose* in favour of
       *word → meaning* or *spelling builder* (feature 08 supplies availability).
-- [ ] Maximum 17 screens for a full session (4 × (intro + 2 exercises) + 5 reviews).
+- [x] Maximum 17 screens for a full session (4 × (intro + 2 exercises) + 5 reviews).
 
 ## Tasks (ordered)
 
@@ -98,6 +98,48 @@ progress behind.
 - Run a full session on iPad Safari; count the screens (≤ 17).
 - Close the tab mid-session, reopen: no partial progress (feature 09's commit never ran).
 - Repeat the same day on the same device: the mode order is stable.
+
+## Implementation notes
+
+- `src/domain/random.ts` — FNV-1a seed hash, mulberry32 RNG, and a non-mutating Fisher–Yates
+  shuffle. Same seed, same assignment.
+- `src/domain/session.ts` — `buildSession`, `previewSession`, `screenCount`, the attempt model
+  (`answerAttempt`, `confirmRevealAnswer`), the reducer, and `buildSessionResult`. No React, no store.
+- `src/session/SessionProvider.tsx` — one session per visit to the session routes: reads progress
+  once, builds the plan, registers the `beforeLeave` veto, mirrors the phase onto the fragment, and
+  renders the exit confirmation above the shell. It only reads the store.
+- Screens: session landing (counts or caught-up), introduction card, exercise host, summary.
+- `src/speech.ts` — tap-to-hear, and `resolveSpeechAvailability` decides whether *listen & choose* may
+  be planned. An empty voice list (iOS before the first utterance) is treated as supported;
+  `voiceschanged` refreshes the flag, and the plan is rebuilt only before Start.
+- `LeaveGuard` now passes the destination hash to the handler. The session allows only the forward
+  moves it makes itself (`intro → exercise`, `exercise → summary`); everything else, including
+  returning to `#/session`, asks first.
+
+### The exercise-host seam
+
+Feature 08 owns the five practice modes. The host built here renders a temporary self-check body
+(mode label, artwork, word, "I know it" / "Not yet") and already owns everything around it: the
+planned mode, progress, the answer callbacks, hints and reveal. A feature-08 module replaces only the
+body and calls `dispatch({ type: "answer", correct })`; the ladder and XP are therefore exercised end
+to end before any mode is written.
+
+### Not persisted yet
+
+The completed `SessionResult` is exposed by the provider and shown on `#/session/summary`; nothing is
+written. Feature 09 consumes the same object and commits it in one transaction, and the summary copy
+says so plainly until then.
+
+## Verification
+
+- `pnpm test` — 182 tests, including 34 session-engine tests and 12 across `random` and `speech`.
+- `pnpm typecheck` and `pnpm build`.
+- Headless Edge against the dev server with a seeded dev profile: landing counts, all four intro
+  cards, the full ladder (hint 1 → hint 2 → reveal → confirming tap), two exit destinations
+  (`#/session` and `#/home`) with the route held, twelve exercises, a summary showing `+14 XP` and
+  4 words, and browser back from the summary corrected to the summary. No console errors or uncaught
+  exceptions.
+- Still manual: iPad Safari voice behaviour and the on-device screen count.
 
 ## Non-goals
 

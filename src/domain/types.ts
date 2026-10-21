@@ -151,6 +151,8 @@ export interface SessionAttempt {
   correct: boolean
   hintLevel: 0 | 1 | 2
   revealed: boolean
+  /** Every miss on this exercise; feature 09 applies one scheduler penalty each. */
+  wrongTaps: number
   xp: number
 }
 
