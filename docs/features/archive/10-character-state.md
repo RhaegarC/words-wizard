@@ -1,6 +1,6 @@
 # Feature 10 — Character State & Character Screen
 
-> Priority: Must · Mission 1 · **Status: In progress — implemented, pending merge**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #23**
 > Depends on: 04, 05, 09
 
 ## Summary
