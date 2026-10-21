@@ -1,6 +1,6 @@
 # Feature 02 — App Shell & Hash Routing
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #3**
 > Depends on: 01
 
 ## Summary
