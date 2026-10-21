@@ -1,30 +1,30 @@
 [
   {
     "id": "craft-1",
-    "title": "First Tools",
-    "titleZh": "第一批工具",
+    "title": "My Workshop",
+    "titleZh": "我的工作间",
     "topicId": "craft-and-build",
     "order": 1,
     "unlockRule": { "type": "masteryCount", "value": 0 },
     "wordIds": [
-      "w-bag", "w-ball", "w-box", "w-brush", "w-card",
-      "w-clock", "w-cup", "w-desk", "w-door", "w-drum",
-      "w-flag", "w-hammer", "w-key", "w-lamp", "w-paper",
-      "w-pencil", "w-build", "w-careful", "w-together", "w-proud"
+      "w-box", "w-bag", "w-paper", "w-pencil", "w-ruler",
+      "w-crayon", "w-paint", "w-toy", "w-ball", "w-clock",
+      "w-desk", "w-table", "w-chair", "w-lamp", "w-make",
+      "w-draw", "w-choose", "w-build", "w-fix", "w-careful"
     ]
   },
   {
     "id": "craft-2",
-    "title": "Materials",
-    "titleZh": "材料",
+    "title": "Materials & Making",
+    "titleZh": "材料与动手",
     "topicId": "craft-and-build",
     "order": 2,
     "unlockRule": { "type": "masteryCount", "value": 15 },
     "wordIds": [
-      "w-craft-2-01", "w-craft-2-02", "w-craft-2-03", "w-craft-2-04", "w-craft-2-05",
-      "w-craft-2-06", "w-craft-2-07", "w-craft-2-08", "w-craft-2-09", "w-craft-2-10",
-      "w-craft-2-11", "w-craft-2-12", "w-craft-2-13", "w-craft-2-14", "w-craft-2-15",
-      "w-craft-2-16", "w-craft-2-17", "w-craft-2-18", "w-craft-2-19", "w-craft-2-20"
+      "w-sand", "w-glass", "w-bottle", "w-bowl", "w-net",
+      "w-plastic", "w-metal", "w-wood", "w-wool", "w-gold",
+      "w-silver", "w-stone", "w-scissors", "w-glue", "w-brush",
+      "w-repair", "w-safe", "w-strong", "w-easy", "w-difficult"
     ]
   },
   {
@@ -35,10 +35,10 @@
     "order": 3,
     "unlockRule": { "type": "masteryCount", "value": 30 },
     "wordIds": [
-      "w-craft-3-01", "w-craft-3-02", "w-craft-3-03", "w-craft-3-04", "w-craft-3-05",
-      "w-craft-3-06", "w-craft-3-07", "w-craft-3-08", "w-craft-3-09", "w-craft-3-10",
-      "w-craft-3-11", "w-craft-3-12", "w-craft-3-13", "w-craft-3-14", "w-craft-3-15",
-      "w-craft-3-16", "w-craft-3-17", "w-craft-3-18", "w-craft-3-19", "w-craft-3-20"
+      "w-cut", "w-design", "w-invent", "w-collect", "w-prepare",
+      "w-decide", "w-believe", "w-explain", "w-improve", "w-together",
+      "w-happy", "w-excited", "w-worried", "w-brave", "w-clever",
+      "w-kind", "w-friendly", "w-beautiful", "w-important", "w-ready"
     ]
   },
   {
