@@ -1,6 +1,6 @@
 # Feature 11 — Home Hub
 
-> Priority: Must · Mission 1 · **Status: In review — device/manual pass pending**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #25**
 > Depends on: 06, 07, 09, 10
 
 ## Summary
