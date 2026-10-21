@@ -1,0 +1,86 @@
+[
+  {
+    "id": "craft-1", "title": "First Tools", "topicId": "craft-and-build", "order": 1, "unlockRule": { "type": "masteryCount", "value": 0 },
+    "wordIds": ["w-bag", "w-ball", "w-board", "w-boat", "w-box", "w-brush", "w-card", "w-clock", "w-cup", "w-desk", "w-doll", "w-door", "w-drum", "w-flag", "w-gate", "w-hammer", "w-key", "w-kite", "w-lamp", "w-mat", "w-nail", "w-paper", "w-pen", "w-pencil", "w-picture"]
+  },
+  {
+    "id": "craft-2", "title": "Materials", "topicId": "craft-and-build", "order": 2, "unlockRule": { "type": "masteryCount", "value": 15 },
+    "wordIds": ["w-plastic", "w-sand", "w-shelf", "w-string", "w-toy", "w-wall", "w-wood", "w-wool", "w-cotton", "w-glass", "w-gold", "w-metal", "w-silver", "w-stone", "w-chain", "w-envelope", "w-glue", "w-net", "w-oil", "w-scissors", "w-stamp", "w-tape", "w-thread", "w-wire", "w-jar"]
+  },
+  {
+    "id": "craft-3", "title": "Actions", "topicId": "craft-and-build", "order": 3, "unlockRule": { "type": "masteryCount", "value": 30 },
+    "wordIds": ["w-build", "w-make", "w-fix", "w-cut", "w-draw", "w-paint", "w-bring", "w-carry", "w-change", "w-choose", "w-collect", "w-cook", "w-create", "w-design", "w-finish", "w-grow", "w-join", "w-mix", "w-move", "w-pick", "w-push", "w-pull", "w-start", "w-try", "w-wash"]
+  },
+  {
+    "id": "craft-4", "title": "Master Builders", "topicId": "craft-and-build", "order": 4, "unlockRule": { "type": "masteryCount", "value": 45 },
+    "wordIds": ["w-bridge", "w-building", "w-castle", "w-city", "w-garden", "w-house", "w-roof", "w-room", "w-school", "w-shop", "w-station", "w-tower", "w-tent", "w-park", "w-factory", "w-big", "w-clever", "w-different", "w-difficult", "w-easy", "w-heavy", "w-light", "w-new", "w-old", "w-strong"]
+  },
+
+  {
+    "id": "explore-1", "title": "The World", "topicId": "explore-and-discover", "order": 1, "unlockRule": { "type": "masteryCount", "value": 0 },
+    "wordIds": ["w-beach", "w-cave", "w-countryside", "w-desert", "w-earth", "w-field", "w-forest", "w-hill", "w-island", "w-jungle", "w-lake", "w-moon", "w-mountain", "w-ocean", "w-path", "w-pond", "w-river", "w-road", "w-rock", "w-sea", "w-sky", "w-star", "w-street", "w-tree", "w-world"]
+  },
+  {
+    "id": "explore-2", "title": "Nature", "topicId": "explore-and-discover", "order": 2, "unlockRule": { "type": "masteryCount", "value": 15 },
+    "wordIds": ["w-animal", "w-bird", "w-butterfly", "w-cat", "w-dog", "w-fish", "w-flower", "w-grass", "w-horse", "w-insect", "w-leaf", "w-lion", "w-monkey", "w-plant", "w-rabbit", "w-snake", "w-spider", "w-tiger", "w-water", "w-whale", "w-weather", "w-wind", "w-rain", "w-snow", "w-sun"]
+  },
+  {
+    "id": "explore-3", "title": "Explorer Gear", "topicId": "explore-and-discover", "order": 3, "unlockRule": { "type": "masteryCount", "value": 30 },
+    "wordIds": ["w-backpack", "w-binoculars", "w-boots", "w-camera", "w-compass", "w-flashlight", "w-hat", "w-jacket", "w-map", "w-notebook", "w-tent", "w-torch", "w-watch", "w-water", "w-bottle", "w-air", "w-boat", "w-car", "w-bike", "w-plane", "w-train", "w-bus", "w-truck", "w-ship", "w-helicopter"]
+  },
+  {
+    "id": "explore-4", "title": "Discovery", "topicId": "explore-and-discover", "order": 4, "unlockRule": { "type": "masteryCount", "value": 45 },
+    "wordIds": ["w-explore", "w-discover", "w-search", "w-find", "w-look", "w-listen", "w-follow", "w-afar", "w-lost", "w-hidden", "w-dark", "w-deep", "w-curious", "w-surprised", "w-excited", "w-amazed", "w-nervous", "w-patient", "w-careful", "w-brave", "w-interesting", "w-fantastic", "w-quiet", "w-beautiful", "w-safe"]
+  },
+
+  {
+    "id": "puzzle-1", "title": "The Mystery", "topicId": "puzzle-and-mystery", "order": 1, "unlockRule": { "type": "masteryCount", "value": 0 },
+    "wordIds": ["w-clue", "w-mystery", "w-puzzle", "w-question", "w-answer", "w-secret", "w-magic", "w-key", "w-lock", "w-door", "w-circle", "w-square", "w-line", "w-piece", "w-missing", "w-game", "w-board", "w-card", "w-dice", "w-score", "w-team", "w-turn", "w-win", "w-lose", "w-prize"]
+  },
+  {
+    "id": "puzzle-2", "title": "Riddles", "topicId": "puzzle-and-mystery", "order": 2, "unlockRule": { "type": "masteryCount", "value": 15 },
+    "wordIds": ["w-number", "w-letter", "w-word", "w-sentence", "w-story", "w-book", "w-page", "w-picture", "w-paint", "w-draw", "w-write", "w-read", "w-spell", "w-count", "w-measure", "w-shape", "w-colour", "w-print", "w-pattern", "w-match", "w-difference", "w-same", "w-copy", "w-check", "w-choose"]
+  },
+  {
+    "id": "puzzle-3", "title": "Thinking", "topicId": "puzzle-and-mystery", "order": 3, "unlockRule": { "type": "masteryCount", "value": 30 },
+    "wordIds": ["w-think", "w-idea", "w-know", "w-learn", "w-understand", "w-remember", "w-forget", "w-guess", "w-solve", "w-wonder", "w-explain", "w-decide", "w-believe", "w-hope", "w-mind", "w-smart", "w-clever", "w-difficult", "w-easy", "w-tricky", "w-simple", "w-complex", "w-strange", "w-normal", "w-mistake"]
+  },
+  {
+    "id": "puzzle-4", "title": "The Solution", "topicId": "puzzle-and-mystery", "order": 4, "unlockRule": { "type": "masteryCount", "value": 45 },
+    "wordIds": ["w-solve", "w-answer", "w-true", "w-false", "w-real", "w-fake", "w-proof", "w-proof", "w-realize", "w-confused", "w-clear", "w-sure", "w-interested", "w-curious", "w-surprised", "w-worried", "w-relieved", "w-proud", "w-happy", "w-satisfied", "w-brilliant", "w-perfect", "w-ready", "w-impossible", "w-possible"]
+  },
+
+  {
+    "id": "coop-1", "title": "Teamwork", "topicId": "co-op-quest", "order": 1, "unlockRule": { "type": "masteryCount", "value": 0 },
+    "wordIds": ["w-team", "w-group", "w-friend", "w-partner", "w-meet", "w-talk", "w-hello", "w-listen", "w-help", "w-share", "w-give", "w-take", "w-follow", "w-lead", "w-wait", "w-join", "w-call", "w-invite", "w-welcome", "w-smile", "w-laugh", "w-play", "w-together", "w-same", "w-different"]
+  },
+  {
+    "id": "coop-2", "title": "Communication", "topicId": "co-op-quest", "order": 2, "unlockRule": { "type": "masteryCount", "value": 15 },
+    "wordIds": ["w-say", "w-tell", "w-ask", "w-answer", "w-speak", "w-whisper", "w-shout", "w-read", "w-write", "w-draw", "w-show", "w-point", "w-plan", "w-agree", "w-promise", "w-trust", "w-choose", "w-discuss", "w-explain", "w-mean", "w-word", "w-language", "w-voice", "w-quiet", "w-loud"]
+  },
+  {
+    "id": "coop-3", "title": "Fair Play", "topicId": "co-op-quest", "order": 3, "unlockRule": { "type": "masteryCount", "value": 30 },
+    "wordIds": ["w-turn", "w-rule", "w-fair", "w-kind", "w-honest", "w-right", "w-wrong", "w-good", "w-bad", "w-sorry", "w-thank", "w-please", "w-patience", "w-careful", "w-gentle", "w-helpful", "w-friendly", "w-share", "w-care", "w-respect", "w-promise", "w-trust", "w-truth", "w-lie", "w-forgive"]
+  },
+  {
+    "id": "coop-4", "title": "Winning Together", "topicId": "co-op-quest", "order": 4, "unlockRule": { "type": "masteryCount", "value": 45 },
+    "wordIds": ["w-win", "w-fail", "w-try", "w-practice", "w-improve", "w-succeed", "w-best", "w-proud", "w-happy", "w-excited", "w-grateful", "w-together", "w-celebrate", "w-party", "w-cheer", "w-clap", "w-smile", "w-hug", "w-high-five", "w-champion", "w-medal", "w-prize", "w-first", "w-second", "w-third"]
+  },
+
+  {
+    "id": "battle-1", "title": "Gear", "topicId": "battle-and-survive", "order": 1, "unlockRule": { "type": "masteryCount", "value": 0 },
+    "wordIds": ["w-sword", "w-shield", "w-armor", "w-helmet", "w-bow", "w-arrow", "w-knife", "w-hammer", "w-tool", "w-rope", "w-map", "w-fire", "w-light", "w-bag", "w-boots", "w-hat", "w-gloves", "w-jacket", "w-belt", "w-ring", "w-magic", "w-potion", "w-prize", "w-treasure", "w-gold"]
+  },
+  {
+    "id": "battle-2", "title": "Danger", "topicId": "battle-and-survive", "order": 2, "unlockRule": { "type": "masteryCount", "value": 15 },
+    "wordIds": ["w-danger", "w-monster", "w-dragon", "w-snake", "w-spider", "w-wolf", "w-bear", "w-fire", "w-storm", "w-flood", "w-earthquake", "w-fight", "w-attack", "w-defend", "w-run", "w-hide", "w-jump", "w-climb", "w-swim", "w-escape", "w-fall", "w-hurt", "w-bleed", "w-scared", "w-brave"]
+  },
+  {
+    "id": "battle-3", "title": "Survival", "topicId": "battle-and-survive", "order": 3, "unlockRule": { "type": "masteryCount", "value": 30 },
+    "wordIds": ["w-survive", "w-eat", "w-drink", "w-sleep", "w-rest", "w-breathe", "w-health", "w-strong", "w-weak", "w-tired", "w-hungry", "w-thirsty", "w-cold", "w-hot", "w-warm", "w-safe", "w-shelter", "w-tent", "w-fire", "w-water", "w-food", "w-medicine", "w-bandage", "w-doctor", "w-help"]
+  },
+  {
+    "id": "battle-4", "title": "Victory", "topicId": "battle-and-survive", "order": 4, "unlockRule": { "type": "masteryCount", "value": 45 },
+    "wordIds": ["w-win", "w-lose", "w-fight", "w-brave", "w-strong", "w-ready", "w-alive", "w-hope", "w-trust", "w-relieved", "w-proud", "w-happy", "w-excited", "w-tired", "w-hurt", "w-scared", "w-worried", "w-brave", "w-fearless", "w-hero", "w-champion", "w-victory", "w-peace", "w-safe", "w-home"]
+  }
+]
