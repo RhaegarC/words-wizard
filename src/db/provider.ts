@@ -40,7 +40,8 @@ export interface SessionCommitPayload {
  */
 export interface ProgressProvider {
   getProfile(): Promise<Profile | null>
-  createProfile(profile: NewProfile): Promise<number>
+  /** Idempotent: returns the existing profile instead of adding a second. */
+  createProfile(profile: NewProfile): Promise<Profile>
   updateProfile(id: number, patch: ProfilePatch): Promise<void>
   getProgress(profileId: number, wordId: string): Promise<Progress | null>
   getAllProgress(profileId: number): Promise<Progress[]>

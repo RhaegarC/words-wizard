@@ -22,8 +22,18 @@ export class DexieProgressProvider implements ProgressProvider {
     return (await this.db.profiles.orderBy("id").first()) ?? null
   }
 
-  async createProfile(profile: NewProfile): Promise<number> {
-    return this.db.profiles.add(profile as Profile)
+  async createProfile(profile: NewProfile): Promise<Profile> {
+    return this.db.transaction("rw", this.db.profiles, async () => {
+      const existing = await this.db.profiles.orderBy("id").first()
+
+      if (existing) {
+        return existing
+      }
+
+      const id = await this.db.profiles.add(profile as Profile)
+
+      return { ...profile, id }
+    })
   }
 
   async updateProfile(id: number, patch: ProfilePatch): Promise<void> {

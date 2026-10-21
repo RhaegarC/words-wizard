@@ -12,7 +12,9 @@ import { resolveRoute } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, parentOf, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
+import { CreateScreen } from "./screens/CreateScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
+import { TopicPickerScreen } from "./screens/TopicPickerScreen"
 import { AppShell } from "./shell/AppShell"
 
 const DEV_ROUTE_TABLE_HASH = "#/__routes"
@@ -68,11 +70,11 @@ export default function App() {
     }
   }, [])
 
-  // The guard decides the screen; the fragment must agree with it, so an
-  // absent profile lands on the canonical `#/create` rather than a Hash of the
-  // route it was denied. The dev route table stays reachable to inspect routes.
+  // The guard decides the screen; the fragment must agree with it. An absent
+  // profile lands on `#/create`, and a profile without a topic on `#/topics`.
+  // The dev route table stays reachable so routes can be inspected directly.
   useEffect(() => {
-    if (boot?.status !== "absent") {
+    if (boot === null) {
       return
     }
 
@@ -80,8 +82,23 @@ export default function App() {
       return
     }
 
-    if (hash !== "#/create") {
+    if (boot.status === "absent" && hash !== "#/create") {
       replace({ id: "create" })
+      return
+    }
+
+    if (
+      boot.status === "present" &&
+      boot.profile.currentTopicId === null &&
+      hash !== "#/topics" &&
+      hash !== "#/install"
+    ) {
+      replace({ id: "topics" })
+      return
+    }
+
+    if (boot.status === "present" && hash === "#/create") {
+      replace({ id: "home" })
     }
   }, [boot, hash, replace])
 
@@ -95,9 +112,11 @@ export default function App() {
     )
   }
 
-  const hasProfile = boot.status === "present"
-  const route = resolveRoute(requested, hasProfile)
-  const parent = parentOf(route)
+  const profile = boot.status === "present" ? boot.profile : null
+  const hasProfile = profile !== null
+  const hasTopic = profile !== null && profile.currentTopicId !== null
+  const route = resolveRoute(requested, hasProfile, hasTopic)
+  const parent = hasTopic ? parentOf(route) : null
   const router = { navigate, replace, leaveGuard }
 
   if (import.meta.env.DEV && hash === DEV_ROUTE_TABLE_HASH) {
@@ -115,7 +134,21 @@ export default function App() {
         routeKey={buildHash(route)}
         onBack={parent ? () => navigate(parent) : undefined}
       >
-        <PlaceholderScreen route={route} />
+        {route.id === "create" ? (
+          <CreateScreen
+            onCreated={(created) => setBoot({ status: "present", profile: created })}
+          />
+        ) : route.id === "topics" && profile ? (
+          <TopicPickerScreen
+            profile={profile}
+            onChosen={(next) => {
+              setBoot({ status: "present", profile: next })
+              navigate({ id: "home" })
+            }}
+          />
+        ) : (
+          <PlaceholderScreen route={route} />
+        )}
       </AppShell>
     </RouterProvider>
   )
