@@ -1,6 +1,6 @@
 # Feature 12 — My Words: Collection & Word Book
 
-> Priority: Must · Mission 1 · **Status: In review — device/manual pass pending**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #27**
 > Depends on: 04, 05, 08, 09
 
 ## Summary
