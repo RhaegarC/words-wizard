@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 
-import { SleepOverlay } from "./components/SleepOverlay"
 import { progressProvider } from "./db"
 import {
   type BootResult,
@@ -16,6 +15,7 @@ import { buildHash, parentOf, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
+import { HomeScreen } from "./screens/HomeScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
 import { SessionExerciseScreen } from "./screens/SessionExerciseScreen"
 import { SessionIntroScreen } from "./screens/SessionIntroScreen"
@@ -141,18 +141,14 @@ export default function App() {
   const screen =
     route.id === "create" ? (
       <CreateScreen
-        onCreated={(created) => setBoot({ status: "present", profile: created })}
+        onCreated={(created) =>
+          setBoot({ status: "present", profile: created })
+        }
       />
     ) : route.id === "character" && profile ? (
       <CharacterScreen profile={profile} onProfileUpdated={updateProfile} />
     ) : route.id === "home" && profile ? (
-      <>
-        <SleepOverlay
-          profile={profile}
-          onProfileUpdated={updateProfile}
-        />
-        <PlaceholderScreen route={route} />
-      </>
+      <HomeScreen profile={profile} onProfileUpdated={updateProfile} />
     ) : route.id === "topics" && profile ? (
       <TopicPickerScreen
         profile={profile}

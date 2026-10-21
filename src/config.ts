@@ -1,5 +1,6 @@
 /**
- * Every tunable in one place, exactly as PRD §12.
+ * Every tunable in one place: the PRD §12 values plus the few presentational
+ * pacing thresholds the UI needs.
  *
  * Domain code reads these values; nothing else hard-codes a threshold, cap, or interval.
  */
@@ -14,7 +15,12 @@ export const config = {
   ],
   dormancy: { sleepyDay: 4, sleepDay: 7, vitalityPerDay: 15 },
   streak: { graceDays: 7, tokenCoversDays: 1 },
-  careTokens: { sessionsPerToken: 5, cap: 3 },
+  careTokens: {
+    sessionsPerToken: 5,
+    cap: 3,
+    /** Home mentions a token only when this few sessions remain. */
+    hintWithin: 2,
+  },
   session: { reviewCap: 5, newWords: 4, newWordExercises: 2, maxWords: 9 },
   exercise: {
     /** Answer plus up to three distractors. */

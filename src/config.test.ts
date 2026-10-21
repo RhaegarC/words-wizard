@@ -55,7 +55,11 @@ describe("config", () => {
   })
 
   it("matches the PRD §7.5 Care Token cadence and cap", () => {
-    expect(config.careTokens).toEqual({ sessionsPerToken: 5, cap: 3 })
+    expect(config.careTokens).toEqual({
+      sessionsPerToken: 5,
+      cap: 3,
+      hintWithin: 2,
+    })
   })
 
   it("matches the PRD §9 scheduler", () => {
