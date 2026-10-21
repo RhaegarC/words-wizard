@@ -15,7 +15,8 @@ parallel from feature 04 because it is authoring work, not code.
 
 ## Definition of Done (whole mission)
 
-- [ ] The app lives at the repository root, builds with `pnpm build`, and carries no Figma Make plugins.
+- [ ] The app and its toolchain live under `src/`; `cd src && pnpm build` produces the root `dist/` and
+      the build carries no Figma Make plugins.
 - [ ] A first run goes: character creation → install prompt → topic picker → Home.
 - [ ] A full session runs end to end: 5 reviews + 4 new words, intro cards, all five modes,
       escalating hints, summary.

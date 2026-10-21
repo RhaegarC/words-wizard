@@ -24,7 +24,8 @@ upload. As a **parent**, the installed app updates from the same URL without rei
 - [ ] `vite build` produces a `dist/` with relative asset URLs (`base: "./"`), so the build also works
       if served from a sub-path.
 - [ ] `.github/workflows/ci.yml` runs on pull requests to `develop`: install (pnpm, frozen lockfile),
-      `typecheck`, `test`, `validate:content`, `build`, and `check:dist`.
+      `typecheck`, `test`, `validate:content`, `build`, and `check:dist`. All pnpm steps run with
+      `working-directory: src`; the package manifest lives there.
 - [ ] `.github/workflows/deploy.yml` runs on push to `master` and on `workflow_dispatch`: the same
       checks, then uploads `dist/` to `$web`.
 - [ ] Authentication uses **GitHub OIDC** federated credentials (`azure/login`), not a stored storage
@@ -34,7 +35,7 @@ upload. As a **parent**, the installed app updates from the same URL without rei
       - artwork and icons → `public, max-age=604800` (paths are not content-hashed);
       - `index.html`, `sw.js`, `registerSW.js`, `manifest.webmanifest` → `no-cache`;
       - content/locale JSON → `public, max-age=3600`.
-- [ ] `scripts/check-dist.mjs` fails the build when `index.html`, the manifest, `sw.js`, hashed JS/CSS,
+- [ ] `src/scripts/check-dist.mjs` fails the build when `index.html`, the manifest, `sw.js`, hashed JS/CSS,
       content JSON, locales, or the icon set are missing; it also asserts `sw.js` references a precache
       manifest.
 - [ ] A post-deploy smoke step checks `index.html`, one hashed asset, and one `.webp` return `200`
@@ -46,14 +47,15 @@ upload. As a **parent**, the installed app updates from the same URL without rei
 ## Tasks (ordered)
 
 1. Enable the static website endpoint on the storage account; confirm `$web` and the default URL.
-2. Add `scripts/check-dist.mjs` (Node, no deps): required files, precache manifest, no absolute
-   `/assets/` URLs in `index.html`.
-3. Add the pure helpers `contentTypeFor(path)` and `cacheControlFor(path)` under `scripts/lib/`, used
-   by the deploy step and unit-tested.
+2. Add `src/scripts/check-dist.mjs` (Node, no deps): required files, precache manifest, no absolute
+   `/assets/` URLs in `index.html`; it inspects the repository-root `dist/`.
+3. Add the pure helpers `contentTypeFor(path)` and `cacheControlFor(path)` under `src/scripts/lib/`,
+   used by the deploy step and unit-tested.
 4. Write `.github/workflows/ci.yml`: pnpm setup with cache, frozen install, typecheck, test,
    validate:content, build, check:dist.
 5. Write `.github/workflows/deploy.yml`: `permissions: id-token: write, contents: read`;
-   `azure/login` with OIDC; upload batches:
+   `azure/login` with OIDC; upload batches run at the repository root so `-s dist` reaches the build
+   output:
    `az storage blob upload-batch --auth-mode login -d '$web' -s dist --pattern "assets/*.js" --content-type "application/javascript" --content-cache-control "public, max-age=31536000, immutable"`
    and equivalent calls for CSS, images, JSON, and root files.
 6. Upload `index.html`, `sw.js`, `registerSW.js`, and `manifest.webmanifest` last, with `no-cache`,

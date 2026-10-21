@@ -9,7 +9,7 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     },
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -20,5 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "public"]
 }

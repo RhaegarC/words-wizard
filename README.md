@@ -36,8 +36,8 @@ and its toolchain is independent of the production app.
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1 sprint index, 17 ordered feature specs, and the backlog |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [src/](src/) | **All application source**: `index.html`, React code, `src/public/` static assets, and `src/scripts/` developer utilities |
-| `package.json`, `vite.config.ts`, `tsconfig.json`, lockfile | Root toolchain only — the root folder stays free of app files |
+| [src/](src/) | **Everything the app needs**: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `index.html`, React code, `src/public/` static assets, and `src/scripts/` utilities |
+| Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/`; generated `dist/` is the build output |
 | [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
 ## Current content state
@@ -64,23 +64,24 @@ languages, image existence, and the Cambridge allowlist.
 
 ## Run the app
 
-From the repository root:
+The package manifest lives in `src/`, so run every command from there:
 
 ```bash
+cd src
 pnpm install
 pnpm dev
 ```
 
-The dev server serves on **http://localhost:8443**. All application source lives under
-`src/`, including `src/index.html` and `src/public/`; the repository root contains only the
-toolchain.
+The dev server serves on **http://localhost:8443**. Every app file — `package.json`,
+`tsconfig.json`, `vite.config.ts`, `index.html`, React code, and static assets — lives under
+`src/`. The repository root stays clean.
 
 | Command | What it does |
 |---|---|
 | `pnpm dev` | Vite dev server on port 8443 |
-| `pnpm build` | Production build into `dist/` |
+| `pnpm build` | Production build into the repository-root `dist/` |
 | `pnpm preview` | Serve the built `dist/` on port 8443 |
-| `pnpm test` | Vitest, single run (`src/**/*.test.ts`) |
+| `pnpm test` | Vitest, single run (`**/*.test.ts` under `src/`) |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm format` | Format with oxfmt |
@@ -92,7 +93,7 @@ or compared at any time. Do not move files out of it, edit it, or import from it
 toolchain is independent of the root app.
 
 To view the prototype, run it from its own directory (it also uses port 8443, so stop the
-root dev server first):
+app dev server first):
 
 ```bash
 cd figma

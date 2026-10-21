@@ -1,14 +1,11 @@
-import path from "node:path"
-
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vitest/config"
 
-const projectRoot = import.meta.dirname
-const srcRoot = path.resolve(projectRoot, "src")
+const srcRoot = import.meta.dirname
 
 export default defineConfig({
-  // All application source lives in src/; the repository root holds only toolchain files.
+  // The package and all app source live in src/; only the build output leaves it.
   root: srcRoot,
   // Relative asset URLs so the build also works from a sub-path.
   base: "./",
@@ -34,8 +31,8 @@ export default defineConfig({
     strictPort: true,
   },
   test: {
-    root: projectRoot,
+    root: srcRoot,
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    include: ["**/*.test.ts"],
   },
 })
