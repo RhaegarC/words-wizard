@@ -11,6 +11,7 @@ import type {
   Avatar,
   ContentMeta,
 } from "../domain/content/types"
+import type { HomeContent } from "../domain/home"
 import type { Pack, Topic, Word } from "../domain/types"
 
 /**
@@ -105,6 +106,20 @@ export function getArtwork(wordId: string): ArtworkEntry | undefined {
 
 export function getContentMeta(): ContentMeta {
   return contentMeta
+}
+
+/**
+ * Everything Home's builder needs in one bundle. Home never searches the
+ * content itself; the builder receives all words because due reviews are
+ * global across topics.
+ */
+export function getHomeContent(): HomeContent {
+  return {
+    packs,
+    words,
+    avatars,
+    contentVersion: contentMeta.contentVersion,
+  }
 }
 
 /** Content is bundled read-only; freeze it so a screen cannot mutate it. */

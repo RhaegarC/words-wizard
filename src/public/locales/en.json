@@ -69,6 +69,10 @@
   "home.settings": "Settings",
   "home.todaySession": "Today's session",
   "home.reviewDue": "Time for a monthly check-in!",
+  "home.shortcuts": "Shortcuts",
+  "home.careTokenCount": "{count} / {total} Care Tokens",
+  "home.tokenHint_one": "{count} more session for a Care Token",
+  "home.tokenHint_other": "{count} more sessions for a Care Token",
 
   "session.introTitle": "Today's session",
   "session.reviewCount_one": "{count} word to review",

@@ -1,6 +1,6 @@
 # Feature 11 — Home Hub
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review — device/manual pass pending**
 > Depends on: 06, 07, 09, 10
 
 ## Summary
@@ -16,27 +16,27 @@ buddy. As a **returning child**, I can see my streak and that today's words are 
 
 ## Acceptance criteria
 
-- [ ] Home renders the buddy using `deriveCharacterState` (feature 10), with stage art, stage progress,
+- [x] Home renders the buddy using `deriveCharacterState` (feature 10), with stage art, stage progress,
       and vitality; tapping the buddy opens `#/character`.
-- [ ] The session card shows how many reviews and new words are waiting and a single **Practice** CTA
+- [x] The session card shows how many reviews and new words are waiting and a single **Practice** CTA
       that routes to `#/session`.
-- [ ] When the builder returns nothing, Home shows the caught-up state: "You're all caught up!", with
+- [x] When the builder returns nothing, Home shows the caught-up state: "You're all caught up!", with
       a CTA to My Words or to change topic. No empty session is offered.
-- [ ] Streak and Care Token count are visible but quiet; a token progress hint appears only when one
+- [x] Streak and Care Token count are visible but quiet; a token progress hint appears only when one
       is close (for example, "2 more sessions for a Care Token").
-- [ ] Cards/links present: My Words, Settings (gear), change topic, and Monthly Review when due.
-- [ ] The Monthly Review card is non-blocking and routes to `#/review`; it is hidden when not due.
-- [ ] The sleepy/sleeping overlay (feature 10) appears when `state !== 'awake'` and offers both wake
+- [x] Cards/links present: My Words, Settings (gear), change topic, and Monthly Review when due.
+- [x] The Monthly Review card is non-blocking and routes to `#/review`; it is hidden when not due.
+- [x] The sleepy/sleeping overlay (feature 10) appears when `state !== 'awake'` and offers both wake
       paths without blocking Practice.
-- [ ] The install prompt (feature 15) mounts here after creation and on every boot until installed;
+- [x] The install prompt (feature 15) mounts here after creation and on every boot until installed;
       Home itself does not implement install logic.
-- [ ] A profile with `currentTopicId === null` routes to the Topic Picker rather than showing an
+- [x] A profile with `currentTopicId === null` routes to the Topic Picker rather than showing an
       empty session.
-- [ ] `buildHomeView()` is a pure function; the screen renders its output and performs no date math,
+- [x] `buildHomeView()` is a pure function; the screen renders its output and performs no date math,
       no content lookup, and no threshold comparison inline.
-- [ ] No raw XP number is displayed anywhere on Home.
-- [ ] Layout works at 1024×768 (iPad landscape) and at 390×844; primary actions stay above the fold.
-- [ ] All copy is bilingual; no English literal in JSX except word content.
+- [x] No raw XP number is displayed anywhere on Home.
+- [x] Layout works at 1024×768 (iPad landscape) and at 390×844; primary actions stay above the fold.
+- [x] All copy is bilingual; no English literal in JSX except word content.
 
 ## Tasks (ordered)
 
