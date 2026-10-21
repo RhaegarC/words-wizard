@@ -106,6 +106,24 @@ body {
   }
 }
 
+/* The art slot shared by word cards and practice modes. An approved image and
+   an emoji placeholder occupy the same box, so layout never shifts. */
+.word-artwork {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  object-fit: cover;
+}
+
+.word-artwork-placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--pale-purple);
+  font-size: clamp(2rem, 12vw, 4rem);
+  line-height: 1;
+}
+
 .placeholder-screen {
   display: flex;
   max-width: 32rem;

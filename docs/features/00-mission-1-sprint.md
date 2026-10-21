@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–03 done and archived; features 04–17 not started.**
+> Status: **In progress — features 01–03 done and archived; feature 04 in review; features 05–17 not started.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
@@ -40,7 +40,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 01 | [App foundation & test harness](archive/01-app-foundation.md) | Done | — |
 | 02 | [App shell & hash routing](archive/02-app-shell-routing.md) | Done | 01 |
 | 03 | [Bilingual UI (i18n)](archive/03-i18n.md) | Done | 01, 02 |
-| 04 | [Content layer & validation](04-content-layer.md) | Not started | 01 |
+| 04 | [Content layer & validation](04-content-layer.md) | In review | 01 |
 | 05 | [Persistence layer (Dexie)](05-persistence.md) | Not started | 01 |
 | 06 | [First run: character creation & topic picker](06-first-run.md) | Not started | 02, 03, 04, 05 |
 | 07 | [Session engine](07-session-engine.md) | Not started | 04, 05, 06 |
