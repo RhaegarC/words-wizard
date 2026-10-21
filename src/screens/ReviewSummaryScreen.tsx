@@ -4,8 +4,6 @@ import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 import { useSession } from "../session/SessionProvider"
 
-import { SessionFallback } from "./SessionFallback"
-
 /**
  * PRD §7.4's tone guardrail: words are "still strong" or "want another visit",
  * never forgotten. The review commits through the same session transaction.
@@ -25,8 +23,17 @@ export function ReviewSummaryScreen() {
     }
   }, [commitStatus])
 
+  // A direct visit to `#/review/summary` starts idle and is redirected by the
+  // host before it can reach this screen. Until the session completes, say so
+  // rather than offering the daily-session fallback, which points elsewhere.
   if (state.phase !== "complete" || result === null) {
-    return <SessionFallback />
+    return (
+      <section className="session-screen session-summary">
+        <p role="status" className="session-loading">
+          {t("session.saving")}
+        </p>
+      </section>
+    )
   }
 
   // A direct visit to `#/review/summary` starts idle and is redirected by the
