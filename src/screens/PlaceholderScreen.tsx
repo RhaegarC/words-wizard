@@ -13,6 +13,7 @@ const FEATURE_FOR_ROUTE: Record<Route["id"], string> = {
   "word-detail": "12",
   character: "10",
   review: "13",
+  "review-exercise": "13",
   "review-summary": "13",
   settings: "14",
   create: "06",

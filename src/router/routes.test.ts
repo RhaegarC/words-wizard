@@ -76,6 +76,12 @@ describe("parseHash / buildHash", () => {
     ).toEqual({ id: "words", tab: "wordbook" })
   })
 
+  it("builds and parses the review exercise route", () => {
+    expect(buildHash({ id: "review-exercise" })).toBe("#/review/exercise")
+    expect(parseHash("#/review/exercise")).toEqual({ id: "review-exercise" })
+    expect(parentOf({ id: "review-exercise" })).toEqual({ id: "review" })
+  })
+
   it("accepts a single trailing slash on known paths", () => {
     expect(parseHash("#/home/")).toEqual({ id: "home" })
     expect(parseHash("#/session/intro/")).toEqual({ id: "session-intro" })

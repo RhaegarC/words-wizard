@@ -1,6 +1,6 @@
 # Feature 13 — Monthly Review
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review**
 > Depends on: 07, 08, 09, 11
 
 ## Summary
@@ -16,30 +16,30 @@ same game-like way. As a **parent**, I can see retention without a test or a sco
 
 ## Acceptance criteria
 
-- [ ] **Trigger:** due when at least 28 **local calendar days** have passed since
+- [x] **Trigger:** due when at least 28 **local calendar days** have passed since
       `lastMonthlyReviewAt` and at least **5 words are learned**. If no review has ever run, the clock
       starts at the `firstSeenAt` of the **fifth learned word** (sorted by `firstSeenAt`); no extra
       stored field is added.
-- [ ] The Home card appears only when due, is never blocking, and routes to `#/review`.
-- [ ] **Scope:** 5–19 learned words → review all. At 20 or more, select 20:
+- [x] The Home card appears only when due, is never blocking, and routes to `#/review`.
+- [x] **Scope:** 5–19 learned words → review all. At 20 or more, select 20:
       1. take 17 by lowest `strength`, then oldest `lastSeenAt`;
       2. add up to 3 **high-strength confirmations** (`strength >= 0.8`) not already selected;
       3. fill any remainder from the oldest `lastSeenAt`.
-- [ ] Each selected word gets exactly one exercise; modes are assigned deterministically from the
+- [x] Each selected word gets exactly one exercise; modes are assigned deterministically from the
       review seed (feature 07's algorithm), with no intro cards and no new words.
-- [ ] The review reuses the session host, feedback ladder, speech fallback, and exit confirmation.
-- [ ] On completion:
+- [x] The review reuses the session host, feedback ladder, speech fallback, and exit confirmation.
+- [x] On completion:
   - each word's strength and counts update with the same SM-2-lite rules as a daily session;
   - words below `strength < 0.5` are demoted;
   - `nextReviewAt` is recomputed from the final strength;
   - `lastMonthlyReviewAt = now`;
   - the review counts as a completed session for XP, `lastPracticeAt`, streak, Care Tokens, and
     `completedSessions` (PRD §7.4 is a session, not a separate economy).
-- [ ] The review summary shows "You reviewed X words. Y still strong, Z want another visit."
+- [x] The review summary shows "You reviewed X words. Y still strong, Z want another visit."
       **Strong** is `strength >= 0.8` after the review. The copy never says "forgot" or "wrong".
-- [ ] Abandoning the review commits nothing, including `lastMonthlyReviewAt`; the card remains due.
-- [ ] `#/review/summary` cannot be reached without a committed review; back does not re-enter it.
-- [ ] Metrics: reviews offered, reviews completed, average strength delta.
+- [x] Abandoning the review commits nothing, including `lastMonthlyReviewAt`; the card remains due.
+- [x] `#/review/summary` cannot be reached without a committed review; back does not re-enter it.
+- [x] Metrics: reviews offered, reviews completed, average strength delta.
 
 ## Tasks (ordered)
 

@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 
 import { AvatarStage } from "../components/AvatarStage"
 import { InstallPromptSlot } from "../components/InstallPromptSlot"
@@ -6,6 +6,8 @@ import { SleepOverlay } from "../components/SleepOverlay"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { config } from "../config"
 import { getHomeContent } from "../content"
+import { progressProvider } from "../db"
+import { METRIC_NAMES } from "../db/metrics"
 import { buildHomeView } from "../domain/home"
 import type { CharacterCondition, Profile } from "../domain/types"
 import { useLocale } from "../i18n/LocaleProvider"
@@ -47,6 +49,26 @@ export function HomeScreen({
           now: Date.now(),
           config,
         })
+
+  // One "offered" per Home visit, not one per render while the card is due.
+  const recordedReviewOffer = useRef(false)
+
+  useEffect(() => {
+    if (
+      view?.monthlyReviewDue !== true ||
+      recordedReviewOffer.current ||
+      profile.id === undefined
+    ) {
+      return
+    }
+
+    recordedReviewOffer.current = true
+    void progressProvider
+      .incrementMetric(profile.id, METRIC_NAMES.monthlyReviewOffered)
+      .catch((reason: unknown) => {
+        console.warn("[home] Could not record the review offer", reason)
+      })
+  }, [profile.id, view?.monthlyReviewDue])
 
   useEffect(() => {
     if (view?.needsTopic) {
