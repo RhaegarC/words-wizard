@@ -1,6 +1,6 @@
 # Feature 15 — PWA Install, Offline & Updates
 
-> Priority: Must · Mission 1 · **Status: Not started**
+> Priority: Must · Mission 1 · **Status: In review**
 > Depends on: 02, 05, 14
 
 ## Summary
@@ -19,31 +19,31 @@ progress.
 
 ## Acceptance criteria
 
-- [ ] `public/manifest.webmanifest` has the product name (English + Chinese short name), `start_url:
+- [x] `public/manifest.webmanifest` has the product name (English + Chinese short name), `start_url:
       "./"`, `scope: "./"`, `display: "standalone"`, theme/background colors, and 192/512 PNG icons
       plus a maskable icon.
-- [ ] A service worker precaches the app shell, content JSON, `locales/*.json`, avatars, and **all
+- [x] A service worker precaches the app shell, content JSON, `locales/*.json`, avatars, and **all
       artwork** at install; after the first successful load the app makes no network request to
       render any screen.
-- [ ] The service worker is generated with Workbox (`vite-plugin-pwa`, `registerType: "prompt"`),
+- [x] The service worker is generated with Workbox (`vite-plugin-pwa`, `registerType: "prompt"`),
       uses a revisioned precache, and cleans old caches on activation.
-- [ ] A new service worker **never** calls `skipWaiting` on its own. The app receives
+- [x] A new service worker **never** calls `skipWaiting` on its own. The app receives
       `onNeedRefresh`, shows "A new pack is ready!" with **Refresh** and **Later**, and calls
       `updateServiceWorker(true)` only on Refresh.
-- [ ] Navigation requests resolve to `index.html` so a hash deep link works offline.
-- [ ] Install detection: `matchMedia("(display-mode: standalone)").matches ||
+- [x] Navigation requests resolve to `index.html` so a hash deep link works offline.
+- [x] Install detection: `matchMedia("(display-mode: standalone)").matches ||
       navigator.standalone === true`; the result is recorded in `device.installed` at boot.
-- [ ] The install prompt appears after character creation and on each boot until installed; it is
+- [x] The install prompt appears after character creation and on each boot until installed; it is
       dismissible once per **session** (in-memory, not persisted) and reappears next session.
-- [ ] Platform-specific steps are shown:
+- [x] Platform-specific steps are shown:
       iPad Safari — Share → Add to Home Screen; Chromium/Edge — the native
       `beforeinstallprompt` where available, otherwise menu → Apps → Install this site.
-- [ ] Prompt copy explains, in one sentence, that a Safari **tab** can lose data after a week while a
+- [x] Prompt copy explains, in one sentence, that a Safari **tab** can lose data after a week while a
       Home Screen app does not. It never threatens or blocks.
-- [ ] `navigator.storage.persist()` runs on first launch (feature 05); its result is shown in
+- [x] `navigator.storage.persist()` runs on first launch (feature 05); its result is shown in
       diagnostics and used by the install prompt copy when persistence was denied.
 - [ ] The app remains fully functional with no network after first load, including a cold start.
-- [ ] Updates preserve IndexedDB data; there is no migration on `skipWaiting`.
+- [x] Updates preserve IndexedDB data; there is no migration on `skipWaiting`.
 - [ ] Cache size is measured and stays within the 10–15 MB target for 315 images plus the shell.
 
 ## Tasks (ordered)

@@ -9,6 +9,7 @@ import {
 import { RouteTable } from "./dev/RouteTable"
 import type { Profile } from "./domain/types"
 import { useLocale } from "./i18n/LocaleProvider"
+import { UpdateProvider } from "./pwa/UpdateProvider"
 import { resolveRoute } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, parentOf, titleKeyFor } from "./router/routes"
@@ -16,6 +17,7 @@ import { useHashRoute } from "./router/useHashRoute"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
 import { HomeScreen } from "./screens/HomeScreen"
+import { InstallScreen } from "./screens/InstallScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
 import { ReviewLandingScreen } from "./screens/ReviewLandingScreen"
 import { ReviewSummaryScreen } from "./screens/ReviewSummaryScreen"
@@ -113,6 +115,15 @@ export default function App() {
       return
     }
 
+    // Creation has just succeeded: first run continues to the install prompt,
+    // a returning profile goes straight Home.
+    if (boot.status === "present" && hash === "#/create") {
+      replace({
+        id: boot.profile.currentTopicId === null ? "install" : "home",
+      })
+      return
+    }
+
     if (
       boot.status === "present" &&
       boot.profile.currentTopicId === null &&
@@ -120,11 +131,6 @@ export default function App() {
       hash !== "#/install"
     ) {
       replace({ id: "topics" })
-      return
-    }
-
-    if (boot.status === "present" && hash === "#/create") {
-      replace({ id: "home" })
     }
   }, [boot, hash, replace])
 
@@ -163,6 +169,8 @@ export default function App() {
           setBoot({ status: "present", profile: created })
         }
       />
+    ) : route.id === "install" && profile ? (
+      <InstallScreen profile={profile} />
     ) : route.id === "character" && profile ? (
       <CharacterScreen profile={profile} onProfileUpdated={updateProfile} />
     ) : route.id === "home" && profile ? (
@@ -224,29 +232,31 @@ export default function App() {
   // The provider sits outside the shell so its exit dialog covers the whole
   // frame, and stays mounted as the session moves between its own routes.
   return (
-    <RouterProvider value={router}>
-      {inSession && profile ? (
-        <SessionProvider
-          // A switch between the daily and monthly families starts clean.
-          key={
-            route.id === "review" ||
-            route.id === "review-exercise" ||
-            route.id === "review-summary"
-              ? "monthly"
-              : "daily"
-          }
-          profile={profile}
-          route={route}
-          onProfileUpdated={(next) =>
-            setBoot({ status: "present", profile: next })
-          }
-          onProfileLost={() => setBoot({ status: "absent" })}
-        >
-          {shell}
-        </SessionProvider>
-      ) : (
-        shell
-      )}
-    </RouterProvider>
+    <UpdateProvider>
+      <RouterProvider value={router}>
+        {inSession && profile ? (
+          <SessionProvider
+            // A switch between the daily and monthly families starts clean.
+            key={
+              route.id === "review" ||
+              route.id === "review-exercise" ||
+              route.id === "review-summary"
+                ? "monthly"
+                : "daily"
+            }
+            profile={profile}
+            route={route}
+            onProfileUpdated={(next) =>
+              setBoot({ status: "present", profile: next })
+            }
+            onProfileLost={() => setBoot({ status: "absent" })}
+          >
+            {shell}
+          </SessionProvider>
+        ) : (
+          shell
+        )}
+      </RouterProvider>
+    </UpdateProvider>
   )
 }
