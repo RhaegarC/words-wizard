@@ -1,6 +1,6 @@
 # Feature 07 — Session Engine
 
-> Priority: Must · Mission 1 · **Status: Implemented — in review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #17**
 > Depends on: 04, 05, 06
 
 ## Summary
