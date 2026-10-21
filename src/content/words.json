@@ -1,48 +1,10 @@
 [
   {
-    "id": "w-bag",
-    "text": "bag",
-    "phonetic": "/bæɡ/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a thing you carry things in",
-    "meaningZh": "包；袋子",
-    "definitionEn": "You put things inside a bag.",
-    "definitionZh": "你可以把东西放进包里。",
-    "examples": [
-      { "en": "My bag is blue.", "zh": "我的包是蓝色的。" },
-      { "en": "I put the book in my bag.", "zh": "我把书放进包里。" }
-    ],
-    "image": "art/w-bag.webp",
-    "emoji": "🎒",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-ball",
-    "text": "ball",
-    "phonetic": "/bɔːl/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a round thing you play with",
-    "meaningZh": "球",
-    "definitionEn": "You can throw and catch a ball.",
-    "definitionZh": "你可以扔球、接球。",
-    "examples": [
-      { "en": "The ball is round.", "zh": "球是圆的。" },
-      { "en": "We play with a red ball.", "zh": "我们玩一个红色的球。" }
-    ],
-    "image": "art/w-ball.webp",
-    "emoji": "⚽",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
     "id": "w-box",
     "text": "box",
     "phonetic": "/bɒks/",
     "partOfSpeech": "noun",
-    "meaningEn": "a box holds things",
+    "meaningEn": "a container you put things in",
     "meaningZh": "盒子",
     "definitionEn": "You put things inside a box.",
     "definitionZh": "你可以把东西放进盒子里。",
@@ -57,210 +19,20 @@
     "topicIds": ["craft-and-build"]
   },
   {
-    "id": "w-brush",
-    "text": "brush",
-    "phonetic": "/brʌʃ/",
+    "id": "w-bag",
+    "text": "bag",
+    "phonetic": "/bæɡ/",
     "partOfSpeech": "noun",
-    "meaningEn": "a tool for painting or cleaning",
-    "meaningZh": "刷子",
-    "definitionEn": "You use a brush to paint or clean.",
-    "definitionZh": "你可以用刷子画画或清扫。",
+    "meaningEn": "a container for carrying things",
+    "meaningZh": "包；袋子",
+    "definitionEn": "You put things inside a bag.",
+    "definitionZh": "你可以把东西放进包里。",
     "examples": [
-      { "en": "This brush is for paint.", "zh": "这把刷子是用来画画的。" },
-      { "en": "Clean the brush after you paint.", "zh": "画完后要清洗刷子。" }
+      { "en": "My bag is blue.", "zh": "我的包是蓝色的。" },
+      { "en": "I put the book in my bag.", "zh": "我把书放进包里。" }
     ],
-    "image": "art/w-brush.webp",
-    "emoji": "🖌️",
-    "level": 1,
-    "tags": ["core", "tool"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-card",
-    "text": "card",
-    "phonetic": "/kɑːd/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a small piece of thick paper",
-    "meaningZh": "卡片",
-    "definitionEn": "You can write on a card or give it to someone.",
-    "definitionZh": "你可以在卡片上写字，或把它送给别人。",
-    "examples": [
-      { "en": "I made a card for my friend.", "zh": "我给朋友做了一张卡片。" },
-      { "en": "Write your name on the card.", "zh": "把名字写在卡片上。" }
-    ],
-    "image": "art/w-card.webp",
-    "emoji": "🃏",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-clock",
-    "text": "clock",
-    "phonetic": "/klɒk/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a thing that shows the time",
-    "meaningZh": "时钟",
-    "definitionEn": "A clock tells you what time it is.",
-    "definitionZh": "时钟会告诉你现在几点。",
-    "examples": [
-      { "en": "The clock is on the wall.", "zh": "时钟挂在墙上。" },
-      { "en": "Look at the clock before we go.", "zh": "出发前看一下时钟。" }
-    ],
-    "image": "art/w-clock.webp",
-    "emoji": "🕰️",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-cup",
-    "text": "cup",
-    "phonetic": "/kʌp/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a small container for drinking",
-    "meaningZh": "杯子",
-    "definitionEn": "You drink from a cup.",
-    "definitionZh": "你用杯子喝水。",
-    "examples": [
-      { "en": "My cup is full of water.", "zh": "我的杯子里装满了水。" },
-      { "en": "Put the cup on the table.", "zh": "把杯子放在桌子上。" }
-    ],
-    "image": "art/w-cup.webp",
-    "emoji": "🥤",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-desk",
-    "text": "desk",
-    "phonetic": "/desk/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a table for reading and writing",
-    "meaningZh": "书桌",
-    "definitionEn": "You read and write at a desk.",
-    "definitionZh": "你在书桌旁读书写字。",
-    "examples": [
-      { "en": "My desk is by the window.", "zh": "我的书桌在窗边。" },
-      { "en": "The pencil is on the desk.", "zh": "铅笔在书桌上。" }
-    ],
-    "image": "art/w-desk.webp",
-    "emoji": "🪑",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-door",
-    "text": "door",
-    "phonetic": "/dɔː/",
-    "partOfSpeech": "noun",
-    "meaningEn": "you go through it to enter a room",
-    "meaningZh": "门",
-    "definitionEn": "You open a door to go into a room.",
-    "definitionZh": "打开门就能走进房间。",
-    "examples": [
-      { "en": "Please close the door.", "zh": "请把门关上。" },
-      { "en": "The door is blue.", "zh": "门是蓝色的。" }
-    ],
-    "image": "art/w-door.webp",
-    "emoji": "🚪",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-drum",
-    "text": "drum",
-    "phonetic": "/drʌm/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a musical instrument you hit",
-    "meaningZh": "鼓",
-    "definitionEn": "You hit a drum to make a sound.",
-    "definitionZh": "敲一敲鼓，就会发出声音。",
-    "examples": [
-      { "en": "He plays the drum in the band.", "zh": "他在乐队里打鼓。" },
-      { "en": "The drum is loud.", "zh": "鼓声很响。" }
-    ],
-    "image": "art/w-drum.webp",
-    "emoji": "🥁",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-flag",
-    "text": "flag",
-    "phonetic": "/flæɡ/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a piece of cloth used as a sign",
-    "meaningZh": "旗子",
-    "definitionEn": "A flag is a piece of cloth that shows a sign.",
-    "definitionZh": "旗子是一块布，可以表示一个标志。",
-    "examples": [
-      { "en": "Our flag is red and yellow.", "zh": "我们的旗子是红色和黄色的。" },
-      { "en": "The flag waves in the wind.", "zh": "旗子在风中飘动。" }
-    ],
-    "image": "art/w-flag.webp",
-    "emoji": "🚩",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-hammer",
-    "text": "hammer",
-    "phonetic": "/ˈhæmə/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a tool for hitting nails",
-    "meaningZh": "锤子",
-    "definitionEn": "You use a hammer to hit a nail.",
-    "definitionZh": "你可以用锤子敲钉子。",
-    "examples": [
-      { "en": "Use the hammer to hit the nail.", "zh": "用锤子敲钉子。" },
-      { "en": "The hammer is heavy.", "zh": "锤子很重。" }
-    ],
-    "image": "art/w-hammer.webp",
-    "emoji": "🔨",
-    "level": 1,
-    "tags": ["core", "tool"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-key",
-    "text": "key",
-    "phonetic": "/kiː/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a thing that opens a lock",
-    "meaningZh": "钥匙",
-    "definitionEn": "A key opens a door or a box.",
-    "definitionZh": "钥匙可以打开门或盒子。",
-    "examples": [
-      { "en": "This key opens my room.", "zh": "这把钥匙能打开我的房间。" },
-      { "en": "I keep the key in my bag.", "zh": "我把钥匙放在包里。" }
-    ],
-    "image": "art/w-key.webp",
-    "emoji": "🔑",
-    "level": 1,
-    "tags": ["core", "object"],
-    "topicIds": ["craft-and-build"]
-  },
-  {
-    "id": "w-lamp",
-    "text": "lamp",
-    "phonetic": "/læmp/",
-    "partOfSpeech": "noun",
-    "meaningEn": "a thing that gives light",
-    "meaningZh": "台灯",
-    "definitionEn": "A lamp gives you light.",
-    "definitionZh": "台灯可以给你光亮。",
-    "examples": [
-      { "en": "The lamp is next to my bed.", "zh": "台灯在我的床边。" },
-      { "en": "Turn on the lamp, please.", "zh": "请把台灯打开。" }
-    ],
-    "image": "art/w-lamp.webp",
-    "emoji": "💡",
+    "image": "art/w-bag.webp",
+    "emoji": "🎒",
     "level": 1,
     "tags": ["core", "object"],
     "topicIds": ["craft-and-build"]
@@ -270,7 +42,7 @@
     "text": "paper",
     "phonetic": "/ˈpeɪpə/",
     "partOfSpeech": "noun",
-    "meaningEn": "you write or draw on it",
+    "meaningEn": "thin material for writing or drawing",
     "meaningZh": "纸",
     "definitionEn": "You can write or draw on paper.",
     "definitionZh": "你可以在纸上写字或画画。",
@@ -304,6 +76,253 @@
     "topicIds": ["craft-and-build"]
   },
   {
+    "id": "w-ruler",
+    "text": "ruler",
+    "phonetic": "/ˈruːlə/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a tool for drawing straight lines",
+    "meaningZh": "尺子",
+    "definitionEn": "A ruler helps you draw a straight line.",
+    "definitionZh": "尺子可以帮你画直线。",
+    "examples": [
+      { "en": "This ruler is long.", "zh": "这把尺子很长。" },
+      { "en": "Draw a line with the ruler.", "zh": "用尺子画一条线。" }
+    ],
+    "image": "art/w-ruler.webp",
+    "emoji": "📏",
+    "level": 1,
+    "tags": ["core", "tool"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-crayon",
+    "text": "crayon",
+    "phonetic": "/ˈkreɪɒn/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a colored stick for drawing",
+    "meaningZh": "蜡笔",
+    "definitionEn": "You draw with a crayon.",
+    "definitionZh": "你可以用蜡笔画画。",
+    "examples": [
+      { "en": "My crayon is red.", "zh": "我的蜡笔是红色的。" },
+      { "en": "I draw a sun with a crayon.", "zh": "我用蜡笔画了一个太阳。" }
+    ],
+    "image": "art/w-crayon.webp",
+    "emoji": "🖍️",
+    "level": 1,
+    "tags": ["core", "tool"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-paint",
+    "text": "paint",
+    "phonetic": "/peɪnt/",
+    "partOfSpeech": "noun / verb",
+    "meaningEn": "color you put on paper, or to put it there",
+    "meaningZh": "颜料；涂色",
+    "definitionEn": "Paint is color you put on paper or wood.",
+    "definitionZh": "颜料是涂在纸或木头上的颜色。",
+    "examples": [
+      { "en": "The paint is blue.", "zh": "颜料是蓝色的。" },
+      { "en": "We paint a big box.", "zh": "我们给一个大盒子涂色。" }
+    ],
+    "image": "art/w-paint.webp",
+    "emoji": "🎨",
+    "level": 1,
+    "tags": ["core", "tool"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-toy",
+    "text": "toy",
+    "phonetic": "/tɔɪ/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a thing you play with",
+    "meaningZh": "玩具",
+    "definitionEn": "A toy is something you play with.",
+    "definitionZh": "玩具是你玩的东西。",
+    "examples": [
+      { "en": "This toy is a robot.", "zh": "这个玩具是机器人。" },
+      { "en": "I make a toy from a box.", "zh": "我用盒子做了一个玩具。" }
+    ],
+    "image": "art/w-toy.webp",
+    "emoji": "🧸",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-ball",
+    "text": "ball",
+    "phonetic": "/bɔːl/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a round thing you play with",
+    "meaningZh": "球",
+    "definitionEn": "You can throw and catch a ball.",
+    "definitionZh": "你可以扔球、接球。",
+    "examples": [
+      { "en": "The ball is round.", "zh": "球是圆的。" },
+      { "en": "We play with a red ball.", "zh": "我们玩一个红色的球。" }
+    ],
+    "image": "art/w-ball.webp",
+    "emoji": "⚽",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-clock",
+    "text": "clock",
+    "phonetic": "/klɒk/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a thing that shows the time",
+    "meaningZh": "时钟",
+    "definitionEn": "A clock tells you what time it is.",
+    "definitionZh": "时钟会告诉你现在几点。",
+    "examples": [
+      { "en": "The clock is on the wall.", "zh": "时钟挂在墙上。" },
+      { "en": "Look at the clock before we go.", "zh": "出发前看一下时钟。" }
+    ],
+    "image": "art/w-clock.webp",
+    "emoji": "🕰️",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-desk",
+    "text": "desk",
+    "phonetic": "/desk/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a table for reading and writing",
+    "meaningZh": "书桌",
+    "definitionEn": "You read and write at a desk.",
+    "definitionZh": "你在书桌旁读书写字。",
+    "examples": [
+      { "en": "My desk is by the window.", "zh": "我的书桌在窗边。" },
+      { "en": "The pencil is on the desk.", "zh": "铅笔在书桌上。" }
+    ],
+    "image": "art/w-desk.webp",
+    "emoji": "🗄️",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-table",
+    "text": "table",
+    "phonetic": "/ˈteɪbl/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a flat piece of furniture with legs",
+    "meaningZh": "桌子",
+    "definitionEn": "You put things on a table.",
+    "definitionZh": "你把东西放在桌子上。",
+    "examples": [
+      { "en": "The table is by the window.", "zh": "桌子在窗边。" },
+      { "en": "Put the paper on the table.", "zh": "把纸放在桌子上。" }
+    ],
+    "image": "art/w-table.webp",
+    "emoji": "🛋️",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-chair",
+    "text": "chair",
+    "phonetic": "/tʃeə/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a seat with a back",
+    "meaningZh": "椅子",
+    "definitionEn": "You sit on a chair.",
+    "definitionZh": "你坐在椅子上。",
+    "examples": [
+      { "en": "My chair is small.", "zh": "我的椅子很小。" },
+      { "en": "Sit on the chair, please.", "zh": "请坐在椅子上。" }
+    ],
+    "image": "art/w-chair.webp",
+    "emoji": "🪑",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-lamp",
+    "text": "lamp",
+    "phonetic": "/læmp/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a thing that gives light",
+    "meaningZh": "台灯",
+    "definitionEn": "A lamp gives you light.",
+    "definitionZh": "台灯可以给你光亮。",
+    "examples": [
+      { "en": "The lamp is next to my bed.", "zh": "台灯在我的床边。" },
+      { "en": "Turn on the lamp, please.", "zh": "请把台灯打开。" }
+    ],
+    "image": "art/w-lamp.webp",
+    "emoji": "💡",
+    "level": 1,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-make",
+    "text": "make",
+    "phonetic": "/meɪk/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to create something",
+    "meaningZh": "制作",
+    "definitionEn": "To make is to create something.",
+    "definitionZh": "制作就是做出一样东西。",
+    "examples": [
+      { "en": "I make a card for my friend.", "zh": "我给朋友做了一张卡片。" },
+      { "en": "We make a boat from paper.", "zh": "我们用纸做了一只船。" }
+    ],
+    "image": "art/w-make.webp",
+    "emoji": "🛠️",
+    "level": 1,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-draw",
+    "text": "draw",
+    "phonetic": "/drɔː/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to make a picture with a pencil or crayon",
+    "meaningZh": "画画",
+    "definitionEn": "To draw is to make a picture.",
+    "definitionZh": "画画就是画出一幅图。",
+    "examples": [
+      { "en": "I draw a cat.", "zh": "我画了一只猫。" },
+      { "en": "Draw a line on the paper.", "zh": "在纸上画一条线。" }
+    ],
+    "image": "art/w-draw.webp",
+    "emoji": "🖊️",
+    "level": 1,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-choose",
+    "text": "choose",
+    "phonetic": "/tʃuːz/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to pick the one you want",
+    "meaningZh": "选择",
+    "definitionEn": "To choose is to pick the one you want.",
+    "definitionZh": "选择就是挑出你想要的那个。",
+    "examples": [
+      { "en": "I choose the red crayon.", "zh": "我选了红色的蜡笔。" },
+      { "en": "Choose a box for your toys.", "zh": "给你的玩具选一个盒子。" }
+    ],
+    "image": "art/w-choose.webp",
+    "emoji": "👉",
+    "level": 1,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
     "id": "w-build",
     "text": "build",
     "phonetic": "/bɪld/",
@@ -323,6 +342,25 @@
     "topicIds": ["craft-and-build"]
   },
   {
+    "id": "w-fix",
+    "text": "fix",
+    "phonetic": "/fɪks/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to make something work again",
+    "meaningZh": "修理",
+    "definitionEn": "To fix is to make something work again.",
+    "definitionZh": "修理就是把坏了的东西弄好。",
+    "examples": [
+      { "en": "I fix my toy car.", "zh": "我修好了我的玩具车。" },
+      { "en": "Dad can fix the chair.", "zh": "爸爸会修椅子。" }
+    ],
+    "image": "art/w-fix.webp",
+    "emoji": "🔧",
+    "level": 2,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
     "id": "w-careful",
     "text": "careful",
     "phonetic": "/ˈkeəfl/",
@@ -332,13 +370,564 @@
     "definitionEn": "Being careful means taking your time so nothing goes wrong.",
     "definitionZh": "小心就是慢慢来，不让事情出错。",
     "examples": [
-      { "en": "Be careful with the hammer.", "zh": "拿锤子时要小心。" },
+      { "en": "Be careful with the paint.", "zh": "拿颜料时要小心。" },
       { "en": "She is careful when she paints.", "zh": "她画画时很细心。" }
     ],
     "image": "art/w-careful.webp",
     "emoji": "🧐",
     "level": 2,
-    "tags": ["abstract", "emotional"],
+    "tags": ["core", "abstract", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-sand",
+    "text": "sand",
+    "phonetic": "/sænd/",
+    "partOfSpeech": "noun",
+    "meaningEn": "tiny bits of rock",
+    "meaningZh": "沙子",
+    "definitionEn": "Sand is made of tiny bits of rock.",
+    "definitionZh": "沙子是由很小的石头颗粒组成的。",
+    "examples": [
+      { "en": "The sand is soft.", "zh": "沙子很软。" },
+      { "en": "We put sand in the box.", "zh": "我们把沙子放进盒子里。" }
+    ],
+    "image": "art/w-sand.webp",
+    "emoji": "🏖️",
+    "level": 1,
+    "tags": ["core", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-glass",
+    "text": "glass",
+    "phonetic": "/ɡlɑːs/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a hard, clear material",
+    "meaningZh": "玻璃",
+    "definitionEn": "Glass is a hard, clear material.",
+    "definitionZh": "玻璃是一种又硬又透明的材料。",
+    "examples": [
+      { "en": "The window is made of glass.", "zh": "窗户是玻璃做的。" },
+      { "en": "Glass is clear and hard.", "zh": "玻璃透明又坚硬。" }
+    ],
+    "image": "art/w-glass.webp",
+    "emoji": "🪟",
+    "level": 2,
+    "tags": ["core", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-bottle",
+    "text": "bottle",
+    "phonetic": "/ˈbɒtl/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a container for drinks",
+    "meaningZh": "瓶子",
+    "definitionEn": "A bottle holds water or other drinks.",
+    "definitionZh": "瓶子可以装水或其他饮料。",
+    "examples": [
+      { "en": "The bottle is full of water.", "zh": "瓶子里装满了水。" },
+      { "en": "I put the bottle on the table.", "zh": "我把瓶子放在桌子上。" }
+    ],
+    "image": "art/w-bottle.webp",
+    "emoji": "🧴",
+    "level": 2,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-bowl",
+    "text": "bowl",
+    "phonetic": "/bəʊl/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a round dish for food",
+    "meaningZh": "碗",
+    "definitionEn": "A bowl is a round dish for food.",
+    "definitionZh": "碗是装食物的圆形容器。",
+    "examples": [
+      { "en": "The bowl is on the table.", "zh": "碗在桌子上。" },
+      { "en": "Put the fruit in the bowl.", "zh": "把水果放进碗里。" }
+    ],
+    "image": "art/w-bowl.webp",
+    "emoji": "🥣",
+    "level": 2,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-net",
+    "text": "net",
+    "phonetic": "/net/",
+    "partOfSpeech": "noun",
+    "meaningEn": "material with many holes, used to catch things",
+    "meaningZh": "网",
+    "definitionEn": "A net is material with many holes.",
+    "definitionZh": "网是有很多洞的材料。",
+    "examples": [
+      { "en": "The ball hit the net.", "zh": "球打到了网上。" },
+      { "en": "We use a net to catch the ball.", "zh": "我们用网接球。" }
+    ],
+    "image": "art/w-net.webp",
+    "emoji": "🥅",
+    "level": 2,
+    "tags": ["core", "object"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-plastic",
+    "text": "plastic",
+    "phonetic": "/ˈplæstɪk/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a light material made in a factory",
+    "meaningZh": "塑料",
+    "definitionEn": "Plastic is a light material made in a factory.",
+    "definitionZh": "塑料是一种轻便的、在工厂里制造的材料。",
+    "examples": [
+      { "en": "The box is made of plastic.", "zh": "盒子是塑料做的。" },
+      { "en": "Plastic is light and strong.", "zh": "塑料又轻又结实。" }
+    ],
+    "image": "art/w-plastic.webp",
+    "emoji": "♻️",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-metal",
+    "text": "metal",
+    "phonetic": "/ˈmetl/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a hard, strong material",
+    "meaningZh": "金属",
+    "definitionEn": "Metal is a hard, strong material.",
+    "definitionZh": "金属是一种又硬又结实的材料。",
+    "examples": [
+      { "en": "The box is made of metal.", "zh": "盒子是金属做的。" },
+      { "en": "Metal is hard and strong.", "zh": "金属又硬又结实。" }
+    ],
+    "image": "art/w-metal.webp",
+    "emoji": "⚙️",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-wood",
+    "text": "wood",
+    "phonetic": "/wʊd/",
+    "partOfSpeech": "noun",
+    "meaningEn": "the hard material from trees",
+    "meaningZh": "木头",
+    "definitionEn": "Wood comes from trees.",
+    "definitionZh": "木头来自树木。",
+    "examples": [
+      { "en": "The table is made of wood.", "zh": "桌子是木头做的。" },
+      { "en": "We use wood to build a house.", "zh": "我们用木头建房子。" }
+    ],
+    "image": "art/w-wood.webp",
+    "emoji": "🪵",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-wool",
+    "text": "wool",
+    "phonetic": "/wʊl/",
+    "partOfSpeech": "noun",
+    "meaningEn": "soft hair from a sheep",
+    "meaningZh": "羊毛",
+    "definitionEn": "Wool is soft hair from a sheep.",
+    "definitionZh": "羊毛是绵羊身上柔软的毛。",
+    "examples": [
+      { "en": "My hat is made of wool.", "zh": "我的帽子是羊毛做的。" },
+      { "en": "Wool comes from sheep.", "zh": "羊毛来自绵羊。" }
+    ],
+    "image": "art/w-wool.webp",
+    "emoji": "🧶",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-gold",
+    "text": "gold",
+    "phonetic": "/ɡəʊld/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a yellow metal",
+    "meaningZh": "金子",
+    "definitionEn": "Gold is a yellow metal.",
+    "definitionZh": "金子是一种黄色的金属。",
+    "examples": [
+      { "en": "The ring is made of gold.", "zh": "戒指是金子做的。" },
+      { "en": "Gold is a yellow metal.", "zh": "金子是一种黄色的金属。" }
+    ],
+    "image": "art/w-gold.webp",
+    "emoji": "🪙",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-silver",
+    "text": "silver",
+    "phonetic": "/ˈsɪlvə/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a shiny gray metal",
+    "meaningZh": "银",
+    "definitionEn": "Silver is a shiny gray metal.",
+    "definitionZh": "银子是一种闪亮的灰色金属。",
+    "examples": [
+      { "en": "The spoon is made of silver.", "zh": "勺子是用银做的。" },
+      { "en": "Silver is shiny and gray.", "zh": "银子闪亮，是灰色的。" }
+    ],
+    "image": "art/w-silver.webp",
+    "emoji": "🥈",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-stone",
+    "text": "stone",
+    "phonetic": "/stəʊn/",
+    "partOfSpeech": "noun",
+    "meaningEn": "hard rock",
+    "meaningZh": "石头",
+    "definitionEn": "Stone is hard rock.",
+    "definitionZh": "石头是坚硬的岩石。",
+    "examples": [
+      { "en": "The wall is made of stone.", "zh": "墙是用石头砌的。" },
+      { "en": "The stone is heavy.", "zh": "这块石头很重。" }
+    ],
+    "image": "art/w-stone.webp",
+    "emoji": "🪨",
+    "level": 3,
+    "tags": ["thematic", "material"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-scissors",
+    "text": "scissors",
+    "phonetic": "/ˈsɪzəz/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a tool with two blades for cutting",
+    "meaningZh": "剪刀",
+    "definitionEn": "Scissors are a tool with two blades for cutting.",
+    "definitionZh": "剪刀是有两片刀刃、用来剪东西的工具。",
+    "examples": [
+      { "en": "I cut the paper with scissors.", "zh": "我用剪刀剪纸。" },
+      { "en": "These scissors are sharp.", "zh": "这把剪刀很锋利。" }
+    ],
+    "image": "art/w-scissors.webp",
+    "emoji": "✂️",
+    "level": 3,
+    "tags": ["thematic", "tool"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-glue",
+    "text": "glue",
+    "phonetic": "/ɡluː/",
+    "partOfSpeech": "noun / verb",
+    "meaningEn": "a sticky liquid that joins things",
+    "meaningZh": "胶水；粘",
+    "definitionEn": "Glue is a sticky liquid that joins things.",
+    "definitionZh": "胶水是一种黏黏的液体，可以把东西粘在一起。",
+    "examples": [
+      { "en": "I use glue to fix the paper.", "zh": "我用胶水把纸粘好。" },
+      { "en": "The glue is sticky.", "zh": "胶水黏黏的。" }
+    ],
+    "image": "art/w-glue.webp",
+    "emoji": "🧪",
+    "level": 3,
+    "tags": ["thematic", "tool"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-brush",
+    "text": "brush",
+    "phonetic": "/brʌʃ/",
+    "partOfSpeech": "noun",
+    "meaningEn": "a tool for painting or cleaning",
+    "meaningZh": "刷子",
+    "definitionEn": "You use a brush to paint or clean.",
+    "definitionZh": "你可以用刷子画画或清扫。",
+    "examples": [
+      { "en": "This brush is for paint.", "zh": "这把刷子是用来画画的。" },
+      { "en": "Clean the brush after you paint.", "zh": "画完后要清洗刷子。" }
+    ],
+    "image": "art/w-brush.webp",
+    "emoji": "🖌️",
+    "level": 3,
+    "tags": ["thematic", "tool"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-repair",
+    "text": "repair",
+    "phonetic": "/rɪˈpeə/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to fix something broken",
+    "meaningZh": "修理",
+    "definitionEn": "To repair is to fix something broken.",
+    "definitionZh": "修理就是把坏了的东西修好。",
+    "examples": [
+      { "en": "We repair the broken chair.", "zh": "我们修理坏了的椅子。" },
+      { "en": "He can repair the toy.", "zh": "他会修理这个玩具。" }
+    ],
+    "image": "art/w-repair.webp",
+    "emoji": "🛠️",
+    "level": 3,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-safe",
+    "text": "safe",
+    "phonetic": "/seɪf/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "not dangerous",
+    "meaningZh": "安全的",
+    "definitionEn": "Safe means not dangerous.",
+    "definitionZh": "安全就是没有危险。",
+    "examples": [
+      { "en": "The workshop is safe.", "zh": "工作间很安全。" },
+      { "en": "Wear gloves to stay safe.", "zh": "戴上手套保持安全。" }
+    ],
+    "image": "art/w-safe.webp",
+    "emoji": "🛡️",
+    "level": 2,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-strong",
+    "text": "strong",
+    "phonetic": "/strɒŋ/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "hard to break",
+    "meaningZh": "结实的；强壮的",
+    "definitionEn": "Strong means hard to break.",
+    "definitionZh": "结实就是不容易坏。",
+    "examples": [
+      { "en": "The box is strong.", "zh": "这个盒子很结实。" },
+      { "en": "A strong bridge can hold a car.", "zh": "结实的桥能承受汽车。" }
+    ],
+    "image": "art/w-strong.webp",
+    "emoji": "💪",
+    "level": 2,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-easy",
+    "text": "easy",
+    "phonetic": "/ˈiːzi/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "not difficult",
+    "meaningZh": "容易的",
+    "definitionEn": "Easy means not difficult.",
+    "definitionZh": "容易就是不难。",
+    "examples": [
+      { "en": "This puzzle is easy.", "zh": "这个拼图很容易。" },
+      { "en": "The first step is easy.", "zh": "第一步很容易。" }
+    ],
+    "image": "art/w-easy.webp",
+    "emoji": "✅",
+    "level": 2,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-difficult",
+    "text": "difficult",
+    "phonetic": "/ˈdɪfɪkəlt/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "not easy",
+    "meaningZh": "困难的",
+    "definitionEn": "Difficult means not easy.",
+    "definitionZh": "困难就是不容易。",
+    "examples": [
+      { "en": "The big puzzle is difficult.", "zh": "这个大拼图很难。" },
+      { "en": "It is difficult to build a tower.", "zh": "搭一座高塔很难。" }
+    ],
+    "image": "art/w-difficult.webp",
+    "emoji": "❓",
+    "level": 2,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-cut",
+    "text": "cut",
+    "phonetic": "/kʌt/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to divide something with scissors or a knife",
+    "meaningZh": "剪；切",
+    "definitionEn": "To cut is to divide something with scissors or a knife.",
+    "definitionZh": "剪就是用剪刀或刀把东西分开。",
+    "examples": [
+      { "en": "I cut the paper.", "zh": "我剪纸。" },
+      { "en": "Cut the paper in half.", "zh": "把纸剪成两半。" }
+    ],
+    "image": "art/w-cut.webp",
+    "emoji": "✂️",
+    "level": 3,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-design",
+    "text": "design",
+    "phonetic": "/dɪˈzaɪn/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to plan how something will look",
+    "meaningZh": "设计",
+    "definitionEn": "To design is to plan how something will look.",
+    "definitionZh": "设计就是计划一样东西要长什么样。",
+    "examples": [
+      { "en": "We design a new toy.", "zh": "我们设计一个新玩具。" },
+      { "en": "She designs a poster.", "zh": "她设计了一张海报。" }
+    ],
+    "image": "art/w-design.webp",
+    "emoji": "📐",
+    "level": 3,
+    "tags": ["thematic", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-invent",
+    "text": "invent",
+    "phonetic": "/ɪnˈvent/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to make something new",
+    "meaningZh": "发明",
+    "definitionEn": "To invent is to make something new.",
+    "definitionZh": "发明就是做出新东西。",
+    "examples": [
+      { "en": "They invent a funny machine.", "zh": "他们发明了一台有趣的机器。" },
+      { "en": "I invent a game with boxes.", "zh": "我用盒子发明了一个游戏。" }
+    ],
+    "image": "art/w-invent.webp",
+    "emoji": "💡",
+    "level": 3,
+    "tags": ["thematic", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-collect",
+    "text": "collect",
+    "phonetic": "/kəˈlekt/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to bring things together",
+    "meaningZh": "收集",
+    "definitionEn": "To collect is to bring things together.",
+    "definitionZh": "收集就是把东西聚在一起。",
+    "examples": [
+      { "en": "We collect boxes for the project.", "zh": "我们为这个项目收集盒子。" },
+      { "en": "She collects small stones.", "zh": "她收集小石头。" }
+    ],
+    "image": "art/w-collect.webp",
+    "emoji": "🧺",
+    "level": 3,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-prepare",
+    "text": "prepare",
+    "phonetic": "/prɪˈpeə/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to get things ready",
+    "meaningZh": "准备",
+    "definitionEn": "To prepare is to get things ready.",
+    "definitionZh": "准备就是把东西准备好。",
+    "examples": [
+      { "en": "We prepare the paper and paint.", "zh": "我们准备好纸和颜料。" },
+      { "en": "Prepare your desk before you start.", "zh": "开始前把书桌准备好。" }
+    ],
+    "image": "art/w-prepare.webp",
+    "emoji": "📋",
+    "level": 3,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-decide",
+    "text": "decide",
+    "phonetic": "/dɪˈsaɪd/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to choose what to do",
+    "meaningZh": "决定",
+    "definitionEn": "To decide is to choose what to do.",
+    "definitionZh": "决定就是选择要做什么。",
+    "examples": [
+      { "en": "We decide to build a boat.", "zh": "我们决定造一只船。" },
+      { "en": "You can decide which color to use.", "zh": "你可以决定用哪种颜色。" }
+    ],
+    "image": "art/w-decide.webp",
+    "emoji": "🤔",
+    "level": 3,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-believe",
+    "text": "believe",
+    "phonetic": "/bɪˈliːv/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to think something is true",
+    "meaningZh": "相信",
+    "definitionEn": "To believe is to think something is true.",
+    "definitionZh": "相信就是认为某件事是真的。",
+    "examples": [
+      { "en": "I believe we can finish it.", "zh": "我相信我们能完成它。" },
+      { "en": "She believes the box is strong.", "zh": "她相信这个盒子很结实。" }
+    ],
+    "image": "art/w-believe.webp",
+    "emoji": "💭",
+    "level": 3,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-explain",
+    "text": "explain",
+    "phonetic": "/ɪkˈspleɪn/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to make something clear",
+    "meaningZh": "解释",
+    "definitionEn": "To explain is to make something clear.",
+    "definitionZh": "解释就是把事情说清楚。",
+    "examples": [
+      { "en": "Please explain your idea.", "zh": "请解释你的想法。" },
+      { "en": "He explains how the machine works.", "zh": "他解释这台机器怎么运作。" }
+    ],
+    "image": "art/w-explain.webp",
+    "emoji": "💬",
+    "level": 3,
+    "tags": ["core", "action"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-improve",
+    "text": "improve",
+    "phonetic": "/ɪmˈpruːv/",
+    "partOfSpeech": "verb",
+    "meaningEn": "to make something better",
+    "meaningZh": "改进",
+    "definitionEn": "To improve is to make something better.",
+    "definitionZh": "改进就是把东西变得更好。",
+    "examples": [
+      { "en": "We improve our treehouse.", "zh": "我们改进我们的树屋。" },
+      { "en": "Paint can improve an old box.", "zh": "颜料可以让旧盒子变好看。" }
+    ],
+    "image": "art/w-improve.webp",
+    "emoji": "📈",
+    "level": 3,
+    "tags": ["core", "action"],
     "topicIds": ["craft-and-build"]
   },
   {
@@ -356,27 +945,198 @@
     ],
     "image": "art/w-together.webp",
     "emoji": "🤝",
-    "level": 1,
-    "tags": ["abstract", "emotional"],
+    "level": 3,
+    "tags": ["core", "abstract", "emotional"],
     "topicIds": ["craft-and-build"]
   },
   {
-    "id": "w-proud",
-    "text": "proud",
-    "phonetic": "/praʊd/",
+    "id": "w-happy",
+    "text": "happy",
+    "phonetic": "/ˈhæpi/",
     "partOfSpeech": "adjective",
-    "meaningEn": "happy about something you did",
-    "meaningZh": "自豪的",
-    "definitionEn": "Feeling proud means you are happy about something you did.",
-    "definitionZh": "自豪就是为自己做成的事感到开心。",
+    "meaningEn": "feeling good",
+    "meaningZh": "开心的",
+    "definitionEn": "Happy means feeling good.",
+    "definitionZh": "开心就是感觉很好。",
     "examples": [
-      { "en": "I am proud of my treehouse.", "zh": "我为自己的树屋感到自豪。" },
-      { "en": "She is proud of her drawing.", "zh": "她为自己的画感到自豪。" }
+      { "en": "I am happy with my picture.", "zh": "我对我的画很满意。" },
+      { "en": "The children are happy to build together.", "zh": "孩子们一起搭建很开心。" }
     ],
-    "image": "art/w-proud.webp",
-    "emoji": "🌟",
+    "image": "art/w-happy.webp",
+    "emoji": "😊",
+    "level": 1,
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-excited",
+    "text": "excited",
+    "phonetic": "/ɪkˈsaɪtɪd/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "feeling full of energy about something",
+    "meaningZh": "兴奋的",
+    "definitionEn": "Excited means feeling full of energy about something.",
+    "definitionZh": "兴奋就是为某件事特别高兴、特别有精神。",
+    "examples": [
+      { "en": "We are excited about the project.", "zh": "我们对这个项目很兴奋。" },
+      { "en": "She is excited to start.", "zh": "她兴奋地准备开始。" }
+    ],
+    "image": "art/w-excited.webp",
+    "emoji": "🤩",
+    "level": 3,
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-worried",
+    "text": "worried",
+    "phonetic": "/ˈwʌrid/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "feeling that something bad may happen",
+    "meaningZh": "担心的",
+    "definitionEn": "Worried means feeling that something bad may happen.",
+    "definitionZh": "担心就是觉得可能会有不好的事发生。",
+    "examples": [
+      { "en": "She is worried about the mess.", "zh": "她担心弄得一团糟。" },
+      { "en": "Do not be worried; we can fix it.", "zh": "别担心，我们能修好。" }
+    ],
+    "image": "art/w-worried.webp",
+    "emoji": "😟",
+    "level": 3,
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-brave",
+    "text": "brave",
+    "phonetic": "/breɪv/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "not afraid to try",
+    "meaningZh": "勇敢的",
+    "definitionEn": "Brave means not afraid to try.",
+    "definitionZh": "勇敢就是不怕尝试。",
+    "examples": [
+      { "en": "He is brave and tries again.", "zh": "他很勇敢，又试了一次。" },
+      { "en": "Be brave and show your design.", "zh": "勇敢一点，展示你的设计。" }
+    ],
+    "image": "art/w-brave.webp",
+    "emoji": "🦸",
     "level": 2,
-    "tags": ["abstract", "emotional"],
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-clever",
+    "text": "clever",
+    "phonetic": "/ˈklevə/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "good at thinking and making things",
+    "meaningZh": "聪明的",
+    "definitionEn": "Clever means good at thinking and making things.",
+    "definitionZh": "聪明就是很会思考和做东西。",
+    "examples": [
+      { "en": "She is clever with boxes.", "zh": "她很会用盒子做东西。" },
+      { "en": "That is a clever idea.", "zh": "那是个聪明的主意。" }
+    ],
+    "image": "art/w-clever.webp",
+    "emoji": "🧠",
+    "level": 2,
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-kind",
+    "text": "kind",
+    "phonetic": "/kaɪnd/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "nice and helpful to others",
+    "meaningZh": "友善的",
+    "definitionEn": "Kind means nice and helpful to others.",
+    "definitionZh": "友善就是对别人很好、乐于帮忙。",
+    "examples": [
+      { "en": "It is kind to help.", "zh": "帮助别人是友善的。" },
+      { "en": "Our teacher is kind.", "zh": "我们的老师很友善。" }
+    ],
+    "image": "art/w-kind.webp",
+    "emoji": "💛",
+    "level": 3,
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-friendly",
+    "text": "friendly",
+    "phonetic": "/ˈfrendli/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "nice and easy to talk to",
+    "meaningZh": "友好的",
+    "definitionEn": "Friendly means nice and easy to talk to.",
+    "definitionZh": "友好就是对人亲切、容易相处。",
+    "examples": [
+      { "en": "The teacher is friendly.", "zh": "老师很友好。" },
+      { "en": "The new child is friendly.", "zh": "新来的孩子很友好。" }
+    ],
+    "image": "art/w-friendly.webp",
+    "emoji": "🤗",
+    "level": 3,
+    "tags": ["core", "emotional"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-beautiful",
+    "text": "beautiful",
+    "phonetic": "/ˈbjuːtɪfl/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "very nice to look at",
+    "meaningZh": "美丽的",
+    "definitionEn": "Beautiful means very nice to look at.",
+    "definitionZh": "美丽就是看起来很好看。",
+    "examples": [
+      { "en": "My picture is beautiful.", "zh": "我的画很美丽。" },
+      { "en": "We make a beautiful card.", "zh": "我们做了一张美丽的卡片。" }
+    ],
+    "image": "art/w-beautiful.webp",
+    "emoji": "🌟",
+    "level": 1,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-important",
+    "text": "important",
+    "phonetic": "/ɪmˈpɔːtnt/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "matters a lot",
+    "meaningZh": "重要的",
+    "definitionEn": "Important means that it matters a lot.",
+    "definitionZh": "重要就是很要紧。",
+    "examples": [
+      { "en": "It is important to be careful.", "zh": "小心很重要。" },
+      { "en": "Sleep is important for children.", "zh": "睡眠对孩子很重要。" }
+    ],
+    "image": "art/w-important.webp",
+    "emoji": "❗",
+    "level": 3,
+    "tags": ["core", "abstract"],
+    "topicIds": ["craft-and-build"]
+  },
+  {
+    "id": "w-ready",
+    "text": "ready",
+    "phonetic": "/ˈredi/",
+    "partOfSpeech": "adjective",
+    "meaningEn": "prepared to start",
+    "meaningZh": "准备好的",
+    "definitionEn": "Ready means prepared to start.",
+    "definitionZh": "准备好就是可以开始了。",
+    "examples": [
+      { "en": "We are ready to start.", "zh": "我们准备好开始了。" },
+      { "en": "The paint is ready to use.", "zh": "颜料准备好可以用了。" }
+    ],
+    "image": "art/w-ready.webp",
+    "emoji": "🏁",
+    "level": 3,
+    "tags": ["core", "abstract"],
     "topicIds": ["craft-and-build"]
   }
 ]
