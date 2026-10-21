@@ -1,20 +1,27 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 
 import { describe, expect, it } from "vitest"
 
 const repoRoot = new URL("../../", import.meta.url)
 const publicDir = new URL("../public/", import.meta.url)
-const ciUrl = new URL(".github/workflows/ci.yml", repoRoot)
-const deployUrl = new URL(".github/workflows/deploy.yml", repoRoot)
+const scriptsDir = new URL("../scripts/", import.meta.url)
+const workflowsDir = new URL(".github/workflows/", repoRoot)
+const ciUrl = new URL("ci.yml", workflowsDir)
 
 function read(url: URL): string {
   return readFileSync(url, "utf8")
 }
 
+function workflows(): string[] {
+  return readdirSync(workflowsDir).filter(
+    (name) => name.endsWith(".yml") || name.endsWith(".yaml"),
+  )
+}
+
 /**
  * Configuration the suite cannot execute: the hash router needs no server
- * rewrite, and a preview deployment would publish the dev dataset's worker.
- * These assertions protect those durable properties of the files.
+ * rewrite, and Cloudflare's Git integration — not a GitHub workflow — owns the
+ * deployment. These assertions protect those durable properties of the files.
  */
 describe("deployment configuration", () => {
   it("ships no _redirects file, because every route is a fragment", () => {
@@ -40,29 +47,21 @@ describe("deployment configuration", () => {
     }
   })
 
-  it("deploys the prebuilt dist from master on push or dispatch", () => {
-    const deploy = read(deployUrl)
+  it("leaves deployment to Cloudflare's Git integration", () => {
+    const names = workflows()
 
-    expect(deploy).toContain("workflow_dispatch:")
-    expect(deploy).toMatch(/push:\s*\n\s*branches:\s*\n?\s*-\s*master/)
-    expect(deploy).toContain("contents: read")
-    expect(deploy).toContain(
-      "wrangler pages deploy dist --project-name words-wizard --branch master",
-    )
-    expect(deploy).toContain("pnpm build")
-    expect(deploy).toContain("pnpm check:dist")
-    expect(deploy).toContain("pnpm check:deploy")
+    expect(names).not.toContain("deploy.yml")
+
+    for (const name of names) {
+      const text = read(new URL(name, workflowsDir))
+
+      expect(text, name).not.toContain("wrangler pages deploy")
+      expect(text, name).not.toContain("CLOUDFLARE_API_TOKEN")
+      expect(text, name).not.toContain("CLOUDFLARE_ACCOUNT_ID")
+    }
   })
 
-  it("never configures a pull-request preview deployment", () => {
-    expect(read(deployUrl)).not.toContain("pull_request:")
-  })
-
-  it("reads deployment credentials only from repository secrets", () => {
-    const deploy = read(deployUrl)
-
-    expect(deploy).toContain("secrets.CLOUDFLARE_API_TOKEN")
-    expect(deploy).toContain("secrets.CLOUDFLARE_ACCOUNT_ID")
-    expect(deploy).not.toMatch(/CLOUDFLARE_API_TOKEN\s*[:=]\s*["'][^$]/)
+  it("keeps an on-demand post-deploy smoke check", () => {
+    expect(existsSync(new URL("check-deploy.mjs", scriptsDir))).toBe(true)
   })
 })

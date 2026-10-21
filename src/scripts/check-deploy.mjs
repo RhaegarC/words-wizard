@@ -2,7 +2,7 @@
 /**
  * Post-deploy smoke check. Requests the deployed URL and proves Cloudflare is
  * serving the document, a hashed asset, and artwork with the headers declared
- * in `_headers`. Runs after `wrangler pages deploy`, with the same Node.
+ * in `_headers`. Run on demand after a Cloudflare Pages production build.
  */
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
