@@ -1,21 +1,12 @@
 import { useEffect, useRef } from "react"
 
 import { config } from "../config"
-import type { StageId } from "../domain/types"
 import { useLocale } from "../i18n/LocaleProvider"
-import type { MessageKey } from "../i18n/messages"
+import { stageMessageKey } from "../i18n/stages"
 import { useRouter } from "../router/RouterContext"
 import { useSession } from "../session/SessionProvider"
 
 import { SessionFallback } from "./SessionFallback"
-
-const STAGE_KEYS: Record<StageId, MessageKey> = {
-  egg: "character.stage.egg",
-  hatchling: "character.stage.hatchling",
-  juvenile: "character.stage.juvenile",
-  adult: "character.stage.adult",
-  legendary: "character.stage.legendary",
-}
 
 /**
  * What the session earned, committed once before the numbers are shown. While
@@ -54,8 +45,8 @@ export function SessionSummaryScreen() {
   }
 
   const percent = Math.round(summary.progress.fraction * 100)
-  const stageBefore = t(STAGE_KEYS[summary.stageBefore])
-  const stageAfter = t(STAGE_KEYS[summary.stageAfter])
+  const stageBefore = t(stageMessageKey(summary.stageBefore))
+  const stageAfter = t(stageMessageKey(summary.stageAfter))
   const stageChanged = summary.stageBefore !== summary.stageAfter
   const tokensFull = summary.careTokens >= config.careTokens.cap
   const saving = commitStatus !== "done" && commitStatus !== "error"

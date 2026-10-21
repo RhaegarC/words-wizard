@@ -1,6 +1,7 @@
 import { config } from "../config"
 
 import { createRng, hashString, shuffle } from "./random"
+import { localDateKey } from "./time"
 import {
   PRACTICE_MODES,
   type Pack,
@@ -104,14 +105,8 @@ export type SessionAction =
   | { type: "confirmReveal"; now: number }
   | { type: "abandon" }
 
-/** The local day the child is in, independent of the device's UTC offset. */
-export function localDateKey(now: number): string {
-  const date = new Date(now)
-  const month = String(date.getMonth() + 1).padStart(2, "0")
-  const day = String(date.getDate()).padStart(2, "0")
-
-  return `${date.getFullYear()}-${month}-${day}`
-}
+/** Kept here for the engine's existing imports; the rule lives in `time.ts`. */
+export { localDateKey } from "./time"
 
 export function sessionSeed(
   profileId: number,

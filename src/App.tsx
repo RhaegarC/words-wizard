@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 
+import { SleepOverlay } from "./components/SleepOverlay"
 import { progressProvider } from "./db"
 import {
   type BootResult,
@@ -7,11 +8,13 @@ import {
   ensureStoragePersistence,
 } from "./db/lifecycle"
 import { RouteTable } from "./dev/RouteTable"
+import type { Profile } from "./domain/types"
 import { useLocale } from "./i18n/LocaleProvider"
 import { resolveRoute } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, parentOf, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
+import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
 import { SessionExerciseScreen } from "./screens/SessionExerciseScreen"
@@ -132,11 +135,24 @@ export default function App() {
     )
   }
 
+  const updateProfile = (next: Profile) =>
+    setBoot({ status: "present", profile: next })
+
   const screen =
     route.id === "create" ? (
       <CreateScreen
         onCreated={(created) => setBoot({ status: "present", profile: created })}
       />
+    ) : route.id === "character" && profile ? (
+      <CharacterScreen profile={profile} onProfileUpdated={updateProfile} />
+    ) : route.id === "home" && profile ? (
+      <>
+        <SleepOverlay
+          profile={profile}
+          onProfileUpdated={updateProfile}
+        />
+        <PlaceholderScreen route={route} />
+      </>
     ) : route.id === "topics" && profile ? (
       <TopicPickerScreen
         profile={profile}

@@ -26,6 +26,6 @@ export function resolveArtwork(
 }
 
 /** Public assets stay relative so the build also works from a sub-path. */
-function assetSrc(file: string): string {
+export function assetSrc(file: string): string {
   return file.startsWith("./") || file.startsWith("/") ? file : `./${file}`
 }
