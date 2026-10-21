@@ -1,6 +1,6 @@
 # Feature 05 — Persistence Layer (Dexie)
 
-> Priority: Must · Mission 1 · **Status: Done — pending merge**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #11**
 > Depends on: 01
 
 ## Summary
