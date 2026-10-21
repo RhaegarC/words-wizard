@@ -5,7 +5,7 @@ aged 9–12 learn English vocabulary through short, game-like sessions with a vi
 word buddy.
 
 **Status:** MVP requirements locked in [docs/PRD.md](docs/PRD.md) (v0.2). The production app is
-scaffolded at the repository root with **all application source under [src/](src/)**. The Figma Make
+scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
 and its toolchain is independent of the production app.
 
@@ -25,7 +25,7 @@ and its toolchain is independent of the production app.
 - **Monthly Review:** a 20-word retention check every 28 days.
 - **Offline PWA:** IndexedDB via Dexie, no backend, no accounts, no sync, no telemetry.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
-- **Azure Blob Storage static hosting** with hash routing.
+- **Azure Static Web Apps** hosting, with hash routing.
 - **315 illustrations:** ~300 word images plus 3 avatars × 5 stages, AI-generated and
   human-reviewed.
 
@@ -114,9 +114,18 @@ component-test suite; UI is verified in the browser.
 
 ## Deployment
 
-Planned: Azure Blob Storage static website (`$web` container), deployed by GitHub
-Actions. The build must set correct MIME types and cache headers, and the service worker
-precaches the shell, content, locales, and all illustrations.
+Planned: **Azure Static Web Apps** (Free plan), deployed by GitHub Actions from `master`.
+The prebuilt `src/dist/` is uploaded with `Azure/static-web-apps-deploy`, and
+`src/public/staticwebapp.config.json` — copied into the build — carries the navigation
+fallback and cache headers. Static Web Apps serves MIME types itself, so no per-extension
+upload step is needed. The service worker precaches the shell, content, locales, and all
+illustrations.
+
+The workflow reads a deployment token from the `AZURE_STATIC_WEB_APPS_API_TOKEN` repository
+secret; no credential is committed. Release flow: merge into `master`, which redeploys the
+production site; re-running the workflow on an older commit is the rollback. Custom domains
+are managed inside Static Web Apps (free managed certificate) and are not part of the
+deployment workflow.
 
 ## Key decisions
 

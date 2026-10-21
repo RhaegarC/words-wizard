@@ -26,7 +26,7 @@ parallel from feature 04 because it is authoring work, not code.
 - [ ] Settings covers locale, re-customization, topic change, JSON export, and diagnostics.
 - [ ] The app installs, works fully offline after first load, and shows an update prompt instead of
       silently swapping the service worker.
-- [ ] `pnpm build` + CI deploy the app to Azure Blob Storage; the deployed site passes the smoke check.
+- [ ] `pnpm build` + CI deploy the app to Azure Static Web Apps; the deployed site passes the smoke check.
 - [ ] Final content: 300 slots across 5 topics × 3 packs × 20, bilingual, Cambridge-allowlisted,
       with one reviewed illustration per distinct word plus 15 avatar-stage images (≈315);
       `pnpm validate:content` passes.
@@ -37,7 +37,7 @@ parallel from feature 04 because it is authoring work, not code.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 01 | [App foundation & test harness](01-app-foundation.md) | Not started | — |
+| 01 | [App foundation & test harness](01-app-foundation.md) | In review | — |
 | 02 | [App shell & hash routing](02-app-shell-routing.md) | Not started | 01 |
 | 03 | [Bilingual UI (i18n)](03-i18n.md) | Not started | 01, 02 |
 | 04 | [Content layer & validation](04-content-layer.md) | Not started | 01 |
@@ -79,8 +79,8 @@ parallel from feature 04 because it is authoring work, not code.
 
 ## Mission tasks (implementation order)
 
-1. **01** — Promote the prototype to the repo root; strip Figma Make plugins; add Vitest, `strict` TS,
-   `src/config.ts`, and domain types.
+1. **01** — Scaffold the production app under `src/`; leave the Figma Make export untouched; add
+   Vitest, `strict` TS, `src/config.ts`, and domain types.
 2. **02** — Hash router, route table, guards, AppShell, placeholder screens.
 3. **03** — `locales/en.json` + `zh.json`, `t()`, locale detection, `html lang`, key-parity test.
 4. **04** — Bilingual `content/` schemas, read-only data-access layer, `validate:content`, artwork manifest.
@@ -96,15 +96,15 @@ parallel from feature 04 because it is authoring work, not code.
 13. **13** — 28-day trigger, 20-word selector, review runner, review summary.
 14. **14** — Locale toggle, re-customize, change topic, JSON export, diagnostics.
 15. **15** — Manifest/icons, Workbox precache, update prompt, install detection and strong prompt.
-16. **16** — GitHub Actions build/test/validate/deploy to `$web`, cache headers, dist smoke check.
+16. **16** — GitHub Actions build/test/validate/deploy to Azure Static Web Apps, cache headers, dist smoke check.
 17. **17** — Author and review 300 bilingual slots and 315 illustrations; flip the dataset to `final`.
 
 ## Sequencing caveats
 
 - **Do not publish a public release before 17 lands.** Features 01–16 run against a `dataset: "dev"`
   content set (one authored pack plus placeholders). The app is demonstrable, but it is not the product.
-- **Feature 01 moves the app to the repository root.** Until it lands, nothing at the root builds and
-  every later feature is blocked.
+- **Feature 01 establishes the build under `src/`.** Until it lands, nothing builds and every later
+  feature is blocked.
 - **Feature 15 must not ship a service worker over the dev dataset** to a public URL: a stale precache
   with placeholder art is worse than no cache. Deploy (16) comes after 15 and after content sign-off.
 - Branching and PRs follow the project workflow: feature branches target `develop`; `master` is the

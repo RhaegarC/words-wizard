@@ -5,7 +5,7 @@ import { defineConfig } from "vitest/config"
 const srcRoot = import.meta.dirname
 
 export default defineConfig({
-  // The package and all app source live in src/; only the build output leaves it.
+  // The package, all app source, and the build output live in src/.
   root: srcRoot,
   // Relative asset URLs so the build also works from a sub-path.
   base: "./",

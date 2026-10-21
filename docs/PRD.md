@@ -95,8 +95,8 @@ character and one progress record.
     styled placeholder tile until each is approved.
 13. The UI and content are **fully bilingual (EN/中文)**. Chinese is the default on
     zh-CN devices; a Settings toggle switches languages.
-14. The app is hosted as a **static website on Azure Blob Storage**. Navigation uses
-    hash routes; no server rewrite is required.
+14. The app is hosted on **Azure Static Web Apps**. Navigation uses hash routes, so every
+    route is a fragment and no server rewrite is required.
 15. **All five practice modes** ship in the MVP: picture match, word → meaning,
     spelling builder, fill-the-blank, listen & choose.
 16. Product metrics are **local counters only**, surfaced in diagnostics and included
@@ -509,7 +509,7 @@ One token type, one currency, two spend options.
 | Content | Bundled read-only JSON behind a data-access layer |
 | Pronunciation | **Web Speech API** + IPA fallback |
 | Routing | Hash routes (`#/home`, `#/practice`, …) |
-| Hosting | Azure Blob Storage static website |
+| Hosting | Azure Static Web Apps |
 | Sync | None |
 | Backend | None |
 
@@ -670,16 +670,23 @@ durability.**
 
 ### 8.9 Hosting & Deployment
 
-- **Azure Blob Storage static website:** `$web` container, index document
-  `index.html`, error document `index.html`. Hash routing means deep links never reach
-  the server.
-- HTTPS is available on the default `*.web.core.windows.net` endpoint. A custom domain
-  requires Azure CDN or Front Door.
-- **CI (GitHub Actions):** build the app, upload to `$web`, and set correct
-  `Content-Type` for `.html`, `.js`, `.css`, `.json`, `.webmanifest`, `.webp`, and
-  `.svg`. Set long-lived caching for hashed assets and no-cache for `index.html` and the
-  service worker.
-- Deployment credentials live in CI secrets; no credentials in the repository.
+- **Azure Static Web Apps (Free plan)**, deployed from GitHub Actions. The app builds to
+  `src/dist/`; that directory is the deployment root and contains `index.html` plus
+  `staticwebapp.config.json`.
+- Hash routing means every route is a fragment (`#/home`), so `index.html` is the only
+  document the server ever returns. `navigationFallback` rewrites unknown paths to
+  `/index.html` as a safety net, excluding asset-like paths so a missing file still 404s.
+- `staticwebapp.config.json` (shipped from `src/public/`) also carries the cache policy:
+  hashed `assets/*` immutable for a year, artwork and icons for 7 days, content and locale
+  JSON for 1 hour, and `index.html`, the service worker, and the manifest `no-cache`.
+- HTTPS is available on the default `*.azurestaticapps.net` endpoint. Custom domains are
+  managed by Static Web Apps with a free managed certificate — no CDN or Front Door
+  required.
+- **CI (GitHub Actions):** pull requests run install, typecheck, tests, content validation,
+  build, and a dist check. Pushes to `master` run the same checks and then upload the
+  prebuilt `src/dist/` with `Azure/static-web-apps-deploy`.
+- The deployment token lives in a GitHub Actions secret; no credential is committed.
+  Rollback is re-running the deployment workflow on an older commit.
 
 ---
 
@@ -797,7 +804,7 @@ export const config = {
 
 | Phase | Scope |
 |-------|-------|
-| **MVP** | Character creation gate; strong install prompt; 5 topics × 3 packs × 20 words; bilingual content and UI; all 5 practice modes; word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); Dexie storage; `persist()`; startup and post-session durability checks; Web Speech + IPA fallback; bundled illustrations and 3 × 5 character art; JSON export; local metrics and diagnostics; Azure Blob hosting; hash routing; Vitest domain and content validation. |
+| **MVP** | Character creation gate; strong install prompt; 5 topics × 3 packs × 20 words; bilingual content and UI; all 5 practice modes; word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); Dexie storage; `persist()`; startup and post-session durability checks; Web Speech + IPA fallback; bundled illustrations and 3 × 5 character art; JSON export; local metrics and diagnostics; Azure Static Web Apps hosting; hash routing; Vitest domain and content validation. |
 | **Phase 2** | Badges; multi-profile switcher UI; Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
 | **Phase 3** | Facilitator panel (focus list, custom words, import); story mode; timed challenges; speaking practice; phrases and sentences; native packaging. |
 | **Future** | Co-op/team mode; parent dashboard (requires a backend); cloud sync. |
@@ -831,7 +838,7 @@ export const config = {
 - Progress commits at session end; confirm-on-exit; browser-kill loss accepted.
 - All five practice modes ship.
 - One My Words screen with Collection and Word Book tabs.
-- Hash routing; Azure Blob static hosting.
+- Hash routing; Azure Static Web Apps hosting.
 - Local counters only; no telemetry.
 - Vitest domain and content validation; manual E2E.
 - Flat bilingual word schema.

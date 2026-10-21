@@ -6,9 +6,10 @@
 ## Summary
 
 Replace the prototype's screen-switching state with a real hash router and a single app shell.
-Azure Blob static hosting cannot rewrite URLs, so every route is a fragment (`#/home`) and a deep
-link never reaches the server. The shell owns the header, back behaviour, focus reset, and the
-first-run guard; each screen becomes a route target.
+Every route is a fragment (`#/home`), so the build behaves identically on `pnpm preview`, any
+static host, and Azure Static Web Apps without depending on rewrite configuration; the host's
+navigation fallback is a safety net, not the routing mechanism. The shell owns the header, back
+behaviour, focus reset, and the first-run guard; each screen becomes a route target.
 
 ## User story
 
