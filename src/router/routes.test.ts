@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { buildHash, parseHash, ROUTE_SAMPLES } from "./routes"
+import { buildHash, parseHash, parentOf, ROUTE_SAMPLES } from "./routes"
 
 describe("parseHash / buildHash", () => {
   it("round-trips every supported route", () => {
@@ -44,6 +44,61 @@ describe("parseHash / buildHash", () => {
       id: "word-detail",
       wordId: "w build",
     })
+  })
+
+  it("carries the tab a word detail was opened from", () => {
+    expect(
+      buildHash({ id: "word-detail", wordId: "w-build", tab: "wordbook" }),
+    ).toBe("#/words/w-build?tab=wordbook")
+    expect(parseHash("#/words/w-build?tab=wordbook")).toEqual({
+      id: "word-detail",
+      wordId: "w-build",
+      tab: "wordbook",
+    })
+    expect(parseHash("#/words/w-build?tab=collection")).toEqual({
+      id: "word-detail",
+      wordId: "w-build",
+      tab: "collection",
+    })
+  })
+
+  it("rejects a bogus word-detail tab", () => {
+    expect(parseHash("#/words/w-build?tab=bogus")).toBeNull()
+  })
+
+  it("returns a word detail to the tab it was opened from", () => {
+    expect(parentOf({ id: "word-detail", wordId: "w-build" })).toEqual({
+      id: "words",
+      tab: "collection",
+    })
+    expect(
+      parentOf({ id: "word-detail", wordId: "w-build", tab: "wordbook" }),
+    ).toEqual({ id: "words", tab: "wordbook" })
+  })
+
+  it("builds and parses the review exercise route", () => {
+    expect(buildHash({ id: "review-exercise" })).toBe("#/review/exercise")
+    expect(parseHash("#/review/exercise")).toEqual({ id: "review-exercise" })
+    expect(parentOf({ id: "review-exercise" })).toEqual({ id: "review" })
+  })
+
+  it("carries the settings origin through the topic picker", () => {
+    expect(buildHash({ id: "topics", from: "settings" })).toBe(
+      "#/topics?from=settings",
+    )
+    expect(parseHash("#/topics?from=settings")).toEqual({
+      id: "topics",
+      from: "settings",
+    })
+    expect(parentOf({ id: "topics", from: "settings" })).toEqual({
+      id: "settings",
+    })
+  })
+
+  it("keeps the first-run topic picker returning home", () => {
+    expect(buildHash({ id: "topics" })).toBe("#/topics")
+    expect(parseHash("#/topics")).toEqual({ id: "topics" })
+    expect(parentOf({ id: "topics" })).toEqual({ id: "home" })
   })
 
   it("accepts a single trailing slash on known paths", () => {

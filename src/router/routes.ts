@@ -15,15 +15,32 @@ export type WordsRoute = {
 export type WordDetailRoute = {
   id: "word-detail"
   wordId: string
+  /** The tab the child opened the word from; back returns there. */
+  tab?: WordsTab
 }
 
-export type Route = { id: "home" } | { id: "topics" } | { id: "session" } | {
-  id: "session-intro"
-} | { id: "session-exercise" } | {
-  id: "session-summary"
-} | WordsRoute | WordDetailRoute | { id: "character" } | { id: "review" } | {
-  id: "review-summary"
-} | { id: "settings" } | { id: "create" } | { id: "install" }
+/** The topic picker can be reached from Settings, where back returns there. */
+export type TopicsRoute = {
+  id: "topics"
+  from?: "settings"
+}
+
+export type Route =
+  | { id: "home" }
+  | TopicsRoute
+  | { id: "session" }
+  | { id: "session-intro" }
+  | { id: "session-exercise" }
+  | { id: "session-summary" }
+  | WordsRoute
+  | WordDetailRoute
+  | { id: "character" }
+  | { id: "review" }
+  | { id: "review-exercise" }
+  | { id: "review-summary" }
+  | { id: "settings" }
+  | { id: "create" }
+  | { id: "install" }
 
 export type RouteId = Route["id"]
 
@@ -31,6 +48,7 @@ export type RouteId = Route["id"]
 export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "home" },
   { id: "topics" },
+  { id: "topics", from: "settings" },
   { id: "session" },
   { id: "session-intro" },
   { id: "session-exercise" },
@@ -40,6 +58,7 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "word-detail", wordId: "w-build" },
   { id: "character" },
   { id: "review" },
+  { id: "review-exercise" },
   { id: "review-summary" },
   { id: "settings" },
   { id: "create" },
@@ -56,6 +75,7 @@ const SIMPLE_HASHES: Record<Exclude<RouteId, "words" | "word-detail">, string> =
     "session-summary": "#/session/summary",
     character: "#/character",
     review: "#/review",
+    "review-exercise": "#/review/exercise",
     "review-summary": "#/review/summary",
     settings: "#/settings",
     create: "#/create",
@@ -72,6 +92,7 @@ const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   "word-detail": "common.screen.wordDetail",
   character: "common.screen.character",
   review: "common.screen.review",
+  "review-exercise": "common.screen.review",
   "review-summary": "common.screen.reviewSummary",
   settings: "common.screen.settings",
   create: "common.screen.create",
@@ -84,7 +105,15 @@ export function buildHash(route: Route): string {
   }
 
   if (route.id === "word-detail") {
-    return `#/words/${encodeURIComponent(route.wordId)}`
+    const base = `#/words/${encodeURIComponent(route.wordId)}`
+
+    return route.tab === undefined ? base : `${base}?tab=${route.tab}`
+  }
+
+  if (route.id === "topics") {
+    return route.from === "settings"
+      ? "#/topics?from=settings"
+      : SIMPLE_HASHES.topics
   }
 
   return SIMPLE_HASHES[route.id]
@@ -106,17 +135,36 @@ export function parseHash(hash: string): Route | null {
   switch (segments[0]) {
     case "home":
       return onlyOneSegment(segments) ? { id: "home" } : null
-    case "topics":
-      return onlyOneSegment(segments) ? { id: "topics" } : null
+    case "topics": {
+      if (!onlyOneSegment(segments)) {
+        return null
+      }
+
+      const from = new URLSearchParams(split.query).get("from")
+
+      return from === "settings"
+        ? { id: "topics", from: "settings" }
+        : { id: "topics" }
+    }
     case "character":
       return onlyOneSegment(segments) ? { id: "character" } : null
     case "review":
       if (onlyOneSegment(segments)) {
         return { id: "review" }
       }
-      return segments.length === 2 && segments[1] === "summary"
-        ? { id: "review-summary" }
-        : null
+
+      if (segments.length !== 2) {
+        return null
+      }
+
+      switch (segments[1]) {
+        case "exercise":
+          return { id: "review-exercise" }
+        case "summary":
+          return { id: "review-summary" }
+        default:
+          return null
+      }
     case "settings":
       return onlyOneSegment(segments) ? { id: "settings" } : null
     case "create":
@@ -149,11 +197,16 @@ export function parentOf(route: Route): Route | null {
     case "create":
       return null
     case "word-detail":
-      return { id: "words", tab: "collection" }
+      return { id: "words", tab: route.tab ?? "collection" }
     case "session-intro":
     case "session-exercise":
       return { id: "session" }
+    case "review-exercise":
+      return { id: "review" }
     case "topics":
+      return route.from === "settings"
+        ? { id: "settings" }
+        : { id: "home" }
     case "session":
     case "session-summary":
     case "words":
@@ -241,7 +294,26 @@ function parseWords(segments: string[], query: string): Route | null {
     return null
   }
 
-  return { id: "word-detail", wordId }
+  const tab = parseDetailTab(query)
+
+  if (tab === null) {
+    return null
+  }
+
+  return tab === undefined
+    ? { id: "word-detail", wordId }
+    : { id: "word-detail", wordId, tab }
+}
+
+/** A detail route has no tab unless the hash names one, unlike `#/words`. */
+function parseDetailTab(query: string): WordsTab | undefined | null {
+  const tab = new URLSearchParams(query).get("tab")
+
+  if (tab === null) {
+    return undefined
+  }
+
+  return tab === "collection" || tab === "wordbook" ? tab : null
 }
 
 function parseTab(query: string): WordsTab | null {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  getAllPacks,
+  getAllWords,
   getArtwork,
   getAvatarSet,
   getContentMeta,
@@ -58,11 +60,18 @@ describe("content data access", () => {
   it("lists the authored words for a topic", () => {
     const words = getWordsByTopic("craft-and-build")
 
-    expect(words).toHaveLength(20)
+    expect(words).toHaveLength(60)
     expect(words.every((word) => word.topicIds.includes("craft-and-build"))).toBe(
       true,
     )
     expect(getWordsByTopic("nope")).toEqual([])
+  })
+
+  it("exposes every word and pack for the session builder", () => {
+    expect(getAllWords().map((word) => word.id)).toContain("w-bag")
+    expect(getAllPacks().map((pack) => pack.id)).toContain("craft-1")
+    expect(Object.isFrozen(getAllWords())).toBe(true)
+    expect(Object.isFrozen(getAllPacks())).toBe(true)
   })
 
   it("exposes the three avatars with five stages each", () => {

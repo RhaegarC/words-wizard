@@ -46,7 +46,7 @@ export function useHashRoute(): HashRoute {
 
       expected.current = null
 
-      if (!leaveGuard.canLeave()) {
+      if (!leaveGuard.canLeave(next)) {
         const restore = accepted.current || "#"
 
         if (restore !== next) {
@@ -68,11 +68,12 @@ export function useHashRoute(): HashRoute {
 
   const commit = useCallback(
     (route: Route, mode: "push" | "replace") => {
-      if (!leaveGuard.canLeave()) {
+      const target = buildHash(route)
+
+      if (!leaveGuard.canLeave(target)) {
         return
       }
 
-      const target = buildHash(route)
       accepted.current = target
 
       if (target === window.location.hash) {

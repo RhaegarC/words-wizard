@@ -13,11 +13,12 @@ export const METRIC_NAMES = {
   wordLearned: "word.learned",
   wordMastered: "word.mastered",
   stageUp: "stage.up",
+  xpEarned: "xp.earned",
   collectionOpened: "collection.opened",
   wordBookOpened: "wordBook.opened",
   monthlyReviewOffered: "monthlyReview.offered",
   monthlyReviewCompleted: "monthlyReview.completed",
-  /** Signed sum: a review that finds decay lowers the total. */
+  /** Signed average: a review that finds decay adds a negative delta. */
   reviewStrengthDelta: "monthlyReview.strengthDelta",
   revivalSession: "revival.session",
   revivalQuickWake: "revival.quickWake",

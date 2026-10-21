@@ -7,14 +7,29 @@ import {
   ensureStoragePersistence,
 } from "./db/lifecycle"
 import { RouteTable } from "./dev/RouteTable"
+import type { Profile } from "./domain/types"
 import { useLocale } from "./i18n/LocaleProvider"
+import { UpdateProvider } from "./pwa/UpdateProvider"
 import { resolveRoute } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, parentOf, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
+import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
+import { HomeScreen } from "./screens/HomeScreen"
+import { InstallScreen } from "./screens/InstallScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
+import { ReviewLandingScreen } from "./screens/ReviewLandingScreen"
+import { ReviewSummaryScreen } from "./screens/ReviewSummaryScreen"
+import { SessionExerciseScreen } from "./screens/SessionExerciseScreen"
+import { SessionIntroScreen } from "./screens/SessionIntroScreen"
+import { SessionLandingScreen } from "./screens/SessionLandingScreen"
+import { SessionSummaryScreen } from "./screens/SessionSummaryScreen"
+import { SettingsScreen } from "./screens/SettingsScreen"
 import { TopicPickerScreen } from "./screens/TopicPickerScreen"
+import { WordDetailScreen } from "./screens/WordDetailScreen"
+import { WordsScreen } from "./screens/WordsScreen"
+import { SessionProvider } from "./session/SessionProvider"
 import { AppShell } from "./shell/AppShell"
 
 const DEV_ROUTE_TABLE_HASH = "#/__routes"
@@ -32,7 +47,7 @@ function readBootOnce(): Promise<BootResult> {
 }
 
 export default function App() {
-  const { t } = useLocale()
+  const { locale, setLocale, t } = useLocale()
   const {
     hash,
     route: requested,
@@ -70,6 +85,19 @@ export default function App() {
     }
   }, [])
 
+  // The stored profile is the authority on language. The localStorage value
+  // only gives the pre-profile screen a sensible language, and the Settings
+  // toggle updates both.
+  useEffect(() => {
+    if (
+      boot !== null &&
+      boot.status === "present" &&
+      boot.profile.locale !== locale
+    ) {
+      setLocale(boot.profile.locale)
+    }
+  }, [boot, locale, setLocale])
+
   // The guard decides the screen; the fragment must agree with it. An absent
   // profile lands on `#/create`, and a profile without a topic on `#/topics`.
   // The dev route table stays reachable so routes can be inspected directly.
@@ -87,6 +115,15 @@ export default function App() {
       return
     }
 
+    // Creation has just succeeded: first run continues to the install prompt,
+    // a returning profile goes straight Home.
+    if (boot.status === "present" && hash === "#/create") {
+      replace({
+        id: boot.profile.currentTopicId === null ? "install" : "home",
+      })
+      return
+    }
+
     if (
       boot.status === "present" &&
       boot.profile.currentTopicId === null &&
@@ -94,11 +131,6 @@ export default function App() {
       hash !== "#/install"
     ) {
       replace({ id: "topics" })
-      return
-    }
-
-    if (boot.status === "present" && hash === "#/create") {
-      replace({ id: "home" })
     }
   }, [boot, hash, replace])
 
@@ -127,29 +159,104 @@ export default function App() {
     )
   }
 
+  const updateProfile = (next: Profile) =>
+    setBoot({ status: "present", profile: next })
+
+  const screen =
+    route.id === "create" ? (
+      <CreateScreen
+        onCreated={(created) =>
+          setBoot({ status: "present", profile: created })
+        }
+      />
+    ) : route.id === "install" && profile ? (
+      <InstallScreen profile={profile} />
+    ) : route.id === "character" && profile ? (
+      <CharacterScreen profile={profile} onProfileUpdated={updateProfile} />
+    ) : route.id === "home" && profile ? (
+      <HomeScreen profile={profile} onProfileUpdated={updateProfile} />
+    ) : route.id === "topics" && profile ? (
+      <TopicPickerScreen
+        profile={profile}
+        fromSettings={route.from === "settings"}
+        onChosen={(next) => {
+          setBoot({ status: "present", profile: next })
+          navigate(
+            route.from === "settings" ? { id: "settings" } : { id: "home" },
+          )
+        }}
+      />
+    ) : route.id === "settings" && profile ? (
+      <SettingsScreen profile={profile} onProfileUpdated={updateProfile} />
+    ) : route.id === "words" && profile ? (
+      <WordsScreen profile={profile} tab={route.tab} />
+    ) : route.id === "word-detail" && profile ? (
+      <WordDetailScreen profile={profile} wordId={route.wordId} />
+    ) : route.id === "session" ? (
+      <SessionLandingScreen />
+    ) : route.id === "session-intro" ? (
+      <SessionIntroScreen />
+    ) : route.id === "session-exercise" ? (
+      <SessionExerciseScreen />
+    ) : route.id === "session-summary" ? (
+      <SessionSummaryScreen />
+    ) : route.id === "review" ? (
+      <ReviewLandingScreen />
+    ) : route.id === "review-exercise" ? (
+      <SessionExerciseScreen />
+    ) : route.id === "review-summary" ? (
+      <ReviewSummaryScreen />
+    ) : (
+      <PlaceholderScreen route={route} />
+    )
+
+  const shell = (
+    <AppShell
+      title={t(titleKeyFor(route))}
+      routeKey={buildHash(route)}
+      onBack={parent ? () => navigate(parent) : undefined}
+    >
+      {screen}
+    </AppShell>
+  )
+
+  const inSession =
+    route.id === "session" ||
+    route.id === "session-intro" ||
+    route.id === "session-exercise" ||
+    route.id === "session-summary" ||
+    route.id === "review" ||
+    route.id === "review-exercise" ||
+    route.id === "review-summary"
+
+  // The provider sits outside the shell so its exit dialog covers the whole
+  // frame, and stays mounted as the session moves between its own routes.
   return (
-    <RouterProvider value={router}>
-      <AppShell
-        title={t(titleKeyFor(route))}
-        routeKey={buildHash(route)}
-        onBack={parent ? () => navigate(parent) : undefined}
-      >
-        {route.id === "create" ? (
-          <CreateScreen
-            onCreated={(created) => setBoot({ status: "present", profile: created })}
-          />
-        ) : route.id === "topics" && profile ? (
-          <TopicPickerScreen
+    <UpdateProvider>
+      <RouterProvider value={router}>
+        {inSession && profile ? (
+          <SessionProvider
+            // A switch between the daily and monthly families starts clean.
+            key={
+              route.id === "review" ||
+              route.id === "review-exercise" ||
+              route.id === "review-summary"
+                ? "monthly"
+                : "daily"
+            }
             profile={profile}
-            onChosen={(next) => {
+            route={route}
+            onProfileUpdated={(next) =>
               setBoot({ status: "present", profile: next })
-              navigate({ id: "home" })
-            }}
-          />
+            }
+            onProfileLost={() => setBoot({ status: "absent" })}
+          >
+            {shell}
+          </SessionProvider>
         ) : (
-          <PlaceholderScreen route={route} />
+          shell
         )}
-      </AppShell>
-    </RouterProvider>
+      </RouterProvider>
+    </UpdateProvider>
   )
 }

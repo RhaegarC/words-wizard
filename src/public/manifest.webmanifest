@@ -1,8 +1,8 @@
 {
-  "name": "Words Wizard",
-  "short_name": "Words Wizard",
+  "name": "Words Wizard — 单词巫师",
+  "short_name": "单词巫师",
   "description": "A bilingual English vocabulary adventure for children aged 9–12.",
-  "lang": "en",
+  "lang": "zh-CN",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

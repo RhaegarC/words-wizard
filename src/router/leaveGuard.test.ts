@@ -31,6 +31,20 @@ describe("leave guard", () => {
     expect(guard.canLeave()).toBe(true)
   })
 
+  it("tells the handler where the child is going", () => {
+    const guard = createLeaveGuard()
+    const seen: Array<string | undefined> = []
+    guard.setBeforeLeave((nextHash) => {
+      seen.push(nextHash)
+      return true
+    })
+
+    guard.canLeave("#/session/exercise")
+    guard.canLeave()
+
+    expect(seen).toEqual(["#/session/exercise", undefined])
+  })
+
   it("fails open when a handler throws, so the child is never trapped", () => {
     const guard = createLeaveGuard()
     guard.setBeforeLeave(() => {

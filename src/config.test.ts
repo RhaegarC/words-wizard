@@ -55,7 +55,11 @@ describe("config", () => {
   })
 
   it("matches the PRD §7.5 Care Token cadence and cap", () => {
-    expect(config.careTokens).toEqual({ sessionsPerToken: 5, cap: 3 })
+    expect(config.careTokens).toEqual({
+      sessionsPerToken: 5,
+      cap: 3,
+      hintWithin: 2,
+    })
   })
 
   it("matches the PRD §9 scheduler", () => {
@@ -82,6 +86,10 @@ describe("config", () => {
     expect(config.unlock).toEqual({ pack2: 15, pack3: 30 })
     expect(config.unlock.pack2).toBeGreaterThan(0)
     expect(config.unlock.pack3).toBeGreaterThan(config.unlock.pack2)
+  })
+
+  it("marks a word recently learned inside a seven-local-day window", () => {
+    expect(config.myWords).toEqual({ recentlyLearnedDays: 7 })
   })
 
   it("matches the PRD §12 speech settings", () => {

@@ -11,6 +11,7 @@ import type {
   Avatar,
   ContentMeta,
 } from "../domain/content/types"
+import type { HomeContent } from "../domain/home"
 import type { Pack, Topic, Word } from "../domain/types"
 
 /**
@@ -85,6 +86,16 @@ export function getWordsByTopic(topicId: string): readonly Word[] {
   return wordsByTopic.get(topicId) ?? EMPTY
 }
 
+/** Every word, for the session builder (reviews may come from any topic). */
+export function getAllWords(): readonly Word[] {
+  return words
+}
+
+/** Every pack, for the session builder's unlock rules. */
+export function getAllPacks(): readonly Pack[] {
+  return packs
+}
+
 export function getAvatarSet(): readonly Avatar[] {
   return avatars
 }
@@ -95,6 +106,20 @@ export function getArtwork(wordId: string): ArtworkEntry | undefined {
 
 export function getContentMeta(): ContentMeta {
   return contentMeta
+}
+
+/**
+ * Everything Home's builder needs in one bundle. Home never searches the
+ * content itself; the builder receives all words because due reviews are
+ * global across topics.
+ */
+export function getHomeContent(): HomeContent {
+  return {
+    packs,
+    words,
+    avatars,
+    contentVersion: contentMeta.contentVersion,
+  }
 }
 
 /** Content is bundled read-only; freeze it so a screen cannot mutate it. */

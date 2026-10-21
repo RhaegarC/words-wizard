@@ -1,4 +1,6 @@
 import type { Profile } from "../domain/types"
+import { hasEnglishVoice } from "../speech"
+
 import { DEVICE_KEYS } from "./device"
 import type { ProgressProvider } from "./provider"
 
@@ -50,6 +52,12 @@ export async function checkProfileAtBoot(
   }
 
   await provider.setDevice(DEVICE_KEYS.lastBootAt, Date.now())
+  // PRD §8.5: the installed context is recorded on every boot, so diagnostics
+  // and the install copy describe this launch, not the first one.
+  await provider.setDevice(DEVICE_KEYS.installed, isInstalled())
+  // Recorded locally so the session builder can exclude listen & choose on a
+  // device whose loaded voice list has no English voice.
+  await provider.setDevice(DEVICE_KEYS.speechAvailable, hasEnglishVoice())
 
   return result
 }

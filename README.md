@@ -133,19 +133,38 @@ component-test suite; UI is verified in the browser.
 
 ## Deployment
 
-Planned: **Cloudflare Pages** (Free plan, Direct Upload), deployed by GitHub Actions from
-`master`. The prebuilt `src/dist/` is deployed by running
-`wrangler pages deploy dist --project-name words-wizard --branch master` from `src/`, and
+The app is published to **Cloudflare Pages** (Free plan) through Cloudflare's **Git
+integration**: Cloudflare builds and deploys this repository itself. There is no GitHub
+deployment workflow, no Wrangler upload step, and no Cloudflare credential in this
+repository. The production URL is <https://words-wizard.pages.dev> over HTTPS, and the
+production branch is `master`.
+
+Cloudflare Pages project settings:
+
+- **Production branch:** `master`
+- **Root directory:** `src` (the package manifest lives there)
+- **Build command:** `pnpm build` (its `prebuild` runs `validate:content`)
+- **Build output directory:** `dist`
+- **Environment:** Node 22 and pnpm 10
+- **Preview deployments:** off — a preview URL would publish the dev dataset and its
+  service worker before feature 17 lands.
+
+Merge into `master` and Cloudflare rebuilds the production site. Rollback is a Cloudflare
+Pages deployment rollback from the project's deployment history, or a redeploy of an older
+commit; the app holds no server-side state. Custom domains are attached to the Pages project
+with automatic TLS and are not part of this setup.
+
+Pull requests to `develop` still run `.github/workflows/ci.yml`: frozen pnpm install,
+`typecheck`, `test`, `validate:content`, `build`, and `check:dist`.
+
 `src/public/_headers` — copied into the build — carries the cache policy. Hash routing means
 no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real
 404. Cloudflare serves MIME types itself, so no per-extension upload step is needed. The
-service worker precaches the shell, content, locales, and all illustrations.
-
-The workflow reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from repository
-secrets; no credential is committed. Release flow: merge into `master`, which redeploys the
-production site. Rollback is a Cloudflare Pages deployment rollback, or re-running the
-workflow on an older commit. Custom domains are attached to the Pages project with automatic
-TLS and are not part of the deployment workflow.
+service worker precaches the shell, content, locales, and all illustrations. `check:dist`
+fails the build if the shell, worker, hashed assets, locales, icons, or `_headers` are
+missing. After a deploy, run `pnpm check:deploy` to fetch `/`, a hashed asset, and one
+`.webp` and assert their status, content type, and cache policy; it intentionally fails until
+feature 17 supplies artwork.
 
 ## Key decisions
 
