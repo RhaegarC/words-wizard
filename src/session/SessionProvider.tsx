@@ -15,6 +15,7 @@ import {
   getContentMeta,
 } from "../content"
 import { progressProvider } from "../db"
+import { DEVICE_KEYS } from "../db/device"
 import {
   buildSession,
   buildSessionResult,
@@ -100,7 +101,14 @@ export function SessionProvider({
 }) {
   const { t } = useLocale()
   const { navigate, leaveGuard } = useRouter()
-  const speechAvailable = useSpeechAvailable()
+  const liveSpeech = useSpeechAvailability()
+  const [recordedSpeech, setRecordedSpeech] = useState<boolean | null>(null)
+  // Until the live voice list has actually loaded, trust the boot record (it
+  // is the stored `device.speechAvailable`). A loaded list is authoritative,
+  // so a voice that arrives late can re-enable listening for a new session.
+  const speechAvailable = liveSpeech.loaded
+    ? liveSpeech.available
+    : (recordedSpeech ?? liveSpeech.available)
   const [progress, setProgress] = useState<readonly Progress[] | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
   const discarded = useRef(false)
@@ -181,6 +189,29 @@ export function SessionProvider({
       active = false
     }
   }, [profile.id])
+
+  // The session builder reads the boot-time voice record, not just the live
+  // list, so a device whose voices arrived late is still handled consistently.
+  useEffect(() => {
+    let active = true
+
+    progressProvider
+      .getDevice(DEVICE_KEYS.speechAvailable)
+      .then((value) => {
+        if (active) {
+          setRecordedSpeech(typeof value === "boolean" ? value : null)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setRecordedSpeech(null)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   // The plan arrives after the progress read, and again if voice support
   // changes before the child starts. An active session keeps its plan.
@@ -350,22 +381,34 @@ export function useSession(): SessionContextValue {
   return value
 }
 
+type LiveSpeech = {
+  available: boolean
+  /** False while the browser has not produced any voices yet (iOS Safari). */
+  loaded: boolean
+}
+
 /**
  * Voices may arrive after mount (iOS Safari), so the flag is refreshed on
  * `voiceschanged`. A loaded list with no English voice disables listening.
  */
-function useSpeechAvailable(): boolean {
-  const [available, setAvailable] = useState(() =>
-    resolveSpeechAvailability(speechSupported(), listVoices()),
-  )
+function useSpeechAvailability(): LiveSpeech {
+  const read = (): LiveSpeech => {
+    const voices = listVoices()
+
+    return {
+      available: resolveSpeechAvailability(speechSupported(), voices),
+      loaded: voices.length > 0,
+    }
+  }
+
+  const [speech, setSpeech] = useState<LiveSpeech>(read)
 
   useEffect(() => {
     if (!speechSupported()) {
       return
     }
 
-    const update = () =>
-      setAvailable(resolveSpeechAvailability(true, listVoices()))
+    const update = () => setSpeech(read())
 
     update()
     window.speechSynthesis.addEventListener("voiceschanged", update)
@@ -374,5 +417,5 @@ function useSpeechAvailable(): boolean {
       window.speechSynthesis.removeEventListener("voiceschanged", update)
   }, [])
 
-  return available
+  return speech
 }

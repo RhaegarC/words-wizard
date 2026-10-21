@@ -1,4 +1,6 @@
 import type { Profile } from "../domain/types"
+import { hasEnglishVoice } from "../speech"
+
 import { DEVICE_KEYS } from "./device"
 import type { ProgressProvider } from "./provider"
 
@@ -50,6 +52,9 @@ export async function checkProfileAtBoot(
   }
 
   await provider.setDevice(DEVICE_KEYS.lastBootAt, Date.now())
+  // Recorded locally so the session builder can exclude listen & choose on a
+  // device whose loaded voice list has no English voice.
+  await provider.setDevice(DEVICE_KEYS.speechAvailable, hasEnglishVoice())
 
   return result
 }

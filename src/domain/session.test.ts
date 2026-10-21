@@ -7,6 +7,7 @@ import {
   buildSessionResult,
   confirmRevealAnswer,
   createSessionState,
+  exerciseSeed,
   hasIntro,
   isLastExercise,
   localDateKey,
@@ -14,6 +15,7 @@ import {
   screenCount,
   sessionReducer,
   sessionSeed,
+  sessionSeedKey,
   type BuildSessionInput,
   type SessionSeed,
   type SessionState,
@@ -187,6 +189,20 @@ describe("sessionSeed", () => {
         kind: "daily",
         contentVersion: "dev",
       })
+  })
+})
+
+describe("exerciseSeed", () => {
+  it("pins one exercise to the session, word, and mode", () => {
+    const key = sessionSeedKey(SEED)
+
+    expect(key).toBe("1|2026-10-21|daily|dev")
+    expect(exerciseSeed(SEED, "w-bag", "pictureMatch")).toBe(
+      "1|2026-10-21|daily|dev|w-bag|pictureMatch",
+    )
+    expect(exerciseSeed(SEED, "w-bag", "spellingBuilder")).not.toBe(
+      exerciseSeed(SEED, "w-bag", "pictureMatch"),
+    )
   })
 })
 

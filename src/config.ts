@@ -16,6 +16,14 @@ export const config = {
   streak: { graceDays: 7, tokenCoversDays: 1 },
   careTokens: { sessionsPerToken: 5, cap: 3 },
   session: { reviewCap: 5, newWords: 4, newWordExercises: 2, maxWords: 9 },
+  exercise: {
+    /** Answer plus up to three distractors. */
+    options: 4,
+    /** A mode needs at least three options; below that it falls back. */
+    minOptions: 3,
+    /** Spelling offers one to three extra letter tiles. */
+    maxExtraLetters: 3,
+  },
   scheduler: {
     correctDelta: 0.2,
     wrongDelta: -0.3,
