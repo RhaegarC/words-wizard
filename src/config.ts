@@ -45,6 +45,10 @@ export const config = {
     highStrengthConfirmations: 3,
   },
   unlock: { pack2: 15, pack3: 30 },
+  myWords: {
+    /** "Recently learned" means a local-calendar day inside this window. */
+    recentlyLearnedDays: 7,
+  },
   speech: { rate: 0.85, pitch: 1.0 },
 } as const
 

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 import { AvatarStage } from "../components/AvatarStage"
 import { InstallPromptSlot } from "../components/InstallPromptSlot"
 import { SleepOverlay } from "../components/SleepOverlay"
+import { useProfileProgress } from "../components/useProfileProgress"
 import { config } from "../config"
 import { getHomeContent } from "../content"
-import { progressProvider } from "../db"
 import { buildHomeView } from "../domain/home"
-import type { CharacterCondition, Profile, Progress } from "../domain/types"
+import type { CharacterCondition, Profile } from "../domain/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import type { MessageKey } from "../i18n/messages"
 import { stageMessageKey } from "../i18n/stages"
@@ -35,41 +35,7 @@ export function HomeScreen({
 }) {
   const { locale, t } = useLocale()
   const { navigate, replace } = useRouter()
-  const [progress, setProgress] = useState<readonly Progress[] | null>(null)
-  const [loadFailed, setLoadFailed] = useState(false)
-
-  useEffect(() => {
-    let active = true
-
-    setProgress(null)
-    setLoadFailed(false)
-
-    if (profile.id === undefined) {
-      setProgress([])
-      return
-    }
-
-    void progressProvider
-      .getAllProgress(profile.id)
-      .then((rows) => {
-        if (active) {
-          setProgress(rows)
-        }
-      })
-      .catch((error: unknown) => {
-        console.error("[home] Could not read progress", error)
-
-        if (active) {
-          setLoadFailed(true)
-          // Character state and the session builder still work without it.
-          setProgress([])
-        }
-      })
-
-    return () => {
-      active = false
-    }
-  }, [profile.id])
+  const { progress, failed: loadFailed } = useProfileProgress(profile.id)
 
   const view =
     progress === null

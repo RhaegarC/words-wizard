@@ -15,6 +15,8 @@ export type WordsRoute = {
 export type WordDetailRoute = {
   id: "word-detail"
   wordId: string
+  /** The tab the child opened the word from; back returns there. */
+  tab?: WordsTab
 }
 
 export type Route = { id: "home" } | { id: "topics" } | { id: "session" } | {
@@ -84,7 +86,9 @@ export function buildHash(route: Route): string {
   }
 
   if (route.id === "word-detail") {
-    return `#/words/${encodeURIComponent(route.wordId)}`
+    const base = `#/words/${encodeURIComponent(route.wordId)}`
+
+    return route.tab === undefined ? base : `${base}?tab=${route.tab}`
   }
 
   return SIMPLE_HASHES[route.id]
@@ -149,7 +153,7 @@ export function parentOf(route: Route): Route | null {
     case "create":
       return null
     case "word-detail":
-      return { id: "words", tab: "collection" }
+      return { id: "words", tab: route.tab ?? "collection" }
     case "session-intro":
     case "session-exercise":
       return { id: "session" }
@@ -241,7 +245,26 @@ function parseWords(segments: string[], query: string): Route | null {
     return null
   }
 
-  return { id: "word-detail", wordId }
+  const tab = parseDetailTab(query)
+
+  if (tab === null) {
+    return null
+  }
+
+  return tab === undefined
+    ? { id: "word-detail", wordId }
+    : { id: "word-detail", wordId, tab }
+}
+
+/** A detail route has no tab unless the hash names one, unlike `#/words`. */
+function parseDetailTab(query: string): WordsTab | undefined | null {
+  const tab = new URLSearchParams(query).get("tab")
+
+  if (tab === null) {
+    return undefined
+  }
+
+  return tab === "collection" || tab === "wordbook" ? tab : null
 }
 
 function parseTab(query: string): WordsTab | null {

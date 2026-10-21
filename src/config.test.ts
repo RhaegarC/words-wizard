@@ -88,6 +88,10 @@ describe("config", () => {
     expect(config.unlock.pack3).toBeGreaterThan(config.unlock.pack2)
   })
 
+  it("marks a word recently learned inside a seven-local-day window", () => {
+    expect(config.myWords).toEqual({ recentlyLearnedDays: 7 })
+  })
+
   it("matches the PRD §12 speech settings", () => {
     expect(config.speech).toEqual({ rate: 0.85, pitch: 1 })
   })

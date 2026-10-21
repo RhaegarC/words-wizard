@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–11 done and archived; features 12–17 not started.**
+> Status: **In progress — features 01–11 done and archived; feature 12 in review; features 13–17 not started.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
@@ -48,7 +48,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 09 | [Progression: commit, XP, streak, tokens, summary](archive/09-progression.md) | Done | 05, 07, 08 |
 | 10 | [Character state & character screen](archive/10-character-state.md) | Done | 04, 05, 09 |
 | 11 | [Home hub](archive/11-home.md) | Done | 06, 07, 09, 10 |
-| 12 | [My Words: Collection & Word Book](12-my-words.md) | Not started | 04, 05, 08, 09 |
+| 12 | [My Words: Collection & Word Book](12-my-words.md) | In progress | 04, 05, 08, 09 |
 | 13 | [Monthly Review](13-monthly-review.md) | Not started | 07, 08, 09, 11 |
 | 14 | [Settings, export & diagnostics](14-settings.md) | Not started | 03, 05, 06, 09, 10 |
 | 15 | [PWA install, offline & updates](15-pwa-offline.md) | Not started | 02, 05, 14 |
