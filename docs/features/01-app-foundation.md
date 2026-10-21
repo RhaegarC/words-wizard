@@ -1,6 +1,6 @@
 # Feature 01 — App Foundation & Test Harness
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #2**
 > Depends on: — (foundation for every other feature)
 
 ## Summary
