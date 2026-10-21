@@ -1,6 +1,6 @@
 # Feature 04 — Content Layer & Validation
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #9**
 > Depends on: 01
 
 ## Summary
