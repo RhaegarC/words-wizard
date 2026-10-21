@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/LocaleProvider"
 import type { Route } from "../router/routes"
 
 /** The feature that replaces each placeholder, so a dead end is never silent. */
@@ -24,19 +25,33 @@ const FEATURE_FOR_ROUTE: Record<Route["id"], string> = {
  * screen and a link is never dead.
  */
 export function PlaceholderScreen({ route }: { route: Route }) {
+  const { t } = useLocale()
+
   return (
     <section className="placeholder-screen">
-      <p className="placeholder-badge">Placeholder</p>
+      <p className="placeholder-badge">{t("common.placeholder.badge")}</p>
       <p className="placeholder-copy">
-        This screen arrives with feature {FEATURE_FOR_ROUTE[route.id]}.
+        {t("common.placeholder.copy", {
+          feature: FEATURE_FOR_ROUTE[route.id],
+        })}
       </p>
 
       {route.id === "words" ? (
-        <p className="placeholder-detail">Tab: {route.tab}</p>
+        <p className="placeholder-detail">
+          {t("common.placeholder.tab", {
+            tab: t(
+              route.tab === "collection"
+                ? "common.tab.collection"
+                : "common.tab.wordbook",
+            ),
+          })}
+        </p>
       ) : null}
 
       {route.id === "word-detail" ? (
-        <p className="placeholder-detail">Word id: {route.wordId}</p>
+        <p className="placeholder-detail">
+          {t("common.placeholder.wordId", { wordId: route.wordId })}
+        </p>
       ) : null}
     </section>
   )

@@ -1,5 +1,6 @@
+import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
-import { buildHash, ROUTE_SAMPLES, titleFor } from "../router/routes"
+import { buildHash, ROUTE_SAMPLES, titleKeyFor } from "../router/routes"
 
 export type RouteTableProps = {
   hasProfile: boolean
@@ -12,6 +13,7 @@ export type RouteTableProps = {
  */
 export function RouteTable({ hasProfile, onToggleProfile }: RouteTableProps) {
   const { navigate } = useRouter()
+  const { locale, setLocale, t } = useLocale()
 
   return (
     <main className="route-table">
@@ -29,6 +31,15 @@ export function RouteTable({ hasProfile, onToggleProfile }: RouteTableProps) {
         Simulate a profile with a character
       </label>
 
+      <label className="route-table-toggle">
+        <input
+          type="checkbox"
+          checked={locale === "zh"}
+          onChange={(event) => setLocale(event.target.checked ? "zh" : "en")}
+        />
+        Chinese UI ({locale})
+      </label>
+
       <ul className="route-table-list">
         {ROUTE_SAMPLES.map((route) => {
           const hash = buildHash(route)
@@ -42,7 +53,7 @@ export function RouteTable({ hasProfile, onToggleProfile }: RouteTableProps) {
                   navigate(route)
                 }}
               >
-                <code>{hash}</code> — {titleFor(route)}
+                <code>{hash}</code> — {t(titleKeyFor(route))}
               </a>
             </li>
           )

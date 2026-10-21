@@ -3,6 +3,8 @@
  * parser is pure and needs no server rewrite. Adding a route here without adding
  * it to `Route` — or vice versa — is a compile error.
  */
+import type { MessageKey } from "../i18n/messages"
+
 export type WordsTab = "collection" | "wordbook"
 
 export type WordsRoute = {
@@ -60,21 +62,20 @@ const SIMPLE_HASHES: Record<Exclude<RouteId, "words" | "word-detail">, string> =
     install: "#/install",
   }
 
-const TITLES: Record<RouteId, string> = {
-  home: "Home",
-  topics: "Choose a topic",
-  session: "Today's session",
-  "session-intro": "New words",
-  "session-exercise": "Practice",
-  "session-summary": "Session complete",
-  words: "My Words",
-  "word-detail": "Word",
-  character: "Your buddy",
-  review: "Monthly Review",
-  "review-summary": "Review complete",
-  settings: "Settings",
-  create: "Create your buddy",
-  install: "Install Words Wizard",
+const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
+  home: "common.screen.home",
+  topics: "common.screen.topics",
+  session: "common.screen.session",
+  "session-intro": "common.screen.sessionIntro",
+  "session-exercise": "common.screen.sessionExercise",
+  "session-summary": "common.screen.sessionSummary",
+  "word-detail": "common.screen.wordDetail",
+  character: "common.screen.character",
+  review: "common.screen.review",
+  "review-summary": "common.screen.reviewSummary",
+  settings: "common.screen.settings",
+  create: "common.screen.create",
+  install: "common.screen.install",
 }
 
 export function buildHash(route: Route): string {
@@ -131,12 +132,14 @@ export function parseHash(hash: string): Route | null {
   }
 }
 
-export function titleFor(route: Route): string {
+export function titleKeyFor(route: Route): MessageKey {
   if (route.id === "words") {
-    return route.tab === "collection" ? "Collection" : "Word Book"
+    return route.tab === "collection"
+      ? "words.collectionTitle"
+      : "words.wordBookTitle"
   }
 
-  return TITLES[route.id]
+  return TITLE_KEYS[route.id]
 }
 
 /** The screen a back affordance returns to, or `null` when there is none. */

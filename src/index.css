@@ -1,7 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  font-family: "Nunito", "Avenir Next", "Segoe UI", sans-serif;
+  /* System CJK stack: no bundled webfont, and Chinese renders in a familiar
+     face on every platform. */
+  font-family:
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
   color: #302747;
   background: #fbfaf7;
   --ink: #302747;
