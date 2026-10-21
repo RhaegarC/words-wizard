@@ -67,7 +67,9 @@ export function selectReviewWords(
 
   const learned = [...latest.values()]
 
-  if (learned.length <= cap) {
+  // At exactly the cap the whole set is selected anyway, but the 17 + 3
+  // ordering still applies so mode assignment matches the documented rule.
+  if (learned.length < cap) {
     return [...learned].sort(byStrengthThenOldest).map((row) => row.wordId)
   }
 
