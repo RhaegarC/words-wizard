@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — feature 01 in review; features 02–17 not started.**
+> Status: **In progress — feature 01 done and archived; features 02–17 not started.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
@@ -37,7 +37,7 @@ parallel from feature 04 because it is authoring work, not code.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 01 | [App foundation & test harness](01-app-foundation.md) | In review | — |
+| 01 | [App foundation & test harness](archive/01-app-foundation.md) | Done | — |
 | 02 | [App shell & hash routing](02-app-shell-routing.md) | Not started | 01 |
 | 03 | [Bilingual UI (i18n)](03-i18n.md) | Not started | 01, 02 |
 | 04 | [Content layer & validation](04-content-layer.md) | Not started | 01 |
@@ -54,6 +54,8 @@ parallel from feature 04 because it is authoring work, not code.
 | 15 | [PWA install, offline & updates](15-pwa-offline.md) | Not started | 02, 05, 14 |
 | 16 | [Azure deployment & CI](16-azure-deployment.md) | Not started | 01, 04, 15 |
 | 17 | [Content production: 300 words & 315 illustrations](17-content-production.md) | Not started | 04 (authoring runs in parallel) |
+
+Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
 
 ## Vertical slice map
 

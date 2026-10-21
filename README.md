@@ -34,7 +34,7 @@ and its toolchain is independent of the production app.
 | Path | Purpose |
 |---|---|
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
-| [docs/features/](docs/features/) | Mission 1 sprint index, 17 ordered feature specs, and the backlog |
+| [docs/features/](docs/features/) | Mission 1 sprint index, the ordered feature specs, the backlog, and completed features under `archive/` |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
 | [src/](src/) | **Everything the app needs**: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `index.html`, React code, `src/public/` static assets, `src/scripts/` utilities, and the generated `src/dist/` build |
 | Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |
