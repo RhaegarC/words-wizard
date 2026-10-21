@@ -24,6 +24,8 @@ export type Route = { id: "home" } | { id: "topics" } | { id: "session" } | {
 } | { id: "session-exercise" } | {
   id: "session-summary"
 } | WordsRoute | WordDetailRoute | { id: "character" } | { id: "review" } | {
+  id: "review-exercise"
+} | {
   id: "review-summary"
 } | { id: "settings" } | { id: "create" } | { id: "install" }
 
@@ -42,6 +44,7 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "word-detail", wordId: "w-build" },
   { id: "character" },
   { id: "review" },
+  { id: "review-exercise" },
   { id: "review-summary" },
   { id: "settings" },
   { id: "create" },
@@ -58,6 +61,7 @@ const SIMPLE_HASHES: Record<Exclude<RouteId, "words" | "word-detail">, string> =
     "session-summary": "#/session/summary",
     character: "#/character",
     review: "#/review",
+    "review-exercise": "#/review/exercise",
     "review-summary": "#/review/summary",
     settings: "#/settings",
     create: "#/create",
@@ -74,6 +78,7 @@ const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   "word-detail": "common.screen.wordDetail",
   character: "common.screen.character",
   review: "common.screen.review",
+  "review-exercise": "common.screen.review",
   "review-summary": "common.screen.reviewSummary",
   settings: "common.screen.settings",
   create: "common.screen.create",
@@ -118,9 +123,19 @@ export function parseHash(hash: string): Route | null {
       if (onlyOneSegment(segments)) {
         return { id: "review" }
       }
-      return segments.length === 2 && segments[1] === "summary"
-        ? { id: "review-summary" }
-        : null
+
+      if (segments.length !== 2) {
+        return null
+      }
+
+      switch (segments[1]) {
+        case "exercise":
+          return { id: "review-exercise" }
+        case "summary":
+          return { id: "review-summary" }
+        default:
+          return null
+      }
     case "settings":
       return onlyOneSegment(segments) ? { id: "settings" } : null
     case "create":
@@ -157,6 +172,8 @@ export function parentOf(route: Route): Route | null {
     case "session-intro":
     case "session-exercise":
       return { id: "session" }
+    case "review-exercise":
+      return { id: "review" }
     case "topics":
     case "session":
     case "session-summary":

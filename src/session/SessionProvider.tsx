@@ -18,6 +18,7 @@ import { progressProvider } from "../db"
 import { DEVICE_KEYS } from "../db/device"
 import { checkProfileAfterSession } from "../db/lifecycle"
 import { METRIC_NAMES } from "../db/metrics"
+import { buildReview, isMonthlyReviewDue } from "../domain/monthlyReview"
 import {
   buildSessionCommit,
   type SessionSummary,
@@ -34,7 +35,12 @@ import {
   type SessionPreview,
   type SessionState,
 } from "../domain/session"
-import type { Profile, Progress, SessionResult } from "../domain/types"
+import type {
+  Profile,
+  Progress,
+  SessionKind,
+  SessionResult,
+} from "../domain/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import { buildHash, type Route } from "../router/routes"
 import { useRouter } from "../router/RouterContext"
@@ -49,21 +55,50 @@ import { commitSessionResult } from "./commit"
 
 /**
  * The forward moves the host itself makes while a session runs. Everything
- * else — including back to `#/session` — is an exit and asks for confirmation.
+ * else — including back to the landing — is an exit and asks for confirmation.
  */
-const FORWARD_HASHES: Partial<Record<SessionState["phase"], ReadonlySet<string>>> =
-  {
-    intro: new Set(["#/session/exercise"]),
-    exercise: new Set(["#/session/exercise", "#/session/summary"]),
-    feedback: new Set(["#/session/exercise", "#/session/summary"]),
-  }
+function forwardHashes(
+  kind: SessionKind,
+): Partial<Record<SessionState["phase"], ReadonlySet<string>>> {
+  const exercise = buildHash(
+    kind === "monthly" ? { id: "review-exercise" } : { id: "session-exercise" },
+  )
+  const summary = buildHash(
+    kind === "monthly" ? { id: "review-summary" } : { id: "session-summary" },
+  )
 
-const PHASE_ROUTE: Record<SessionState["phase"], Route> = {
-  idle: { id: "session" },
-  intro: { id: "session-intro" },
-  exercise: { id: "session-exercise" },
-  feedback: { id: "session-exercise" },
-  complete: { id: "session-summary" },
+  return {
+    intro: new Set([exercise]),
+    exercise: new Set([exercise, summary]),
+    feedback: new Set([exercise, summary]),
+  }
+}
+
+function phaseRoutes(kind: SessionKind): Record<SessionState["phase"], Route> {
+  return kind === "monthly"
+    ? {
+        idle: { id: "review" },
+        // A review has no intro card; the idle phase never visits this.
+        intro: { id: "review" },
+        exercise: { id: "review-exercise" },
+        feedback: { id: "review-exercise" },
+        complete: { id: "review-summary" },
+      }
+    : {
+        idle: { id: "session" },
+        intro: { id: "session-intro" },
+        exercise: { id: "session-exercise" },
+        feedback: { id: "session-exercise" },
+        complete: { id: "session-summary" },
+      }
+}
+
+function isReviewRoute(route: Route): boolean {
+  return (
+    route.id === "review" ||
+    route.id === "review-exercise" ||
+    route.id === "review-summary"
+  )
 }
 
 const EMPTY_PLAN: SessionPlan = { words: [], caughtUp: true }
@@ -83,6 +118,9 @@ type CommitState = {
 type SessionContextValue = {
   /** False until the progress read has finished; Start waits for it. */
   ready: boolean
+  kind: SessionKind
+  /** True only for a monthly host whose review is due right now. */
+  reviewDue: boolean
   plan: SessionPlan
   preview: SessionPreview
   state: SessionState
@@ -145,21 +183,40 @@ export function SessionProvider({
   const commitStarted = useRef<string | null>(null)
   // The seed fixes the day and content version; a re-render must not reroll it.
   const sessionNow = useRef(Date.now())
+  const kind: SessionKind = isReviewRoute(route) ? "monthly" : "daily"
+  const routes = useMemo(() => phaseRoutes(kind), [kind])
+  const reviewDue =
+    progress !== null &&
+    profile.id !== undefined &&
+    isMonthlyReviewDue(profile, progress, sessionNow.current)
 
   const seed = useMemo(
     () =>
       sessionSeed(
         profile.id ?? -1,
         sessionNow.current,
-        "daily",
+        kind,
         getContentMeta().contentVersion,
       ),
-    [profile.id],
+    [kind, profile.id],
   )
 
   const plan = useMemo(() => {
     if (progress === null || profile.id === undefined) {
       return EMPTY_PLAN
+    }
+
+    if (kind === "monthly") {
+      return isMonthlyReviewDue(profile, progress, sessionNow.current)
+        ? buildReview({
+            profile,
+            progress,
+            words: getAllWords(),
+            now: sessionNow.current,
+            seed,
+            speechAvailable,
+          })
+        : EMPTY_PLAN
     }
 
     return buildSession({
@@ -171,11 +228,19 @@ export function SessionProvider({
       seed,
       speechAvailable,
     })
-  }, [progress, profile, seed, speechAvailable])
+  }, [kind, progress, profile, seed, speechAvailable])
 
   const preview = useMemo(() => {
     if (progress === null || profile.id === undefined) {
       return EMPTY_PREVIEW
+    }
+
+    if (kind === "monthly") {
+      return {
+        reviewCount: plan.words.length,
+        newCount: 0,
+        caughtUp: plan.words.length === 0,
+      }
     }
 
     return previewSession({
@@ -187,7 +252,7 @@ export function SessionProvider({
       seed,
       speechAvailable,
     })
-  }, [progress, profile, seed, speechAvailable])
+  }, [kind, plan.words.length, progress, profile, seed, speechAvailable])
 
   const [state, setState] = useState<SessionState>(() =>
     createSessionState(EMPTY_PLAN, seed),
@@ -266,14 +331,24 @@ export function SessionProvider({
       return
     }
 
-    const expected = PHASE_ROUTE[state.phase]
+    const expected = routes[state.phase]
 
     if (route.id !== expected.id) {
       navigate(expected)
     }
-  }, [navigate, route, state.phase])
+  }, [navigate, route, routes, state.phase])
 
   useEffect(() => {
+    const forward = forwardHashes(kind)
+    const ownFamily =
+      kind === "monthly"
+        ? [buildHash({ id: "review" }), buildHash({ id: "review-exercise" })]
+        : [
+            buildHash({ id: "session" }),
+            buildHash({ id: "session-intro" }),
+            buildHash({ id: "session-exercise" }),
+          ]
+
     leaveGuard.setBeforeLeave((nextHash) => {
       if (state.phase === "idle") {
         return true
@@ -288,16 +363,12 @@ export function SessionProvider({
 
         // A completed session may leave for anywhere but back into its own
         // exercise screens; the summary is the only session view left.
-        return !(
-          nextHash === buildHash({ id: "session" }) ||
-          nextHash === buildHash({ id: "session-intro" }) ||
-          nextHash === buildHash({ id: "session-exercise" })
-        )
+        return !(nextHash !== undefined && ownFamily.includes(nextHash))
       }
 
       if (
         nextHash !== undefined &&
-        FORWARD_HASHES[state.phase]?.has(nextHash) === true
+        forward[state.phase]?.has(nextHash) === true
       ) {
         return true
       }
@@ -307,7 +378,7 @@ export function SessionProvider({
     })
 
     return () => leaveGuard.setBeforeLeave(null)
-  }, [commit.status, leaveGuard, state.phase])
+  }, [commit.status, kind, leaveGuard, state.phase])
 
   const start = useCallback(() => {
     discarded.current = false
@@ -317,8 +388,8 @@ export function SessionProvider({
   }, [])
 
   const resume = useCallback(() => {
-    navigate(PHASE_ROUTE[state.phase])
-  }, [navigate, state.phase])
+    navigate(routes[state.phase])
+  }, [navigate, routes, state.phase])
 
   const confirmExit = useCallback(() => {
     // Clear the veto before the navigation that follows, or the confirmation
@@ -413,6 +484,8 @@ export function SessionProvider({
   const value = useMemo(
     () => ({
       ready: progress !== null,
+      kind,
+      reviewDue,
       plan,
       preview,
       state,
@@ -431,6 +504,8 @@ export function SessionProvider({
     }),
     [
       progress,
+      kind,
+      reviewDue,
       plan,
       preview,
       state,

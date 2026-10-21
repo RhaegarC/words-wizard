@@ -52,6 +52,13 @@ export interface XpAward {
   total: number
 }
 
+/** PRD §7.4; the review summary never reports a word as forgotten. */
+export interface ReviewSummary {
+  reviewed: number
+  strong: number
+  needsVisit: number
+}
+
 export interface SessionSummary {
   wordsPracticed: number
   wordsMastered: number
@@ -63,6 +70,8 @@ export interface SessionSummary {
   bestStreak: number
   careTokens: number
   sessionsSinceLastToken: number
+  /** Present only for a monthly review. */
+  review: ReviewSummary | null
 }
 
 export interface SessionCommit {
@@ -273,6 +282,9 @@ export function buildSessionCommit(
 
   let learned = 0
   let mastered = 0
+  let reviewed = 0
+  let strong = 0
+  let strengthDeltaTotal = 0
   const progress: SessionProgressWrite[] = []
 
   for (const word of result.words) {
@@ -281,6 +293,7 @@ export function buildSessionCommit(
     }
 
     const existing = existingByWord.get(word.wordId)
+    const strengthBefore = existing?.strength ?? 0
 
     if (existing === undefined) {
       learned += 1
@@ -316,6 +329,15 @@ export function buildSessionCommit(
 
     if (newlyMastered) {
       mastered += 1
+    }
+
+    if (result.kind === "monthly") {
+      reviewed += 1
+      strengthDeltaTotal += row.strength - strengthBefore
+
+      if (row.strength >= config.scheduler.masteredStrength) {
+        strong += 1
+      }
     }
 
     progress.push(
@@ -375,6 +397,11 @@ export function buildSessionCommit(
 
   if (result.kind === "monthly") {
     profilePatch.lastMonthlyReviewAt = now
+    metrics[METRIC_NAMES.monthlyReviewCompleted] = 1
+
+    if (reviewed > 0) {
+      metrics[METRIC_NAMES.reviewStrengthDelta] = strengthDeltaTotal / reviewed
+    }
   }
 
   return {
@@ -397,6 +424,10 @@ export function buildSessionCommit(
       bestStreak: streak.bestStreak,
       careTokens: care.careTokens,
       sessionsSinceLastToken: care.sessionsSinceLastToken,
+      review:
+        result.kind === "monthly"
+          ? { reviewed, strong, needsVisit: reviewed - strong }
+          : null,
     },
   }
 }

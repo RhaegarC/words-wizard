@@ -140,13 +140,31 @@ export function availableModes(
  */
 export function buildSession(input: BuildSessionInput): SessionPlan {
   const entries = selectEntries(input)
-  const rng = createRng(hashString(sessionSeedKey(input.seed)))
-  const words = assignModes(entries, availableModes(input.speechAvailable), rng)
+  const words = assignSessionWords(
+    entries,
+    input.seed,
+    input.speechAvailable,
+  )
 
   return {
     words: words.slice(0, config.session.maxWords),
     caughtUp: words.length === 0,
   }
+}
+
+/**
+ * Assign modes to a prepared word queue. The monthly review uses this with a
+ * single review entry per word, so both session kinds share one deterministic
+ * algorithm.
+ */
+export function assignSessionWords(
+  entries: readonly { wordId: string; kind: SessionWordKind }[],
+  seed: SessionSeed,
+  speechAvailable: boolean,
+): SessionWord[] {
+  const rng = createRng(hashString(sessionSeedKey(seed)))
+
+  return assignModes(entries, availableModes(speechAvailable), rng)
 }
 
 /** Counts for Home and the session landing, without assigning modes. */

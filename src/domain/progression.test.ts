@@ -899,3 +899,132 @@ describe("buildSessionCommit", () => {
     expect(payload.metrics[METRIC_NAMES.wordLearned]).toBeUndefined()
   })
 })
+
+describe("monthly review commit", () => {
+  it("applies the same strength rules and recomputes nextReviewAt", () => {
+    const existing = makeProgress({
+      wordId: "w-bag",
+      strength: 0.4,
+      correctCount: 2,
+      lastSeenAt: NOW - 2 * DAY,
+    })
+    const result = makeResult(
+      [makeWord("w-bag", [makeAttempt({ wordId: "w-bag", xp: 2 })])],
+      2,
+      "monthly",
+    )
+    const { payload } = buildSessionCommit(
+      result,
+      makeProfile(),
+      [existing],
+      NOW,
+    )
+
+    expect(payload.progress[0]).toMatchObject({
+      wordId: "w-bag",
+      status: "learning",
+      strength: 0.6,
+      nextReviewAt: nextReviewAt(0.6, NOW),
+      lastSeenAt: NOW,
+      correctCount: 3,
+    })
+    expect(payload.profile.lastMonthlyReviewAt).toBe(NOW)
+  })
+
+  it("demotes a mastered word whose strength falls below 0.5", () => {
+    const existing = makeProgress({
+      wordId: "w-bag",
+      status: "mastered",
+      strength: 0.6,
+      correctCount: 5,
+      masteryXpAwarded: true,
+    })
+    const result = makeResult(
+      [
+        makeWord("w-bag", [
+          makeAttempt({ wordId: "w-bag", wrongTaps: 2, xp: 2 }),
+        ]),
+      ],
+      2,
+      "monthly",
+    )
+    const { payload } = buildSessionCommit(
+      result,
+      makeProfile(),
+      [existing],
+      NOW,
+    )
+
+    // 0.6 − 0.3 − 0.3 + 0.2 = 0.2.
+    expect(payload.progress[0]).toMatchObject({
+      status: "learning",
+      strength: 0.2,
+      masteryXpAwarded: true,
+    })
+    expect(payload.metrics[METRIC_NAMES.wordMastered]).toBeUndefined()
+  })
+
+  it("counts the review as a completed session and a streak day", () => {
+    const result = makeResult(
+      [makeWord("w-bag", [makeAttempt({ wordId: "w-bag", xp: 2 })])],
+      2,
+      "monthly",
+    )
+    const { payload } = buildSessionCommit(
+      result,
+      makeProfile({ completedSessions: 7, streakCount: 2 }),
+      [makeProgress({ wordId: "w-bag", strength: 0.4 })],
+      NOW,
+    )
+
+    expect(payload.profile).toMatchObject({
+      lastPracticeAt: NOW,
+      completedSessions: 8,
+      streakCount: 3,
+      lastStreakDate: TODAY,
+    })
+    expect(payload.xpEarned).toBe(7)
+    expect(payload.metrics).toMatchObject({
+      [METRIC_NAMES.sessionCompleted]: 1,
+      [METRIC_NAMES.monthlyReviewCompleted]: 1,
+      [METRIC_NAMES.xpEarned]: 7,
+    })
+    expect(payload.metrics[METRIC_NAMES.reviewStrengthDelta]).toBeCloseTo(
+      0.2,
+      5,
+    )
+  })
+
+  it("counts strong words and those wanting another visit", () => {
+    const result = makeResult(
+      [
+        makeWord("w-strong", [makeAttempt({ wordId: "w-strong", xp: 2 })]),
+        makeWord("w-weak", [makeAttempt({ wordId: "w-weak", xp: 2 })]),
+      ],
+      4,
+      "monthly",
+    )
+    const { summary } = buildSessionCommit(
+      result,
+      makeProfile(),
+      [
+        makeProgress({ wordId: "w-strong", status: "mastered", strength: 0.8 }),
+        makeProgress({ wordId: "w-weak", strength: 0.4 }),
+      ],
+      NOW,
+    )
+
+    expect(summary.review).toEqual({
+      reviewed: 2,
+      strong: 1,
+      needsVisit: 1,
+    })
+  })
+
+  it("leaves a daily session without a review summary", () => {
+    const result = makeResult([], 0)
+    const { summary } = buildSessionCommit(result, makeProfile(), [], NOW)
+
+    expect(summary.review).toBeNull()
+  })
+})

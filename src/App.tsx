@@ -17,6 +17,8 @@ import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
 import { HomeScreen } from "./screens/HomeScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
+import { ReviewLandingScreen } from "./screens/ReviewLandingScreen"
+import { ReviewSummaryScreen } from "./screens/ReviewSummaryScreen"
 import { SessionExerciseScreen } from "./screens/SessionExerciseScreen"
 import { SessionIntroScreen } from "./screens/SessionIntroScreen"
 import { SessionLandingScreen } from "./screens/SessionLandingScreen"
@@ -171,6 +173,12 @@ export default function App() {
       <SessionExerciseScreen />
     ) : route.id === "session-summary" ? (
       <SessionSummaryScreen />
+    ) : route.id === "review" ? (
+      <ReviewLandingScreen />
+    ) : route.id === "review-exercise" ? (
+      <SessionExerciseScreen />
+    ) : route.id === "review-summary" ? (
+      <ReviewSummaryScreen />
     ) : (
       <PlaceholderScreen route={route} />
     )
@@ -189,7 +197,10 @@ export default function App() {
     route.id === "session" ||
     route.id === "session-intro" ||
     route.id === "session-exercise" ||
-    route.id === "session-summary"
+    route.id === "session-summary" ||
+    route.id === "review" ||
+    route.id === "review-exercise" ||
+    route.id === "review-summary"
 
   // The provider sits outside the shell so its exit dialog covers the whole
   // frame, and stays mounted as the session moves between its own routes.
@@ -197,6 +208,14 @@ export default function App() {
     <RouterProvider value={router}>
       {inSession && profile ? (
         <SessionProvider
+          // A switch between the daily and monthly families starts clean.
+          key={
+            route.id === "review" ||
+            route.id === "review-exercise" ||
+            route.id === "review-summary"
+              ? "monthly"
+              : "daily"
+          }
           profile={profile}
           route={route}
           onProfileUpdated={(next) =>
