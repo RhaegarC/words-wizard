@@ -1,6 +1,6 @@
 # Feature 16 — Cloudflare Pages Deployment & CI
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #35**
 > Depends on: 01, 04, 15
 
 ## Summary
