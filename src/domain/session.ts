@@ -145,7 +145,7 @@ export function availableModes(
  */
 export function buildSession(input: BuildSessionInput): SessionPlan {
   const entries = selectEntries(input)
-  const rng = createRng(hashString(seedKey(input.seed)))
+  const rng = createRng(hashString(sessionSeedKey(input.seed)))
   const words = assignModes(entries, availableModes(input.speechAvailable), rng)
 
   return {
@@ -607,8 +607,18 @@ function advance(state: SessionState, now: number): SessionState {
   }
 }
 
-function seedKey(seed: SessionSeed): string {
+/** The session's stable string form; also the base of every exercise seed. */
+export function sessionSeedKey(seed: SessionSeed): string {
   return [seed.profileId, seed.localDate, seed.kind, seed.contentVersion].join(
     "|",
   )
+}
+
+/** One exercise's seed: the session, its word, and its mode. */
+export function exerciseSeed(
+  seed: SessionSeed,
+  wordId: string,
+  mode: PracticeMode,
+): string {
+  return `${sessionSeedKey(seed)}|${wordId}|${mode}`
 }
