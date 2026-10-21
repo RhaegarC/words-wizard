@@ -27,7 +27,7 @@ useful, and free of game-brand references.
 - [ ] Exactly 5 topics × 3 packs × 20 slots = **300 slots**, all resolving to authored words; at most
       300 distinct records (cross-topic sharing allowed and documented).
 - [ ] Every word is in the Cambridge Starters/Movers/Flyers 2025 list, or carries a documented
-      exception approved by the content lead in `content/EXCEPTIONS.md`.
+      exception approved by the content lead in `src/content/EXCEPTIONS.md`.
 - [ ] Level `1 | 2 | 3` matches the word's Cambridge band (Starters/Movers/Flyers), not its pack order.
 - [ ] Per topic: ~80% core useful words, ~20% thematic flavour words; at least one abstract/emotional
       word; each pack runs concrete → abstract and its final third includes an abstract word tagged
@@ -38,7 +38,7 @@ useful, and free of game-brand references.
       sentence, because fill-the-blank extracts it.
 - [ ] No forbidden terms (game names, logos, characters, or game-specific slang) anywhere.
 - [ ] A Chinese-speaking English teacher has reviewed every record for level, natural English,
-      natural Chinese, and age-appropriateness; sign-off is recorded in `content/REVIEW.md` by
+      natural Chinese, and age-appropriateness; sign-off is recorded in `src/content/REVIEW.md` by
       topic and pack with reviewer and date.
 
 ### Artwork
@@ -81,9 +81,9 @@ useful, and free of game-brand references.
 9. Produce the art style guide and prompt sheet (one subject per word, no text in image, consistent
    palette); generate one image per distinct word record (≈300) in batches.
 10. Human review of every word image at 96 px and 512 px; regenerate rejects; convert to WebP and add
-    to `content/art/`.
+    to `src/content/art/`.
 11. Produce and review the 15 avatar-stage images.
-12. Update `content/art/manifest.json` to `status: "approved"` for every record and confirm the
+12. Update `src/content/art/manifest.json` to `status: "approved"` for every record and confirm the
     validator's image-existence rule.
 13. Run `pnpm validate:content`, fix every error and warning; confirm no dangling references and no
     placeholders.
@@ -100,9 +100,9 @@ useful, and free of game-brand references.
 
 **Doc assertions:**
 
-- `content/REVIEW.md` has a row for every topic and pack, each with a reviewer and a date.
-- `content/EXCEPTIONS.md` lists every word outside the allowlist with its approval.
-- `content/art/manifest.json` has one entry per distinct word record (≈300) and 15 avatar entries,
+- `src/content/REVIEW.md` has a row for every topic and pack, each with a reviewer and a date.
+- `src/content/EXCEPTIONS.md` lists every word outside the allowlist with its approval.
+- `src/content/art/manifest.json` has one entry per distinct word record (≈300) and 15 avatar entries,
   all `approved`.
 
 **Verification (manual):**

@@ -4,8 +4,10 @@ A bilingual (English + 中文) offline-first PWA that helps Chinese-speaking chi
 aged 9–12 learn English vocabulary through short, game-like sessions with a virtual
 word buddy.
 
-**Status:** MVP requirements locked in [docs/PRD.md](docs/PRD.md) (v0.2). The UI in
-[figma/](figma/) is a working prototype; the production app will be promoted from it.
+**Status:** MVP requirements locked in [docs/PRD.md](docs/PRD.md) (v0.2). The production app is
+scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
+export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
+and its toolchain is independent of the production app.
 
 ---
 
@@ -23,7 +25,7 @@ word buddy.
 - **Monthly Review:** a 20-word retention check every 28 days.
 - **Offline PWA:** IndexedDB via Dexie, no backend, no accounts, no sync, no telemetry.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
-- **Azure Blob Storage static hosting** with hash routing.
+- **Azure Static Web Apps** hosting, with hash routing.
 - **315 illustrations:** ~300 word images plus 3 avatars × 5 stages, AI-generated and
   human-reviewed.
 
@@ -34,7 +36,9 @@ word buddy.
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1 sprint index, 17 ordered feature specs, and the backlog |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [figma/](figma/) | React 19 + Vite 8 + Tailwind 4 + Dexie 4 UI prototype |
+| [src/](src/) | **Everything the app needs**: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `index.html`, React code, `src/public/` static assets, `src/scripts/` utilities, and the generated `src/dist/` build |
+| Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |
+| [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
 ## Current content state
 
@@ -58,9 +62,38 @@ Content is authored AI-assisted and then reviewed in full by a Chinese-speaking 
 teacher. Automated validation will enforce schema completeness, ID integrity, both
 languages, image existence, and the Cambridge allowlist.
 
-## Run the prototype
+## Run the app
 
-The prototype is the Figma Make app in `figma/`. From that directory:
+The package manifest lives in `src/`, so run every command from there:
+
+```bash
+cd src
+pnpm install
+pnpm dev
+```
+
+The dev server serves on **http://localhost:8443**. Every app file — `package.json`,
+`tsconfig.json`, `vite.config.ts`, `index.html`, React code, and static assets — lives under
+`src/`. The repository root stays clean.
+
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Vite dev server on port 8443 |
+| `pnpm build` | Production build into `src/dist/` |
+| `pnpm preview` | Serve the built `src/dist/` on port 8443 |
+| `pnpm test` | Vitest, single run (`**/*.test.ts` under `src/`) |
+| `pnpm test:watch` | Vitest in watch mode |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm format` | Format with oxfmt |
+
+### Prototype reference (read-only)
+
+The Figma Make export in `figma/` is kept **exactly as exported**, so it can be re-synced
+or compared at any time. Do not move files out of it, edit it, or import from it. Its
+toolchain is independent of the root app.
+
+To view the prototype, run it from its own directory (it also uses port 8443, so stop the
+app dev server first):
 
 ```bash
 cd figma
@@ -68,30 +101,31 @@ pnpm install
 pnpm dev
 ```
 
-The dev server uses port `8443` by default. Inside Figma Make, the preview server is
-already provided; `pnpm dev` is only needed for local development.
-
-Note: `figma/vite.config.ts` currently contains Figma Make-specific plugins. They will
-be stripped when the app is promoted to the production build.
-
 ## Testing
 
-Planned for the production app:
+The root app uses **Vitest** for pure domain logic — XP and stage derivation, vitality and
+sleep, streak grace, Care Token ledger, SM-2 scheduling, session building, Monthly Review
+selection, Collection selectors, i18n key completeness, and content integrity. Tests live
+beside the code as `src/**/*.test.ts` and run offline.
 
-- **Vitest** for pure domain logic: XP and stage derivation, vitality and sleep, streak
-  grace, Care Token ledger, SM-2 scheduling, session builder, Monthly Review selection,
-  Collection selectors, i18n key completeness, and content integrity.
-- **Manual end-to-end checks** on iPad Safari and Edge for install, offline behavior,
-  IndexedDB persistence, and Web Speech.
-
-There is no component-test suite; the UI is a design-exported frontend and is verified
-manually.
+**Manual end-to-end checks** on iPad Safari and Edge remain the tier for install, offline
+behavior, IndexedDB persistence, service-worker updates, and Web Speech. There is no
+component-test suite; UI is verified in the browser.
 
 ## Deployment
 
-Planned: Azure Blob Storage static website (`$web` container), deployed by GitHub
-Actions. The build must set correct MIME types and cache headers, and the service worker
-precaches the shell, content, locales, and all illustrations.
+Planned: **Azure Static Web Apps** (Free plan), deployed by GitHub Actions from `master`.
+The prebuilt `src/dist/` is uploaded with `Azure/static-web-apps-deploy`, and
+`src/public/staticwebapp.config.json` — copied into the build — carries the navigation
+fallback and cache headers. Static Web Apps serves MIME types itself, so no per-extension
+upload step is needed. The service worker precaches the shell, content, locales, and all
+illustrations.
+
+The workflow reads a deployment token from the `AZURE_STATIC_WEB_APPS_API_TOKEN` repository
+secret; no credential is committed. Release flow: merge into `master`, which redeploys the
+production site; re-running the workflow on an older commit is the rollback. Custom domains
+are managed inside Static Web Apps (free managed certificate) and are not part of the
+deployment workflow.
 
 ## Key decisions
 

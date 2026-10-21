@@ -21,13 +21,13 @@ list of what is wrong with a pack before anyone plays it.
 
 ## Acceptance criteria
 
-- [ ] `content/topics.json`, `content/packs.json`, `content/words.json` exist at the root in the
+- [ ] `src/content/topics.json`, `src/content/packs.json`, `src/content/words.json` exist in the
       v0.2 schema (PRD §6.4, §6.5).
-- [ ] `content/avatars.json` declares 3 avatars (`luma`, `pippin`, `moss`) × 5 stages, each with an
-      image path.
-- [ ] `content/art/manifest.json` maps every word id to `{ "file": "art/<word>.webp",
+- [ ] `src/content/avatars.json` declares 3 avatars (`luma`, `pippin`, `moss`) × 5 stages, each with
+      an image path.
+- [ ] `src/content/art/manifest.json` maps every word id to `{ "file": "art/<word>.webp",
       "status": "approved" | "placeholder" }`.
-- [ ] `content/content-meta.json` declares `{ "schemaVersion": 1, "dataset": "dev" | "final",
+- [ ] `src/content/content-meta.json` declares `{ "schemaVersion": 1, "dataset": "dev" | "final",
       "contentVersion": "x.y.z" }`.
 - [ ] The data-access module exports `getTopics`, `getTopic`, `getPacksByTopic`, `getPack`,
       `getWord`, `getWordsByIds`, `getWordsByTopic`, `getAvatarSet`, `getArtwork`, and
@@ -52,7 +52,8 @@ list of what is wrong with a pack before anyone plays it.
 5. Every example has non-empty `en` and `zh`.
 6. The first English example contains the target word, case-insensitively and on a word boundary —
    feature 08's fill-the-blank depends on it.
-7. Every `image` path exists in `public/` (or `content/art/`), and the manifest has a matching entry.
+7. Every `image` path exists in `src/public/` (or `src/content/art/`), and the manifest has a
+   matching entry.
 8. No forbidden IP terms (game names, logos, characters, slang) in any word or topic field; the term
    list is data, not code.
 9. Pack `order` is `1..3` within a topic and unique.
@@ -71,7 +72,7 @@ list of what is wrong with a pack before anyone plays it.
    paired examples, and the first example containing the target word.
 4. Write the pure validator in `src/domain/content/validate.ts`; return structured issues, never
    throw on the first failure.
-5. Write the `scripts/validate-content.ts` runner (`tsx`) and the `validate:content` script; print
+5. Write the `src/scripts/validate-content.ts` runner (`tsx`) and the `validate:content` script; print
    a grouped report.
 6. Write the data-access module `src/content/index.ts`; freeze the returned arrays so a screen cannot
    mutate content.
