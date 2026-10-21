@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–05 done and archived; features 06–17 not started.**
+> Status: **In progress — features 01–08 done and archived; features 09–17 not started.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
@@ -44,7 +44,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 05 | [Persistence layer (Dexie)](archive/05-persistence.md) | Done | 01 |
 | 06 | [First run: character creation & topic picker](archive/06-first-run.md) | Done | 02, 03, 04, 05 |
 | 07 | [Session engine](archive/07-session-engine.md) | Done | 04, 05, 06 |
-| 08 | [Five practice modes](08-practice-modes.md) | Not started | 03, 04, 07 |
+| 08 | [Five practice modes](archive/08-practice-modes.md) | Done | 03, 04, 07 |
 | 09 | [Progression: commit, XP, streak, tokens, summary](09-progression.md) | Not started | 05, 07, 08 |
 | 10 | [Character state & character screen](10-character-state.md) | Not started | 04, 05, 09 |
 | 11 | [Home hub](11-home.md) | Not started | 06, 07, 09, 10 |
