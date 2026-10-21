@@ -1,6 +1,6 @@
 # Feature 06 — First Run: Character Creation & Topic Picker
 
-> Priority: Must · Mission 1 · **Status: Done — pending merge**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #13**
 > Depends on: 02, 03, 04, 05
 
 ## Summary

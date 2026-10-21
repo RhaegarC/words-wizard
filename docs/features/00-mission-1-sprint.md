@@ -42,7 +42,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 03 | [Bilingual UI (i18n)](archive/03-i18n.md) | Done | 01, 02 |
 | 04 | [Content layer & validation](archive/04-content-layer.md) | Done | 01 |
 | 05 | [Persistence layer (Dexie)](archive/05-persistence.md) | Done | 01 |
-| 06 | [First run: character creation & topic picker](06-first-run.md) | Not started | 02, 03, 04, 05 |
+| 06 | [First run: character creation & topic picker](archive/06-first-run.md) | Done | 02, 03, 04, 05 |
 | 07 | [Session engine](07-session-engine.md) | Not started | 04, 05, 06 |
 | 08 | [Five practice modes](08-practice-modes.md) | Not started | 03, 04, 07 |
 | 09 | [Progression: commit, XP, streak, tokens, summary](09-progression.md) | Not started | 05, 07, 08 |
