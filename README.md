@@ -25,7 +25,7 @@ and its toolchain is independent of the production app.
 - **Monthly Review:** a 20-word retention check every 28 days.
 - **Offline PWA:** IndexedDB via Dexie, no backend, no accounts, no sync, no telemetry.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
-- **Azure Static Web Apps** hosting, with hash routing.
+- **Cloudflare Pages** hosting, with hash routing.
 - **315 illustrations:** ~300 word images plus 3 avatars × 5 stages, AI-generated and
   human-reviewed.
 
@@ -133,18 +133,19 @@ component-test suite; UI is verified in the browser.
 
 ## Deployment
 
-Planned: **Azure Static Web Apps** (Free plan), deployed by GitHub Actions from `master`.
-The prebuilt `src/dist/` is uploaded with `Azure/static-web-apps-deploy`, and
-`src/public/staticwebapp.config.json` — copied into the build — carries the navigation
-fallback and cache headers. Static Web Apps serves MIME types itself, so no per-extension
-upload step is needed. The service worker precaches the shell, content, locales, and all
-illustrations.
+Planned: **Cloudflare Pages** (Free plan, Direct Upload), deployed by GitHub Actions from
+`master`. The prebuilt `src/dist/` is deployed by running
+`wrangler pages deploy dist --project-name words-wizard --branch master` from `src/`, and
+`src/public/_headers` — copied into the build — carries the cache policy. Hash routing means
+no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real
+404. Cloudflare serves MIME types itself, so no per-extension upload step is needed. The
+service worker precaches the shell, content, locales, and all illustrations.
 
-The workflow reads a deployment token from the `AZURE_STATIC_WEB_APPS_API_TOKEN` repository
-secret; no credential is committed. Release flow: merge into `master`, which redeploys the
-production site; re-running the workflow on an older commit is the rollback. Custom domains
-are managed inside Static Web Apps (free managed certificate) and are not part of the
-deployment workflow.
+The workflow reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from repository
+secrets; no credential is committed. Release flow: merge into `master`, which redeploys the
+production site. Rollback is a Cloudflare Pages deployment rollback, or re-running the
+workflow on an older commit. Custom domains are attached to the Pages project with automatic
+TLS and are not part of the deployment workflow.
 
 ## Key decisions
 

@@ -26,7 +26,7 @@ parallel from feature 04 because it is authoring work, not code.
 - [ ] Settings covers locale, re-customization, topic change, JSON export, and diagnostics.
 - [ ] The app installs, works fully offline after first load, and shows an update prompt instead of
       silently swapping the service worker.
-- [ ] `pnpm build` + CI deploy the app to Azure Static Web Apps; the deployed site passes the smoke check.
+- [ ] `pnpm build` + CI deploy the app to Cloudflare Pages; the deployed site passes the smoke check.
 - [ ] Final content: 300 slots across 5 topics × 3 packs × 20, bilingual, Cambridge-allowlisted,
       with one reviewed illustration per distinct word plus 15 avatar-stage images (≈315);
       `pnpm validate:content` passes.
@@ -52,7 +52,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 13 | [Monthly Review](13-monthly-review.md) | Not started | 07, 08, 09, 11 |
 | 14 | [Settings, export & diagnostics](14-settings.md) | Not started | 03, 05, 06, 09, 10 |
 | 15 | [PWA install, offline & updates](15-pwa-offline.md) | Not started | 02, 05, 14 |
-| 16 | [Azure deployment & CI](16-azure-deployment.md) | Not started | 01, 04, 15 |
+| 16 | [Cloudflare Pages deployment & CI](16-cloudflare-pages.md) | Not started | 01, 04, 15 |
 | 17 | [Content production: 300 words & 315 illustrations](17-content-production.md) | Not started | 04 (authoring runs in parallel) |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
@@ -75,7 +75,7 @@ Completed feature files move to [`archive/`](archive/); the table keeps the row 
                                              └─► 13 Monthly Review
                                                   14 Settings
                                                    └─► 15 PWA / offline
-                                                        └─► 16 Azure CI/CD
+                                                        └─► 16 Cloudflare CI/CD
 17 Content production ── parallel from 04 ── must land before release
 ```
 
@@ -98,7 +98,7 @@ Completed feature files move to [`archive/`](archive/); the table keeps the row 
 13. **13** — 28-day trigger, 20-word selector, review runner, review summary.
 14. **14** — Locale toggle, re-customize, change topic, JSON export, diagnostics.
 15. **15** — Manifest/icons, Workbox precache, update prompt, install detection and strong prompt.
-16. **16** — GitHub Actions build/test/validate/deploy to Azure Static Web Apps, cache headers, dist smoke check.
+16. **16** — GitHub Actions build/test/validate/deploy to Cloudflare Pages, cache headers, dist smoke check.
 17. **17** — Author and review 300 bilingual slots and 315 illustrations; flip the dataset to `final`.
 
 ## Sequencing caveats
