@@ -1,6 +1,6 @@
 # Feature 13 — Monthly Review
 
-> Priority: Must · Mission 1 · **Status: In review**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #29**
 > Depends on: 07, 08, 09, 11
 
 ## Summary
