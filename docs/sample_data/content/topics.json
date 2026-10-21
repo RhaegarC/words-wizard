@@ -1,0 +1,37 @@
+[
+  {
+    "id": "craft-and-build",
+    "title": "Craft & Build",
+    "icon": "hammer.png",
+    "description": "Make things, fix things, and build amazing stuff.",
+    "packIds": ["craft-1", "craft-2", "craft-3", "craft-4"]
+  },
+  {
+    "id": "explore-and-discover",
+    "title": "Explore & Discover",
+    "icon": "compass.png",
+    "description": "Find hidden places and learn about the world.",
+    "packIds": ["explore-1", "explore-2", "explore-3", "explore-4"]
+  },
+  {
+    "id": "puzzle-and-mystery",
+    "title": "Puzzle & Mystery",
+    "icon": "magnifying-glass.png",
+    "description": "Solve clues and figure out secrets.",
+    "packIds": ["puzzle-1", "puzzle-2", "puzzle-3", "puzzle-4"]
+  },
+  {
+    "id": "co-op-quest",
+    "title": "Co-op Quest",
+    "icon": "handshake.png",
+    "description": "Work together with friends to finish the mission.",
+    "packIds": ["coop-1", "coop-2", "coop-3", "coop-4"]
+  },
+  {
+    "id": "battle-and-survive",
+    "title": "Battle & Survive",
+    "icon": "shield.png",
+    "description": "Be brave, stay safe, and face the challenge.",
+    "packIds": ["battle-1", "battle-2", "battle-3", "battle-4"]
+  }
+]
