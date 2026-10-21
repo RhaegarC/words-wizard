@@ -30,9 +30,9 @@ the Figma Make export stays exactly as exported, so it can be re-synced or compa
 - [x] **`figma/` is untouched**: `git status --short figma` is empty after the feature lands, and no
       production file imports from `figma/`.
 - [x] `src/vite.config.ts` contains only React, Tailwind 4, and the `@` alias, with the Vite root set
-      to its own directory, `publicDir: "public"`, and `build.outDir: "../dist"` — no `.figma/`
+      to its own directory, `publicDir: "public"`, and `build.outDir: "dist"` — no `.figma/`
       imports, no Figma site-configuration, error-overlay, refresh-boundary, or Make-kit plugins.
-- [x] From `src/`, `pnpm dev` serves on port 8443; `pnpm build` emits the root `dist/`; `pnpm preview`
+- [x] From `src/`, `pnpm dev` serves on port 8443; `pnpm build` emits `src/dist/`; `pnpm preview`
       serves it.
 - [x] From `src/`, `pnpm test` runs Vitest; `pnpm test:watch` watches; `pnpm typecheck` runs
       `tsc --noEmit`.
@@ -59,7 +59,7 @@ the Figma Make export stays exactly as exported, so it can be re-synced or compa
 3. Add `src/tsconfig.json`: `strict`, `jsx: react-jsx`, `moduleResolution: bundler`, `noEmit`,
    `types: ["node"]`, `paths` for `@/*` → `./*`; include `**/*.ts` and `**/*.tsx`.
 4. Add `src/vite.config.ts`: Vite root is its own directory, `publicDir: "public"`,
-   `build.outDir: "../dist"`, React + Tailwind plugins, `@` alias, `server.port = 8443`,
+   `build.outDir: "dist"`, React + Tailwind plugins, `@` alias, `server.port = 8443`,
    `strictPort`, `base: "./"`, and the Vitest block (`environment: "node"`,
    `include: ["**/*.test.ts"]`).
 5. Add `src/index.html` with the product title, description, theme color, manifest link, and root
@@ -92,7 +92,7 @@ the Figma Make export stays exactly as exported, so it can be re-synced or compa
 **Verification (manual):**
 
 - From `src/`, `pnpm dev` on port 8443 shows the production boot screen.
-- From `src/`, `pnpm build && pnpm preview` serves the same build from the root `dist/`.
+- From `src/`, `pnpm build && pnpm preview` serves the same build from `src/dist/`.
 - `git status --short figma` is empty before and after the build.
 - A clean clone + `cd src` + `pnpm install` + `pnpm test` is green.
 

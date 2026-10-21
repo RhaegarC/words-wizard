@@ -36,8 +36,8 @@ and its toolchain is independent of the production app.
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1 sprint index, 17 ordered feature specs, and the backlog |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [src/](src/) | **Everything the app needs**: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `index.html`, React code, `src/public/` static assets, and `src/scripts/` utilities |
-| Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/`; generated `dist/` is the build output |
+| [src/](src/) | **Everything the app needs**: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `index.html`, React code, `src/public/` static assets, `src/scripts/` utilities, and the generated `src/dist/` build |
+| Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |
 | [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
 ## Current content state
@@ -79,8 +79,8 @@ The dev server serves on **http://localhost:8443**. Every app file — `package.
 | Command | What it does |
 |---|---|
 | `pnpm dev` | Vite dev server on port 8443 |
-| `pnpm build` | Production build into the repository-root `dist/` |
-| `pnpm preview` | Serve the built `dist/` on port 8443 |
+| `pnpm build` | Production build into `src/dist/` |
+| `pnpm preview` | Serve the built `src/dist/` on port 8443 |
 | `pnpm test` | Vitest, single run (`**/*.test.ts` under `src/`) |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm typecheck` | `tsc --noEmit` |

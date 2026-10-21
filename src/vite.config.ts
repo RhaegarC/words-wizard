@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   publicDir: "public",
   build: {
-    outDir: "../dist",
+    outDir: "dist",
     emptyOutDir: true,
   },
   resolve: {
