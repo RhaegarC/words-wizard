@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react"
 import { AvatarStage } from "../components/AvatarStage"
 import { InstallPromptSlot } from "../components/InstallPromptSlot"
 import { SleepOverlay } from "../components/SleepOverlay"
+import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { config } from "../config"
 import { getHomeContent } from "../content"
@@ -200,6 +201,8 @@ export function HomeScreen({
         </p>
       ) : null}
 
+      <UpdateStatusSlot />
+
       <section
         className="home-session-card"
         aria-labelledby="home-session-title"
@@ -255,6 +258,8 @@ export function HomeScreen({
         )}
       </section>
 
+      <InstallPromptSlot />
+
       <nav className="home-cards" aria-label={t("home.shortcuts")}>
         {view.monthlyReviewDue ? (
           <button
@@ -304,7 +309,6 @@ export function HomeScreen({
         </button>
       </nav>
 
-      <InstallPromptSlot />
     </section>
   )
 }

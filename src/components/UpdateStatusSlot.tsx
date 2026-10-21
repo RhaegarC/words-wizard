@@ -1,8 +1,9 @@
+import { UpdateStatus } from "./UpdateStatus"
+
 /**
- * Feature 15 mounts the service-worker update notice here. Settings owns the
- * slot from feature 14 onward so adding the notice later does not reshape the
- * screen.
+ * Feature 15 fills the slot feature 14 reserved. Home and Settings each mount
+ * it; the worker itself is registered once by `UpdateProvider`.
  */
 export function UpdateStatusSlot() {
-  return null
+  return <UpdateStatus />
 }
