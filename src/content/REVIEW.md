@@ -4,11 +4,11 @@ Feature 17 requires a Chinese-speaking English teacher to read every record for
 level, natural English, natural Chinese, and age-appropriateness before the
 dataset can be marked `final`. This file records that sign-off.
 
-**The Craft & Build pilot is authored but not yet reviewed.** No row below is
-signed. Do not change `content-meta.json` to `dataset: "final"` until every
-authored pack has a reviewer and a date.
+**Craft & Build is reviewed and signed off. Explore & Discover is authored but
+not yet reviewed.** Do not change `content-meta.json` to `dataset: "final"`
+until every authored pack has a reviewer and a date.
 
-## Pilot scope
+## Craft & Build scope
 
 - **Topic:** Craft & Build (`craft-and-build`)
 - **Packs:** `craft-1` My Workshop, `craft-2` Materials & Making, `craft-3`
@@ -25,14 +25,27 @@ authored pack has a reviewer and a date.
   illustrations and the 15 avatar stages still need to be produced and
   approved.
 
+## Explore & Discover scope
+
+- **Topic:** Explore & Discover (`explore-and-discover`)
+- **Packs:** `explore-1` Wild Places, `explore-2` Finding the Way, `explore-3`
+  Curious Minds
+- **Words:** 60 distinct records, 48 tagged `core` and 12 tagged `thematic`
+  (80/20). Every headword is a single word from `cambridge-allowlist.json` at
+  its Cambridge band; no exceptions are needed.
+- **Shape:** each pack runs concrete → abstract, and its final third contains a
+  word tagged `abstract`.
+- **Artwork:** every record has a manifest entry marked `placeholder`. The 60
+  illustrations still need to be produced and approved.
+
 ## Review record
 
 | Topic | Pack | Reviewer | Date | Status |
 | --- | --- | --- | --- | --- |
-| Craft & Build | `craft-1` My Workshop | — | — | Authored — review pending |
-| Craft & Build | `craft-2` Materials & Making | — | — | Authored — review pending |
-| Craft & Build | `craft-3` Making & Feeling | — | — | Authored — review pending |
-| Explore & Discover | all packs | — | — | Not authored |
+| Craft & Build | `craft-1` My Workshop | Rhaegar Cheng | 2026-10-22 | Reviewed |
+| Craft & Build | `craft-2` Materials & Making | Rhaegar Cheng | 2026-10-22 | Reviewed |
+| Craft & Build | `craft-3` Making & Feeling | Rhaegar Cheng | 2026-10-22 | Reviewed |
+| Explore & Discover | all packs | — | — | Authored — review pending |
 | Puzzle & Mystery | all packs | — | — | Not authored |
 | Co-op Quest | all packs | — | — | Not authored |
 | Battle & Survive | all packs | — | — | Not authored |

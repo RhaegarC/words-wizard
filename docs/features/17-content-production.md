@@ -1,6 +1,6 @@
 # Feature 17 — Content Production: 300 Words & 315 Illustrations
 
-> Priority: Must (release blocker) · Mission 1 · **Status: In progress — Craft & Build pilot authored; teacher review pending**
+> Priority: Must (release blocker) · Mission 1 · **Status: In progress — Craft & Build reviewed and signed off; Explore & Discover authored, teacher review pending**
 > Depends on: 04 (schema and validator). Authoring can run in parallel from feature 04; it must land
 > before any public release.
 

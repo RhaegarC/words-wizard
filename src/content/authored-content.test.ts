@@ -31,12 +31,21 @@ const packs = loadJson<Pack[]>("./packs.json")
 const words = loadJson<Word[]>("./words.json")
 const artwork = loadJson<Record<string, ArtworkEntry>>("./art/manifest.json")
 
-const CRAFT_TOPIC = "craft-and-build"
-const craftPacks = packs.filter((pack) => pack.topicId === CRAFT_TOPIC)
-const craftWords = words.filter((word) =>
-  word.topicIds.includes(CRAFT_TOPIC),
-)
+/**
+ * Topics whose 60 slots are authored. The remaining three topics still carry
+ * placeholder slots in `dev`, so only these are asserted to resolve.
+ */
+const AUTHORED_TOPICS = ["craft-and-build", "explore-and-discover"] as const
+
 const wordsById = new Map(words.map((word) => [word.id, word]))
+
+function packsOf(topicId: string): Pack[] {
+  return packs.filter((pack) => pack.topicId === topicId)
+}
+
+function wordsOf(topicId: string): Word[] {
+  return words.filter((word) => word.topicIds.includes(topicId))
+}
 
 /**
  * Feature 17's authoring contract that `validate:content` cannot check: the
@@ -44,21 +53,21 @@ const wordsById = new Map(words.map((word) => [word.id, word]))
  * else stops a word from being authored at the wrong band or invented
  * altogether. These assertions also protect the concrete→abstract shape of
  * each pack and the 80/20 core/thematic mix.
- *
- * The pilot authors one topic. The remaining topics still carry placeholder
- * slots in `dev`, so only the craft packs are asserted to resolve.
  */
-describe("feature 17 — Craft & Build pilot", () => {
-  it("authors three packs of twenty distinct, resolved words", () => {
-    expect(craftPacks).toHaveLength(3)
+describe.each(AUTHORED_TOPICS)("feature 17 — %s", (topicId) => {
+  const topicPacks = packsOf(topicId)
+  const topicWords = wordsOf(topicId)
 
-    const ids = craftPacks.flatMap((pack) => pack.wordIds)
+  it("authors three packs of twenty distinct, resolved words", () => {
+    expect(topicPacks).toHaveLength(3)
+
+    const ids = topicPacks.flatMap((pack) => pack.wordIds)
 
     expect(ids).toHaveLength(60)
     expect(new Set(ids).size).toBe(60)
-    expect(craftWords).toHaveLength(60)
+    expect(topicWords).toHaveLength(60)
 
-    for (const pack of craftPacks) {
+    for (const pack of topicPacks) {
       expect(pack.wordIds, pack.id).toHaveLength(20)
       expect(new Set(pack.wordIds).size, pack.id).toBe(20)
 
@@ -68,8 +77,8 @@ describe("feature 17 — Craft & Build pilot", () => {
     }
   })
 
-  it("draws every craft word from the Cambridge allowlist at its band", () => {
-    for (const word of craftWords) {
+  it("draws every word from the Cambridge allowlist at its band", () => {
+    for (const word of topicWords) {
       const entries = allowlist.words.filter(
         (entry) =>
           entry.level === word.level &&
@@ -90,7 +99,7 @@ describe("feature 17 — Craft & Build pilot", () => {
   })
 
   it("keeps the 80/20 core-to-thematic mix", () => {
-    for (const word of craftWords) {
+    for (const word of topicWords) {
       const isCore = word.tags.includes("core")
       const isThematic = word.tags.includes("thematic")
 
@@ -99,7 +108,7 @@ describe("feature 17 — Craft & Build pilot", () => {
       )
     }
 
-    const thematic = craftWords.filter((word) =>
+    const thematic = topicWords.filter((word) =>
       word.tags.includes("thematic"),
     ).length
 
@@ -108,7 +117,7 @@ describe("feature 17 — Craft & Build pilot", () => {
   })
 
   it("ends every pack on an abstract word", () => {
-    for (const pack of craftPacks) {
+    for (const pack of topicPacks) {
       const finalThird = pack.wordIds
         .slice(Math.floor((pack.wordIds.length * 2) / 3))
         .map((wordId) => wordsById.get(wordId))
@@ -119,13 +128,20 @@ describe("feature 17 — Craft & Build pilot", () => {
       ).toBe(true)
     }
   })
+})
 
+describe("feature 17 — authored dataset", () => {
   it("leaves no orphan word record and no stale artwork entry", () => {
     const referenced = new Set(packs.flatMap((pack) => pack.wordIds))
 
     for (const word of words) {
       expect(referenced.has(word.id), `${word.id} is not in any pack`).toBe(true)
-      expect(word.topicIds, word.id).toContain(CRAFT_TOPIC)
+      expect(
+        word.topicIds.some((topicId) =>
+          (AUTHORED_TOPICS as readonly string[]).includes(topicId),
+        ),
+        word.id,
+      ).toBe(true)
 
       const entry = artwork[word.id]
 
