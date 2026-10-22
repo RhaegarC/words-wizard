@@ -929,9 +929,13 @@ body {
 }
 
 .home-buddy-cta {
+  max-width: 6.5rem;
+  overflow-wrap: anywhere;
   color: var(--dark-purple);
   font-size: 0.75rem;
   font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .home-buddy-info {

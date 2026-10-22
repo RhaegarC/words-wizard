@@ -17,6 +17,8 @@ Four small product enhancements gathered into one feature:
    the UI is Chinese. Practice and introduction cards remain bilingual.
 4. **The install instructions use a smaller corner radius** on the card and its
    buttons, so the block reads as guidance rather than a pill-like banner.
+5. **Home names the buddy instead of saying "My buddy."** The caption under the
+   portrait shows the child's chosen character name.
 
 ## User story
 
@@ -39,6 +41,8 @@ like instructions, not a floating badge.
       a failed save stays on Settings with the error.
 - [x] Word Detail uses `meaningEn` and `definitionEn` in both UI languages.
 - [x] The install prompt and its action buttons use a `0.5rem` border radius.
+- [x] Home's portrait caption shows `profile.characterName`; the `home.buddy`
+      locale key is gone.
 - [x] `pnpm test`, `pnpm typecheck`, `pnpm validate:content`, and `pnpm build`
       pass.
 - [x] Manual browser run confirms the six portraits, the post-save Home route,
@@ -67,7 +71,8 @@ accepts exactly the new ids.
 six portraits (all 300 px wide) named Alex, Cody, Creeper, Malenia, May, Steve;
 the install card and its "Continue in browser" button both computed an 8 px
 radius; saving after switching to 中文
-landed on `#/home`; Home rendered Alex's portrait; and `#/words/w-bag` showed
+landed on `#/home`; Home rendered Alex's portrait with "Mia" as its caption;
+and `#/words/w-bag` showed
 "a container for carrying things" / "You put things inside a bag." with the
 Chinese strings absent.
 
