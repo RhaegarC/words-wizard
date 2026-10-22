@@ -1,6 +1,6 @@
 # Feature 19 — Buddy Portraits, Settings Return & Detail Polish
 
-> Priority: Should · Mission 1 · **Status: In progress — implemented, PR review pending**
+> Priority: Should · Mission 1 · **Status: Done — merged in PR #44**
 > Depends on: 03, 06, 12, 14, 15
 
 ## Summary
