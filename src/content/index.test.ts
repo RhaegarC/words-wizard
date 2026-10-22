@@ -74,13 +74,16 @@ describe("content data access", () => {
     expect(Object.isFrozen(getAllPacks())).toBe(true)
   })
 
-  it("exposes the three avatars with five stages each", () => {
+  it("exposes the six buddy portraits with five stages each", () => {
     const avatars = getAvatarSet()
 
     expect(avatars.map((avatar) => avatar.id)).toEqual([
-      "luma",
-      "pippin",
-      "moss",
+      "alex",
+      "cody",
+      "creeper",
+      "malenia",
+      "may",
+      "steve",
     ])
 
     for (const avatar of avatars) {

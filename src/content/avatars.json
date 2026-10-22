@@ -1,44 +1,86 @@
 [
   {
-    "id": "luma",
-    "name": "Luma",
-    "nameZh": "露玛",
-    "color": "#7562df",
-    "pale": "#ded9ff",
+    "id": "alex",
+    "name": "Alex",
+    "nameZh": "Alex",
+    "color": "#3b6fd4",
+    "pale": "#d9e4ff",
     "stages": {
-      "egg": "art/avatars/luma-egg.webp",
-      "hatchling": "art/avatars/luma-hatchling.webp",
-      "juvenile": "art/avatars/luma-juvenile.webp",
-      "adult": "art/avatars/luma-adult.webp",
-      "legendary": "art/avatars/luma-legendary.webp"
+      "egg": "art/avatars/alex.jpeg",
+      "hatchling": "art/avatars/alex.jpeg",
+      "juvenile": "art/avatars/alex.jpeg",
+      "adult": "art/avatars/alex.jpeg",
+      "legendary": "art/avatars/alex.jpeg"
     }
   },
   {
-    "id": "pippin",
-    "name": "Pippin",
-    "nameZh": "皮平",
-    "color": "#e9825d",
-    "pale": "#ffe0d2",
+    "id": "cody",
+    "name": "Cody",
+    "nameZh": "Cody",
+    "color": "#d9732f",
+    "pale": "#ffe3cf",
     "stages": {
-      "egg": "art/avatars/pippin-egg.webp",
-      "hatchling": "art/avatars/pippin-hatchling.webp",
-      "juvenile": "art/avatars/pippin-juvenile.webp",
-      "adult": "art/avatars/pippin-adult.webp",
-      "legendary": "art/avatars/pippin-legendary.webp"
+      "egg": "art/avatars/cody.png",
+      "hatchling": "art/avatars/cody.png",
+      "juvenile": "art/avatars/cody.png",
+      "adult": "art/avatars/cody.png",
+      "legendary": "art/avatars/cody.png"
     }
   },
   {
-    "id": "moss",
-    "name": "Moss",
-    "nameZh": "苔苔",
-    "color": "#55a57a",
-    "pale": "#cfeedd",
+    "id": "creeper",
+    "name": "Creeper",
+    "nameZh": "Creeper",
+    "color": "#3f9b4a",
+    "pale": "#d4f0d6",
     "stages": {
-      "egg": "art/avatars/moss-egg.webp",
-      "hatchling": "art/avatars/moss-hatchling.webp",
-      "juvenile": "art/avatars/moss-juvenile.webp",
-      "adult": "art/avatars/moss-adult.webp",
-      "legendary": "art/avatars/moss-legendary.webp"
+      "egg": "art/avatars/creeper.jpg",
+      "hatchling": "art/avatars/creeper.jpg",
+      "juvenile": "art/avatars/creeper.jpg",
+      "adult": "art/avatars/creeper.jpg",
+      "legendary": "art/avatars/creeper.jpg"
+    }
+  },
+  {
+    "id": "malenia",
+    "name": "Malenia",
+    "nameZh": "Malenia",
+    "color": "#a84b4b",
+    "pale": "#f5d9d7",
+    "stages": {
+      "egg": "art/avatars/malenia.png",
+      "hatchling": "art/avatars/malenia.png",
+      "juvenile": "art/avatars/malenia.png",
+      "adult": "art/avatars/malenia.png",
+      "legendary": "art/avatars/malenia.png"
+    }
+  },
+  {
+    "id": "may",
+    "name": "May",
+    "nameZh": "May",
+    "color": "#c65b8a",
+    "pale": "#ffe0ec",
+    "stages": {
+      "egg": "art/avatars/may.png",
+      "hatchling": "art/avatars/may.png",
+      "juvenile": "art/avatars/may.png",
+      "adult": "art/avatars/may.png",
+      "legendary": "art/avatars/may.png"
+    }
+  },
+  {
+    "id": "steve",
+    "name": "Steve",
+    "nameZh": "Steve",
+    "color": "#5b6f9b",
+    "pale": "#dde5f3",
+    "stages": {
+      "egg": "art/avatars/steve.jpeg",
+      "hatchling": "art/avatars/steve.jpeg",
+      "juvenile": "art/avatars/steve.jpeg",
+      "adult": "art/avatars/steve.jpeg",
+      "legendary": "art/avatars/steve.jpeg"
     }
   }
 ]

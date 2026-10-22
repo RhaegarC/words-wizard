@@ -1,6 +1,6 @@
 # Feature 18 — Spelling-First Five-Mode Practice & 10-Word Sessions
 
-> Priority: Must · Mission 1 · **Status: In progress — implemented, PR review pending**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #42**
 > Depends on: 07 (session builder), 08 (practice modes)
 
 ## Summary

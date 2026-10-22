@@ -180,7 +180,8 @@ Creation** before practice.
 
 - **Name:** free text with suggestions, maximum 16 characters. This names the buddy;
   `profile.name` defaults to the same value.
-- **Avatar:** choose one of three built-in illustrated avatars.
+- **Avatar:** choose one of six bundled buddy portraits; the file name is the
+  character's name (Alex, Cody, Creeper, Malenia, May, Steve).
 - Confirm sets `createdAt = lastPracticeAt = now` and starts the dormancy clock.
 - Re-customization in Settings does not reset the clock.
 
@@ -322,8 +323,8 @@ schema-compatible addition.
   - A Care Token can cover one missed day (§7.5).
 - **Pack unlocks:** per-topic mastery counts, as in §6.1.
 - **Badges:** deferred to Phase 2.
-- **Character customization:** avatar re-selection in Settings. Stage art is the
-  growth layer.
+- **Character customization:** avatar re-selection in Settings. The stage name and
+  progress bar are the growth layer; the buddy portrait does not change per stage.
 
 ### 7.2 Virtual Character
 
@@ -384,6 +385,7 @@ No stored `characterStage` or `vitality`.
   Legendary (2000)`.
 - No separate level system. Between stages, the child sees a filling progress bar.
 - The chosen avatar is the character's identity; stage is a growth layer on top of it.
+  Each stage currently shows the same bundled portrait because no stage art exists.
 
 **XP sources (quality over frequency):**
 
@@ -423,8 +425,8 @@ Wrong answers cost nothing. Re-mastering a demoted word does not award the +10 a
   - Filters: topic, status, recently learned
   - Per-word strength as a simple bar (not a number)
 - **Word Book tab:** mastered-only, illustrated, browseable, emotional.
-- **Word Detail:** word, IPA, tap-to-hear, image, definitions in the current language,
-  example EN + ZH, strength bar, status badge.
+- **Word Detail:** word, IPA, tap-to-hear, image, meaning and definition **always in
+  English** (even when the UI is Chinese), example EN + ZH, strength bar, status badge.
 - **Learned rule:** a word leaves `new` on its **first exercise attempt in a session
   that completes** — right, wrong, or revealed. Merely seeing the introduction card
   does not earn it, and an abandoned session commits nothing.
@@ -649,7 +651,7 @@ durability.**
 ### 8.7 Offline Updates & Service Worker
 
 - Precache the app shell, bundled JSON, locales, and **all illustrations**
-  (~300 word images + 15 character images).
+  (~300 word images + 6 buddy portraits).
 - Image target: **WebP, ~512 px, ~20–40 KB each**, roughly 10–15 MB total. Measure first
   load on an iPad.
 - Content and app updates ship as version bumps. A new service worker **does not**
@@ -668,6 +670,8 @@ durability.**
 - Word content uses `definitionEn` / `definitionZh` and paired examples. In `zh`, show
   the Chinese definition and both the English example and its Chinese translation. In
   `en`, show the English definition and the English example.
+- **Exception — Word Detail:** the meaning and definition are always English in both UI
+  languages, so the detail view remains the English reference (feature 19).
 - Audio: English words use an English voice; Chinese UI read-aloud uses a Chinese voice.
 - Chinese font: system CJK fallback stack; do not bundle a font in v1.
 
@@ -833,13 +837,14 @@ export const config = {
 | 6 | ESL support | Bilingual EN + 中文, full UI and content; toggle; zh default on zh-CN. |
 | 7 | iPad onboarding | Strong, repeated install prompt; never a hard gate. |
 | 8 | Never-practiced dormancy | In-app only; no notifications. |
-| 9 | Avatar set and stage art | 3 avatars × 5 stages; AI-generated, human-reviewed. |
+| 9 | Avatar set and stage art | 6 buddy portraits (filename = character name); each stage maps to the portrait. Replaced the 3 × 5 stage set in feature 19. |
 | 10 | XP tuning | First-try 2, hint 1, mastery 10, session 5; 50/300/900/2000. |
 | 11 | Monthly Review cadence | Rolling 28 days; ≥5 learned; cap 20. |
 | 12 | Mastery demotion | Strength < 0.5. |
 | 13 | Repository visibility | Child-facing; facilitator sees export and diagnostics only. |
 | 14 | Multi-profile | Single-profile UI; `profileId` retained in schema. |
 | 15 | Streak reset | 7-day grace; token covers one missed day; best streak kept. |
+| 16 | Word Detail language | Meaning and definition always English; surrounding labels follow the UI language. Feature 19. |
 
 **Additional v0.2 decisions:**
 

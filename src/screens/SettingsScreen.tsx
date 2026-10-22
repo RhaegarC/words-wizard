@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react"
 
+import { AvatarPortrait } from "../components/AvatarPortrait"
 import { SettingsDiagnostics } from "../components/SettingsDiagnostics"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { getAvatarSet, getContentMeta, getTopic } from "../content"
@@ -123,7 +124,10 @@ export function SettingsScreen({
 
     void progressProvider
       .updateProfile(profile.id, result.patch)
-      .then(() => onProfileUpdated({ ...profile, ...result.patch }))
+      .then(() => {
+        onProfileUpdated({ ...profile, ...result.patch })
+        navigate({ id: "home" })
+      })
       .catch((reason: unknown) => {
         console.error("[settings] Could not save the buddy", reason)
         setSaveError("save")
@@ -264,13 +268,7 @@ export function SettingsScreen({
                     checked={selected}
                     onChange={() => setAvatarId(avatar.id)}
                   />
-                  <span
-                    className="avatar-tile"
-                    style={{ background: avatar.pale, color: avatar.color }}
-                    aria-hidden="true"
-                  >
-                    {avatar.name.charAt(0)}
-                  </span>
+                  <AvatarPortrait avatar={avatar} />
                   <span className="avatar-name">
                     {locale === "zh" ? avatar.nameZh : avatar.name}
                   </span>

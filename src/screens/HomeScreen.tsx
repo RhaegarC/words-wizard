@@ -112,7 +112,7 @@ export function HomeScreen({
         <button
           type="button"
           className="home-buddy-button"
-          aria-label={`${t("home.buddy")}: ${profile.characterName} — ${stageName}`}
+          aria-label={`${profile.characterName} — ${stageName}`}
           onClick={() => navigate({ id: "character" })}
         >
           <AvatarStage
@@ -122,7 +122,7 @@ export function HomeScreen({
             stageLabel={stageName}
             className="home-buddy-art"
           />
-          <span className="home-buddy-cta">{t("home.buddy")}</span>
+          <span className="home-buddy-cta">{profile.characterName}</span>
         </button>
 
         <div className="home-buddy-info">

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react"
 
+import { AvatarPortrait } from "../components/AvatarPortrait"
 import { getAvatarSet } from "../content"
 import { progressProvider } from "../db"
 import {
@@ -141,13 +142,7 @@ export function CreateScreen({
                   checked={selected}
                   onChange={() => chooseAvatar(avatar.id)}
                 />
-                <span
-                  className="avatar-tile"
-                  style={{ background: avatar.pale, color: avatar.color }}
-                  aria-hidden="true"
-                >
-                  {avatar.name.charAt(0)}
-                </span>
+                <AvatarPortrait avatar={avatar} />
                 <span className="avatar-name">
                   {locale === "zh" ? avatar.nameZh : avatar.name}
                 </span>

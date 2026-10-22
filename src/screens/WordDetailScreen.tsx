@@ -15,8 +15,8 @@ const STATUS_KEYS = {
 } as const
 
 /**
- * PRD §7.3. One detail screen behind both tabs; every localized string,
- * status, and strength comes from `buildWordDetail`.
+ * PRD §7.3. One detail screen behind both tabs. The meaning and definition are
+ * always English; status and strength come from `buildWordDetail`.
  */
 export function WordDetailScreen({
   profile,
@@ -59,7 +59,7 @@ export function WordDetailScreen({
   }
 
   const row = progress.find((entry) => entry.wordId === wordId)
-  const detail = buildWordDetail(word, row, locale)
+  const detail = buildWordDetail(word, row)
   const percent = Math.round(detail.strength * 100)
   const speechAvailable = hasEnglishVoice()
   const topics = detail.topicIds
