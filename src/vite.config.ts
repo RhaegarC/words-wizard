@@ -26,7 +26,7 @@ export default defineConfig({
         clientsClaim: false,
         cleanupOutdatedCaches: true,
         globPatterns: [
-          "**/*.{js,css,html,json,webmanifest,svg,png,webp,woff2}",
+          "**/*.{js,css,html,json,webmanifest,svg,png,jpg,jpeg,webp,woff2}",
         ],
         navigateFallback: "index.html",
         // Every illustration plus the shell; the artwork target is 10–15 MB.

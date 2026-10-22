@@ -274,32 +274,23 @@ describe("buildWordDetail", () => {
     image: "w2.png",
   })
 
-  it("localizes meaning and definition, and always carries both languages of the example", () => {
-    const en = buildWordDetail(
+  it("always uses the English meaning and definition, and carries both languages of the example", () => {
+    const detail = buildWordDetail(
       word,
       makeProgress("w2", { status: "mastered", strength: 0.85 }),
-      "en",
-    )
-    const zh = buildWordDetail(
-      word,
-      makeProgress("w2", { status: "mastered", strength: 0.85 }),
-      "zh",
     )
 
-    expect(en.meaning).toBe("meaning w2")
-    expect(en.definition).toBe("definition w2")
-    expect(zh.meaning).toBe("意思 w2")
-    expect(zh.definition).toBe("解释 w2")
-    expect(en.example).toEqual(word.examples[0])
-    expect(en.example.en).toBe("An example with w2.")
-    expect(en.example.zh).toBe("一个包含 w2 的例句。")
+    expect(detail.meaning).toBe("meaning w2")
+    expect(detail.definition).toBe("definition w2")
+    expect(detail.example).toEqual(word.examples[0])
+    expect(detail.example.en).toBe("An example with w2.")
+    expect(detail.example.zh).toBe("一个包含 w2 的例句。")
   })
 
   it("passes through IPA, image, topics, and progress state", () => {
     const detail = buildWordDetail(
       word,
       makeProgress("w2", { status: "mastered", strength: 0.85 }),
-      "en",
     )
 
     expect(detail.phonetic).toBe("/wɜːd/")
@@ -310,7 +301,7 @@ describe("buildWordDetail", () => {
   })
 
   it("treats an uncounted word as new with no strength", () => {
-    const detail = buildWordDetail(word, undefined, "en")
+    const detail = buildWordDetail(word, undefined)
 
     expect(detail.status).toBe("new")
     expect(detail.strength).toBe(0)

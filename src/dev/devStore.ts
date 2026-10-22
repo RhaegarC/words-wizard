@@ -17,8 +17,8 @@ export async function seedDevProfile(
   const now = Date.now()
   const profile = await provider.createProfile({
     name: "",
-    characterName: "Luma",
-    avatar: "luma",
+    characterName: "Alex",
+    avatar: "alex",
     currentTopicId: "craft-and-build",
     xp: 0,
     createdAt: now,

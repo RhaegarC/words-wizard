@@ -1,12 +1,6 @@
 import { config } from "../config"
 import { daysSinceLocal } from "./time"
-import type {
-  Locale,
-  Progress,
-  ProgressStatus,
-  Word,
-  WordExample,
-} from "./types"
+import type { Progress, ProgressStatus, Word, WordExample } from "./types"
 
 /** A word the child has met, joined to the progress row that proves it. */
 export interface CollectedWord {
@@ -191,17 +185,20 @@ export interface WordDetailView {
   strength: number
 }
 
-/** Everything the detail screen shows, localized and independent of storage. */
+/**
+ * Everything the detail screen shows, independent of storage. The meaning and
+ * definition stay English in both UI languages so the detail view is always the
+ * English reference; only surrounding labels are localized.
+ */
 export function buildWordDetail(
   word: Word,
   progress: Progress | undefined,
-  locale: Locale,
 ): WordDetailView {
   return {
     text: word.text,
     phonetic: word.phonetic,
-    meaning: locale === "zh" ? word.meaningZh : word.meaningEn,
-    definition: locale === "zh" ? word.definitionZh : word.definitionEn,
+    meaning: word.meaningEn,
+    definition: word.definitionEn,
     example: word.examples[0],
     image: word.image,
     topicIds: word.topicIds,

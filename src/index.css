@@ -302,9 +302,15 @@ body {
   width: 4.5rem;
   height: 4.5rem;
   place-items: center;
+  overflow: hidden;
   border-radius: 50%;
   font-size: 1.75rem;
   font-weight: 900;
+}
+
+.avatar-portrait {
+  display: block;
+  object-fit: cover;
 }
 
 .avatar-name {
@@ -923,9 +929,13 @@ body {
 }
 
 .home-buddy-cta {
+  max-width: 6.5rem;
+  overflow-wrap: anywhere;
   color: var(--dark-purple);
   font-size: 0.75rem;
   font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .home-buddy-info {
@@ -1972,7 +1982,7 @@ body {
   margin-top: 1rem;
   padding: 1.25rem;
   border: 2px solid var(--purple);
-  border-radius: 1.25rem;
+  border-radius: 0.5rem;
   background: var(--pale-purple);
 }
 
@@ -2018,6 +2028,13 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+/* The install card reads as instructions, so its buttons share the card's
+   smaller radius instead of the app-wide pill shape. */
+.install-actions .primary-button,
+.install-actions .secondary-button {
+  border-radius: 0.5rem;
 }
 
 .update-notice {

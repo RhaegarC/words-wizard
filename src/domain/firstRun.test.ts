@@ -85,12 +85,15 @@ describe("validateCharacterName", () => {
 })
 
 describe("validateAvatarId", () => {
-  it.each(["luma", "pippin", "moss"])("accepts %s", (id) => {
-    const result = validateAvatarId(id)
+  it.each(["alex", "cody", "creeper", "malenia", "may", "steve"])(
+    "accepts %s",
+    (id) => {
+      const result = validateAvatarId(id)
 
-    expect(result.ok).toBe(true)
-    expect(result.ok && result.avatar.id).toBe(id)
-  })
+      expect(result.ok).toBe(true)
+      expect(result.ok && result.avatar.id).toBe(id)
+    },
+  )
 
   it.each(["../../evil", "", "Luma", "dragon"])("rejects %j", (id) => {
     expect(validateAvatarId(id)).toEqual({ ok: false })
