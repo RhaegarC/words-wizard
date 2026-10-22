@@ -15,8 +15,8 @@ Four small product enhancements gathered into one feature:
    immediately visible instead of leaving the child on the form.
 3. **Word Detail always shows the English meaning and definition**, even when
    the UI is Chinese. Practice and introduction cards remain bilingual.
-4. **The install instructions use a smaller corner radius**, so the card reads
-   as guidance rather than a pill-like banner.
+4. **The install instructions use a smaller corner radius** on the card and its
+   buttons, so the block reads as guidance rather than a pill-like banner.
 
 ## User story
 
@@ -38,7 +38,7 @@ like instructions, not a floating badge.
 - [x] A successful Save in Settings updates the profile and navigates to Home;
       a failed save stays on Settings with the error.
 - [x] Word Detail uses `meaningEn` and `definitionEn` in both UI languages.
-- [x] The install prompt's border radius is `0.5rem`.
+- [x] The install prompt and its action buttons use a `0.5rem` border radius.
 - [x] `pnpm test`, `pnpm typecheck`, `pnpm validate:content`, and `pnpm build`
       pass.
 - [x] Manual browser run confirms the six portraits, the post-save Home route,
@@ -65,7 +65,8 @@ accepts exactly the new ids.
 
 **Verification (manual, 2026-10-22, headless Edge):** the creation screen showed
 six portraits (all 300 px wide) named Alex, Cody, Creeper, Malenia, May, Steve;
-the install card's computed radius was 8 px; saving after switching to 中文
+the install card and its "Continue in browser" button both computed an 8 px
+radius; saving after switching to 中文
 landed on `#/home`; Home rendered Alex's portrait; and `#/words/w-bag` showed
 "a container for carrying things" / "You put things inside a bag." with the
 Chinese strings absent.

@@ -2026,6 +2026,13 @@ body {
   gap: 0.5rem;
 }
 
+/* The install card reads as instructions, so its buttons share the card's
+   smaller radius instead of the app-wide pill shape. */
+.install-actions .primary-button,
+.install-actions .secondary-button {
+  border-radius: 0.5rem;
+}
+
 .update-notice {
   display: grid;
   gap: 0.5rem;
