@@ -7,6 +7,7 @@ import {
   buildSessionResult,
   confirmRevealAnswer,
   createSessionState,
+  estimatedMinutes,
   exerciseSeed,
   hasIntro,
   isLastExercise,
@@ -17,6 +18,7 @@ import {
   sessionSeed,
   sessionSeedKey,
   type BuildSessionInput,
+  type SessionPlan,
   type SessionSeed,
   type SessionState,
 } from "./session"
@@ -143,7 +145,7 @@ function playAllCorrect(initial: SessionState): SessionState {
 
   while (state.phase !== "complete") {
     guard += 1
-    expect(guard).toBeLessThan(100)
+    expect(guard).toBeLessThan(500)
 
     if (state.phase === "intro") {
       state = sessionReducer(state, { type: "continueIntro" })
@@ -207,7 +209,7 @@ describe("exerciseSeed", () => {
 })
 
 describe("buildSession", () => {
-  it("builds five reviews plus four new words, capped at nine", () => {
+  it("builds five reviews plus ten new words, capped at fifteen", () => {
     const newWords = Array.from({ length: 20 }, (_, index) =>
       makeWord(`n${index + 1}`),
     )
@@ -224,9 +226,9 @@ describe("buildSession", () => {
       progress,
     )
 
-    expect(plan.words).toHaveLength(9)
+    expect(plan.words).toHaveLength(15)
     expect(plan.words.filter((word) => word.kind === "review")).toHaveLength(5)
-    expect(plan.words.filter((word) => word.kind === "new")).toHaveLength(4)
+    expect(plan.words.filter((word) => word.kind === "new")).toHaveLength(10)
     expect(plan.caughtUp).toBe(false)
   })
 
@@ -426,6 +428,7 @@ describe("buildSession", () => {
       "d2",
       "d3",
       "d4",
+      "d5",
     ])
   })
 
@@ -507,7 +510,7 @@ describe("mode assignment", () => {
     expect(buildSession(input)).toEqual(buildSession(input))
   })
 
-  it("gives two distinct modes to each new word and one to each review", () => {
+  it("runs every new word through all five modes in the fixed order", () => {
     const words = ["r1", "r2", "n1", "n2"].map((id) => makeWord(id))
     const plan = planWith(
       [makePack("p1", ["n1", "n2"], 1, 0)],
@@ -517,8 +520,13 @@ describe("mode assignment", () => {
 
     for (const word of plan.words) {
       if (word.kind === "new") {
-        expect(word.modes).toHaveLength(2)
-        expect(new Set(word.modes).size).toBe(2)
+        expect(word.modes).toEqual([
+          "spellingBuilder",
+          "fillBlank",
+          "wordToMeaning",
+          "pictureMatch",
+          "listenChoose",
+        ])
       } else {
         expect(word.modes).toHaveLength(1)
       }
@@ -548,16 +556,44 @@ describe("mode assignment", () => {
       progress: [makeProgress("r1")],
       speechAvailable: false,
     })
-    const modes = buildSession(input).words.flatMap((word) => word.modes)
+    const plan = buildSession(input)
+    const modes = plan.words.flatMap((word) => word.modes)
+    const newWord = plan.words.find((word) => word.kind === "new")
 
     expect(modes).not.toContain("listenChoose")
     expect(modes.length).toBeGreaterThan(0)
+    expect(newWord?.modes).toEqual([
+      "spellingBuilder",
+      "fillBlank",
+      "wordToMeaning",
+      "pictureMatch",
+    ])
   })
 
   it("offers listen and choose only when speech is available", () => {
     expect(availableModes(true)).toContain("listenChoose")
     expect(availableModes(false)).not.toContain("listenChoose")
     expect(availableModes(false)).toHaveLength(4)
+  })
+})
+
+describe("estimatedMinutes", () => {
+  function planOfScreens(screens: number): SessionPlan {
+    return {
+      words: Array.from({ length: screens }, (_, index) => ({
+        wordId: `w${index}`,
+        kind: "review" as const,
+        modes: ["fillBlank" as const],
+      })),
+      caughtUp: screens === 0,
+    }
+  }
+
+  it("rounds the screen count up to the next five minutes", () => {
+    expect(estimatedMinutes(planOfScreens(17))).toBe(10)
+    expect(estimatedMinutes(planOfScreens(55))).toBe(25)
+    expect(estimatedMinutes(planOfScreens(65))).toBe(30)
+    expect(estimatedMinutes(planOfScreens(0))).toBe(5)
   })
 })
 
@@ -714,11 +750,11 @@ describe("session reducer", () => {
     expect(hasIntro(fresh)).toBe(true)
   })
 
-  it("runs a full session of five reviews and four new words to completion", () => {
+  it("runs a full session of five reviews and ten new words to completion", () => {
     const reviewWords = Array.from({ length: 5 }, (_, index) =>
       makeWord(`r${index + 1}`),
     )
-    const newWords = Array.from({ length: 4 }, (_, index) =>
+    const newWords = Array.from({ length: 10 }, (_, index) =>
       makeWord(`n${index + 1}`),
     )
     const plan = planWith(
@@ -733,7 +769,7 @@ describe("session reducer", () => {
     })
     const finished = playAllCorrect(started)
 
-    expect(screenCount(plan)).toBe(17)
+    expect(screenCount(plan)).toBe(65)
     expect(finished.phase).toBe("complete")
     expect(finished.startedAt).toBe(NOW)
     expect(finished.completedAt).not.toBeNull()
@@ -741,11 +777,11 @@ describe("session reducer", () => {
     const result = buildSessionResult(finished)
 
     expect(result).not.toBeNull()
-    expect(result?.words).toHaveLength(9)
+    expect(result?.words).toHaveLength(15)
     expect(result?.words.reduce((sum, word) => sum + word.attempts.length, 0)).toBe(
-      13,
+      55,
     )
-    expect(result?.xpEarned).toBe(26)
+    expect(result?.xpEarned).toBe(110)
     expect(result?.kind).toBe("daily")
     expect(result?.words.every((word) => word.firstAttemptCorrect)).toBe(true)
   })
@@ -844,13 +880,28 @@ describe("session reducer", () => {
       type: "continueFeedback",
       now: NOW + 3,
     })
+    state = sessionReducer(state, { type: "answer", correct: true })
+    state = sessionReducer(state, {
+      type: "continueFeedback",
+      now: NOW + 4,
+    })
+    state = sessionReducer(state, { type: "answer", correct: true })
+    state = sessionReducer(state, {
+      type: "continueFeedback",
+      now: NOW + 5,
+    })
+    state = sessionReducer(state, { type: "answer", correct: true })
+    state = sessionReducer(state, {
+      type: "continueFeedback",
+      now: NOW + 6,
+    })
 
     const result = buildSessionResult(state)
     const row = result?.words[0] as SessionWordResult
 
     expect(row.firstAttemptCorrect).toBe(false)
-    expect(row.attempts).toHaveLength(2)
-    expect(result?.xpEarned).toBe(3)
+    expect(row.attempts).toHaveLength(5)
+    expect(result?.xpEarned).toBe(9)
   })
 
   it("discards everything when the child confirms leaving", () => {

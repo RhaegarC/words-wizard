@@ -125,7 +125,7 @@
   "session.caughtUpTitle": "今天的练习都完成啦！",
   "session.caughtUpBody": "明天再来，会有新的单词等着你。",
   "session.backHome": "回到首页",
-  "session.aboutMinutes": "大约 7 分钟",
+  "session.aboutMinutes": "大约 {count} 分钟",
   "session.badgeNew": "新单词",
   "session.badgeReview": "复习",
   "session.selfCheck": "你认识这个单词吗？",

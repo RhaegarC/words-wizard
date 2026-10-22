@@ -106,12 +106,14 @@ character and one progress record.
 
 ## 5. Core Learning Loop
 
-A session is 6–8 minutes and contains up to 9 words:
+A session is 30–40 minutes at the full daily shape and contains up to 15 words:
 
 - Up to **5 due review words**, one exercise each.
-- Up to **4 new words**, each with a word-introduction card followed by **two
-  exercises in different modes**.
-- Maximum **17 screens** (4 × 3 + 5 × 1).
+- Up to **10 new words**, each with a word-introduction card followed by **all
+  five practice modes in this fixed order**: spelling builder → fill the blank →
+  word → meaning → picture match → listen & choose.
+- Maximum **65 screens** (10 × (1 intro + 5 exercises) + 5 × 1). With no English
+  voice, *Listen & choose* is dropped, giving 55 screens and 45 exercises.
 
 ### 5.1 Word Introduction
 
@@ -137,12 +139,13 @@ always present.
    missing word.
 5. **Listen & choose** — hear the English word → pick the matching picture or word.
 
-**Mode rotation:** for each new word, choose two distinct modes; for each review word,
-choose one. Rotation is deterministic per session and avoids repeating the same mode
-back-to-back where possible.
+**Mode rotation:** every new word runs all five modes in this fixed order:
+spelling builder → fill the blank → word → meaning → picture match → listen & choose.
+Each review word gets one mode; the review rotation is deterministic and starts so that
+the final review does not repeat the spelling builder that opens the first new word.
 
-**Speech fallback:** if no English voice is available, *Listen & choose* is replaced by a
-non-audio mode (*word → meaning* or *spelling builder*). IPA is always visible.
+**Speech fallback:** if no English voice is available, *Listen & choose* is removed from
+the sequence, so each new word gets four exercises. IPA is always visible.
 
 ### 5.3 Feedback
 
@@ -708,12 +711,12 @@ durability.**
 **Daily session builder:**
 
 - Up to `reviewCap` (5) due reviews ordered by `nextReviewAt`.
-- Up to `newWordsPerSession` (4) new words from the lowest-order unlocked pack in the
+- Up to `newWordsPerSession` (10) new words from the lowest-order unlocked pack in the
   selected topic.
-- Dedupe by `wordId`; cap at 9 words.
+- Dedupe by `wordId`; cap at 15 words.
 - If there are no due reviews and no new words, show an **all caught up** state.
-- Mode assignment: two distinct modes for each new word, one for each review word;
-  deterministic per session.
+- Mode assignment: all five modes in the fixed order for each new word, one for each
+  review word; deterministic per session.
 
 **Monthly Review builder:** separate; up to 20 learned words, selected per §7.4.
 
@@ -778,7 +781,14 @@ export const config = {
   dormancy: { sleepyDay: 4, sleepDay: 7, vitalityPerDay: 15 },
   streak: { graceDays: 7, tokenCoversDays: 1 },
   careTokens: { sessionsPerToken: 5, cap: 3 },
-  session: { reviewCap: 5, newWords: 4, newWordExercises: 2, maxWords: 9 },
+  session: {
+    reviewCap: 5,
+    newWords: 10,
+    newWordModes: [
+      'spellingBuilder', 'fillBlank', 'wordToMeaning', 'pictureMatch', 'listenChoose',
+    ],
+    maxWords: 15,
+  },
   scheduler: {
     correctDelta: 0.2,
     wrongDelta: -0.3,
@@ -817,7 +827,7 @@ export const config = {
 |---|---|---|
 | 1 | Character stakes | Sleep + free revival; never dead. |
 | 2 | Care Token cadence | +1 per 5 completed sessions, cap 3; freeze and quick wake. |
-| 3 | Session length | 4 new (intro + 2) + 5 reviews = 9 words / 17 screens, 6–8 min. |
+| 3 | Session length | 10 new (intro + all five modes) + 5 reviews = 15 words / 65 screens, 30–40 min. Superseded the v0.2 4-new / 17-screen shape in feature 18. |
 | 4 | Word audio | Web Speech API + IPA fallback; no bundled audio. |
 | 5 | Topic count | 5 at launch; 3 packs × 20 words per topic. |
 | 6 | ESL support | Bilingual EN + 中文, full UI and content; toggle; zh default on zh-CN. |

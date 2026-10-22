@@ -1,9 +1,7 @@
 import { config } from "../config"
 
-import { createRng, hashString, shuffle } from "./random"
 import { localDateKey } from "./time"
 import {
-  PRACTICE_MODES,
   type Pack,
   type PracticeMode,
   type Profile,
@@ -28,7 +26,7 @@ export type SessionWordKind = "review" | "new"
 export interface SessionWord {
   wordId: string
   kind: SessionWordKind
-  /** One mode for a review, two distinct modes for a new word. */
+  /** Every available mode in order for a new word; one mode for a review. */
   modes: PracticeMode[]
 }
 
@@ -122,17 +120,21 @@ export function sessionSeed(
   }
 }
 
-/** Listen and choose is dropped when no English voice exists. */
+/**
+ * The fixed new-word order, with listen and choose dropped when no English
+ * voice exists. This deliberately differs from the `PRACTICE_MODES` registry
+ * order.
+ */
 export function availableModes(
   speechAvailable: boolean,
 ): readonly PracticeMode[] {
-  return speechAvailable
-    ? PRACTICE_MODES
-    : PRACTICE_MODES.filter((mode) => mode !== "listenChoose")
+  return config.session.newWordModes.filter(
+    (mode) => speechAvailable || mode !== "listenChoose",
+  )
 }
 
 /**
- * Choose up to five due reviews and four new words, then assign modes.
+ * Choose up to five due reviews and ten new words, then assign modes.
  *
  * Reviews are global (any topic) and ordered by `nextReviewAt`; new words come
  * from one pack only — the lowest-order unlocked pack that still has a word
@@ -159,12 +161,10 @@ export function buildSession(input: BuildSessionInput): SessionPlan {
  */
 export function assignSessionWords(
   entries: readonly { wordId: string; kind: SessionWordKind }[],
-  seed: SessionSeed,
+  _seed: SessionSeed,
   speechAvailable: boolean,
 ): SessionWord[] {
-  const rng = createRng(hashString(sessionSeedKey(seed)))
-
-  return assignModes(entries, availableModes(speechAvailable), rng)
+  return assignModes(entries, availableModes(speechAvailable))
 }
 
 /** Counts for Home and the session landing, without assigning modes. */
@@ -178,13 +178,20 @@ export function previewSession(input: BuildSessionInput): SessionPreview {
   }
 }
 
-/** 4 × (intro + 2 exercises) + 5 reviews = 17. */
+/** 10 × (intro + 5 exercises) + 5 reviews = 65. */
 export function screenCount(plan: SessionPlan): number {
   return plan.words.reduce(
     (total, word) =>
       total + (word.kind === "new" ? 1 : 0) + word.modes.length,
     0,
   )
+}
+
+/** A rough duration for the landing screen, rounded up to five minutes. */
+export function estimatedMinutes(plan: SessionPlan): number {
+  const seconds = screenCount(plan) * config.session.secondsPerScreen
+
+  return Math.max(5, Math.ceil(seconds / 60 / 5) * 5)
 }
 
 export function answerAttempt(
@@ -513,67 +520,28 @@ function selectNewWordIds(
 function assignModes(
   entries: readonly SessionEntry[],
   available: readonly PracticeMode[],
-  rng: () => number,
 ): SessionWord[] {
   if (available.length === 0) {
     return entries.map((entry) => ({ ...entry, modes: [] }))
   }
 
-  const order = shuffle(available, rng)
-  let cursor = 0
-  let previous: PracticeMode | null = null
-  const words: SessionWord[] = []
+  // Start the review rotation so the last review lands on the final mode.
+  // That keeps it clear of the spelling builder that opens the next new word.
+  const reviewCount = entries.filter((entry) => entry.kind === "review").length
+  const reviewStart =
+    (available.length - (reviewCount % available.length)) % available.length
+  let reviewIndex = 0
 
-  for (const entry of entries) {
-    const count =
-      entry.kind === "new" ? config.session.newWordExercises : 1
-    const modes: PracticeMode[] = []
-
-    for (let index = 0; index < count; index += 1) {
-      const picked = nextMode(order, cursor, modes, previous)
-      modes.push(picked.mode)
-      cursor = picked.cursor
-      previous = picked.mode
+  return entries.map((entry) => {
+    if (entry.kind === "new") {
+      return { ...entry, modes: [...available] }
     }
 
-    words.push({ ...entry, modes })
-  }
+    const mode = available[(reviewStart + reviewIndex) % available.length]
+    reviewIndex += 1
 
-  return words
-}
-
-/**
- * Walk the shuffled mode order, skipping modes already used by this word and
- * the immediately previous exercise while an alternative remains.
- */
-function nextMode(
-  order: readonly PracticeMode[],
-  cursor: number,
-  taken: readonly PracticeMode[],
-  previous: PracticeMode | null,
-): { mode: PracticeMode; cursor: number } {
-  const untaken = order.filter((mode) => !taken.includes(mode))
-
-  if (untaken.length === 0) {
-    return {
-      mode: order[cursor % order.length],
-      cursor: (cursor + 1) % order.length,
-    }
-  }
-
-  const withoutPrevious = untaken.filter((mode) => mode !== previous)
-  const pool = withoutPrevious.length > 0 ? withoutPrevious : untaken
-
-  for (let offset = 0; offset < order.length; offset += 1) {
-    const index = (cursor + offset) % order.length
-    const mode = order[index]
-
-    if (pool.includes(mode)) {
-      return { mode, cursor: (index + 1) % order.length }
-    }
-  }
-
-  return { mode: pool[0], cursor }
+    return { ...entry, modes: [mode] }
+  })
 }
 
 function advance(state: SessionState, now: number): SessionState {
