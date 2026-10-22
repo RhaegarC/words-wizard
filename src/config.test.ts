@@ -36,9 +36,16 @@ describe("config", () => {
   it("matches the PRD §5 session caps", () => {
     expect(config.session).toEqual({
       reviewCap: 5,
-      newWords: 4,
-      newWordExercises: 2,
-      maxWords: 9,
+      newWords: 10,
+      newWordModes: [
+        "spellingBuilder",
+        "fillBlank",
+        "wordToMeaning",
+        "pictureMatch",
+        "listenChoose",
+      ],
+      maxWords: 15,
+      secondsPerScreen: 25,
     })
     expect(config.session.reviewCap + config.session.newWords).toBe(
       config.session.maxWords,
