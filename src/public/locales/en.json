@@ -125,7 +125,7 @@
   "session.caughtUpTitle": "You're all caught up!",
   "session.caughtUpBody": "Come back tomorrow for a fresh set of words.",
   "session.backHome": "Back home",
-  "session.aboutMinutes": "About 7 minutes",
+  "session.aboutMinutes": "About {count} minutes",
   "session.badgeNew": "New",
   "session.badgeReview": "Review",
   "session.selfCheck": "Do you know this word?",

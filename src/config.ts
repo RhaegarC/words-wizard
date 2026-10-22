@@ -21,7 +21,21 @@ export const config = {
     /** Home mentions a token only when this few sessions remain. */
     hintWithin: 2,
   },
-  session: { reviewCap: 5, newWords: 4, newWordExercises: 2, maxWords: 9 },
+  session: {
+    reviewCap: 5,
+    newWords: 10,
+    /** The full practice sequence every new word runs, in order. */
+    newWordModes: [
+      "spellingBuilder",
+      "fillBlank",
+      "wordToMeaning",
+      "pictureMatch",
+      "listenChoose",
+    ],
+    maxWords: 15,
+    /** Used only to turn a session's screen count into a rough time estimate. */
+    secondsPerScreen: 25,
+  },
   exercise: {
     /** Answer plus up to three distractors. */
     options: 4,

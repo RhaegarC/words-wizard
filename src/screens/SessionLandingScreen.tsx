@@ -1,3 +1,4 @@
+import { estimatedMinutes } from "../domain/session"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 import { useSession } from "../session/SessionProvider"
@@ -9,7 +10,7 @@ import { useSession } from "../session/SessionProvider"
 export function SessionLandingScreen() {
   const { t } = useLocale()
   const { navigate } = useRouter()
-  const { ready, preview, state, start, resume } = useSession()
+  const { ready, plan, preview, state, start, resume } = useSession()
 
   if (!ready) {
     return (
@@ -72,7 +73,9 @@ export function SessionLandingScreen() {
         ) : null}
       </ul>
 
-      <p className="session-meta">{t("session.aboutMinutes")}</p>
+      <p className="session-meta">
+        {t("session.aboutMinutes", { count: estimatedMinutes(plan) })}
+      </p>
 
       <button type="button" className="primary-button" onClick={start}>
         {t("session.start")}
