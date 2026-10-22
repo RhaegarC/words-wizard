@@ -6,12 +6,12 @@ describe("buildRecustomizePatch", () => {
   it("trims the name and returns only the editable fields", () => {
     const result = buildRecustomizePatch({
       characterName: "  Mia  ",
-      avatar: "luma",
+      avatar: "alex",
     })
 
     expect(result).toEqual({
       ok: true,
-      patch: { name: "Mia", characterName: "Mia", avatar: "luma" },
+      patch: { name: "Mia", characterName: "Mia", avatar: "alex" },
     })
 
     if (result.ok) {
@@ -29,14 +29,14 @@ describe("buildRecustomizePatch", () => {
     expect(
       buildRecustomizePatch({
         characterName: "abcdefghijklmnop",
-        avatar: "luma",
+        avatar: "alex",
       }).ok,
     ).toBe(true)
 
     expect(
       buildRecustomizePatch({
         characterName: "abcdefghijklmnopq",
-        avatar: "luma",
+        avatar: "alex",
       }),
     ).toEqual({ ok: false, reason: "too-long" })
   })
@@ -45,14 +45,14 @@ describe("buildRecustomizePatch", () => {
     expect(
       buildRecustomizePatch({
         characterName: "一二三四五六七八九十一二三四五六",
-        avatar: "pippin",
+        avatar: "cody",
       }).ok,
     ).toBe(true)
   })
 
   it("rejects an empty name", () => {
     expect(
-      buildRecustomizePatch({ characterName: "   ", avatar: "luma" }),
+      buildRecustomizePatch({ characterName: "   ", avatar: "alex" }),
     ).toEqual({ ok: false, reason: "empty" })
   })
 
@@ -69,7 +69,7 @@ describe("buildRecustomizePatch", () => {
     expect(
       buildRecustomizePatch({
         characterName: "Mia\nPippin",
-        avatar: "luma",
+        avatar: "alex",
       }),
     ).toEqual({ ok: false, reason: "invalid-character" })
   })

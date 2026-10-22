@@ -302,9 +302,15 @@ body {
   width: 4.5rem;
   height: 4.5rem;
   place-items: center;
+  overflow: hidden;
   border-radius: 50%;
   font-size: 1.75rem;
   font-weight: 900;
+}
+
+.avatar-portrait {
+  display: block;
+  object-fit: cover;
 }
 
 .avatar-name {
@@ -1972,7 +1978,7 @@ body {
   margin-top: 1rem;
   padding: 1.25rem;
   border: 2px solid var(--purple);
-  border-radius: 1.25rem;
+  border-radius: 0.5rem;
   background: var(--pale-purple);
 }
 

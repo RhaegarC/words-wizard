@@ -1,6 +1,6 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–16 done and archived; feature 17 content production under way with two of five topics authored; feature 18 session shape in progress.**
+> Status: **In progress — features 01–16 and 18 done and archived; feature 17 content production under way with two of five topics authored; feature 19 buddy and detail polish in progress.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
@@ -54,7 +54,8 @@ parallel from feature 04 because it is authoring work, not code.
 | 15 | [PWA install, offline & updates](archive/15-pwa-offline.md) | Done | 02, 05, 14 |
 | 16 | [Cloudflare Pages deployment & CI](archive/16-cloudflare-pages.md) | Done | 01, 04, 15 |
 | 17 | [Content production: 300 words & 315 illustrations](17-content-production.md) | In progress — Craft & Build reviewed, Explore & Discover authored | 04 (authoring runs in parallel) |
-| 18 | [Spelling-first five-mode practice & 10-word sessions](18-spelling-practice-and-session-size.md) | In progress | 07, 08 |
+| 18 | [Spelling-first five-mode practice & 10-word sessions](archive/18-spelling-practice-and-session-size.md) | Done | 07, 08 |
+| 19 | [Buddy portraits, settings return & detail polish](19-buddy-portraits-and-settings-polish.md) | In progress | 03, 06, 12, 14, 15 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
 

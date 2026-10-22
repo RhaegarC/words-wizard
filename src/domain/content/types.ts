@@ -19,7 +19,7 @@ export interface ArtworkEntry {
 
 export type ArtworkManifest = Record<string, ArtworkEntry>
 
-/** `avatars.json`: three identities, five stages each. */
+/** `avatars.json`: one identity per buddy, five stages mapped to its portrait. */
 export interface Avatar {
   id: string
   name: string
