@@ -71,6 +71,22 @@ export function SessionLandingScreen() {
             {t("session.newWords", { count: preview.newCount })}
           </li>
         ) : null}
+        {preview.repeatCount > 0 ? (
+          <li className="session-fact">
+            <span className="session-fact-badge" aria-hidden="true">
+              🔄
+            </span>
+            {t("session.practiceAgainWords", { count: preview.repeatCount })}
+          </li>
+        ) : null}
+        {preview.newCount + preview.repeatCount > 0 ? (
+          <li className="session-fact">
+            <span className="session-fact-badge" aria-hidden="true">
+              🧩
+            </span>
+            {t("session.comprehensivePractice")}
+          </li>
+        ) : null}
       </ul>
 
       <p className="session-meta">
@@ -78,7 +94,9 @@ export function SessionLandingScreen() {
       </p>
 
       <button type="button" className="primary-button" onClick={start}>
-        {t("session.start")}
+        {preview.repeatCount > 0
+          ? t("session.practiceAgain")
+          : t("session.start")}
       </button>
     </section>
   )

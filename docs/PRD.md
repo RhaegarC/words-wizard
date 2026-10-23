@@ -106,28 +106,37 @@ character and one progress record.
 
 ## 5. Core Learning Loop
 
-A session is 30–40 minutes at the full daily shape and contains up to 15 words:
+A daily session is about **10 minutes** and contains **five new words, and no
+more for that local day**:
 
-- Up to **5 due review words**, one exercise each.
-- Up to **10 new words**, each with a word-introduction card followed by **all
-  five practice modes in this fixed order**: spelling builder → fill the blank →
-  word → meaning → picture match → listen & choose.
-- Maximum **65 screens** (10 × (1 intro + 5 exercises) + 5 × 1). With no English
-  voice, *Listen & choose* is dropped, giving 55 screens and 45 exercises.
+- **Five new words**, each with a word-introduction card followed by **one
+  spelling-building exercise**.
+- Then a **Comprehensive Practice** block: one randomly chosen non-spelling mode
+  per word, with the mode pairings and exercise order shuffled.
+- Maximum **15 screens** (5 × (1 intro + 1 spelling) + 5 × 1). With no English
+  voice, *Listen & choose* leaves the comprehensive pool, but the screen count
+  is unchanged.
+- Once those five words are learned, the same five are offered as **extra
+  practice**: spelling plus the comprehensive block, with no introduction cards
+  (10 screens, about 5 minutes). Repeated practice is a normal session and earns
+  XP. No new words are introduced until the next local day.
+- The daily due-review block is withdrawn; **Monthly Review** remains the
+  spaced-repetition surface.
 
 ### 5.1 Word Introduction
 
-- English word text
+- English word text with the Chinese translation beside it, for example `box 盒子`
 - IPA / phonetic transcription
 - Tap-to-hear pronunciation (Web Speech API; no autoplay)
 - Bundled illustration
-- Meaning (short gloss) and kid-friendly definition in the current UI language
-- English example sentence with a Chinese translation
+- Meaning (short gloss) and kid-friendly definition in **both English and Chinese**,
+  whichever UI language is active
+- Example sentence in the current UI language
 - Part of speech
 
-In Chinese mode, the Chinese definition and example translation are shown. In English
-mode, the English definition is shown. The target word, IPA, image, and audio are
-always present.
+The card always shows both language versions of the meaning and definition. The
+example follows the UI language, and its translation remains available on Word
+Detail. The target word, IPA, image, and audio are always present.
 
 ### 5.2 Practice Modes (all five ship)
 
@@ -139,13 +148,19 @@ always present.
    missing word.
 5. **Listen & choose** — hear the English word → pick the matching picture or word.
 
-**Mode rotation:** every new word runs all five modes in this fixed order:
-spelling builder → fill the blank → word → meaning → picture match → listen & choose.
-Each review word gets one mode; the review rotation is deterministic and starts so that
-the final review does not repeat the spelling builder that opens the first new word.
+**Mode rotation:** a new word runs only the **spelling builder** while it is being
+introduced, and a same-day repeat runs the same spelling exercise without an intro
+card. After the learning block, **Comprehensive Practice** gives each word one
+randomly chosen mode from the four non-spelling modes — picture match, word →
+meaning, fill the blank, listen & choose — and shuffles the exercises. Spelling is
+excluded so a comprehensive exercise never repeats the exercise the child has just
+done. Both choices are deterministic for a profile, local day, and content version.
 
-**Speech fallback:** if no English voice is available, *Listen & choose* is removed from
-the sequence, so each new word gets four exercises. IPA is always visible.
+The Monthly Review gives each selected word one mode from all five, with a
+deterministic rotation.
+
+**Speech fallback:** if no English voice is available, *Listen & choose* is removed
+from the comprehensive pool and from the monthly rotation. IPA is always visible.
 
 ### 5.3 Feedback
 
@@ -156,6 +171,8 @@ the sequence, so each new word gets four exercises. IPA is always visible.
 - Every wrong tap increments `wrongCount` and applies the SM-2-lite penalty.
 - XP: first-try correct **+2**; correct after a hint **+1**; revealed answer **0**.
 - A correct answer after any hint still increments `correctCount`.
+- The submitted answer stays visible during feedback: a built word remains in its
+  slots and a chosen option keeps its highlight. A retry clears the spelling board.
 
 ### 5.4 Session End
 
@@ -425,8 +442,9 @@ Wrong answers cost nothing. Re-mastering a demoted word does not award the +10 a
   - Filters: topic, status, recently learned
   - Per-word strength as a simple bar (not a number)
 - **Word Book tab:** mastered-only, illustrated, browseable, emotional.
-- **Word Detail:** word, IPA, tap-to-hear, image, meaning and definition **always in
-  English** (even when the UI is Chinese), example EN + ZH, strength bar, status badge.
+- **Word Detail:** word, IPA, tap-to-hear, image, meaning and definition in **both
+  English and Chinese** regardless of UI language, example EN + ZH, strength bar,
+  status badge.
 - **Learned rule:** a word leaves `new` on its **first exercise attempt in a session
   that completes** — right, wrong, or revealed. Merely seeing the introduction card
   does not earn it, and an abandoned session commits nothing.
@@ -667,11 +685,13 @@ durability.**
   completeness between the two files.
 - Default locale: `navigator.language` starting with `zh` → `zh`; otherwise `en`.
   Stored per profile and editable in Settings.
-- Word content uses `definitionEn` / `definitionZh` and paired examples. In `zh`, show
-  the Chinese definition and both the English example and its Chinese translation. In
-  `en`, show the English definition and the English example.
-- **Exception — Word Detail:** the meaning and definition are always English in both UI
-  languages, so the detail view remains the English reference (feature 19).
+- Word content uses `definitionEn` / `definitionZh` and paired examples. The
+  introduction card and Word Detail show both language versions of the meaning and
+  definition; the example follows the UI language, and Word Detail shows both example
+  languages.
+- **Bilingual meaning rule:** meaning and definition are never hidden by the UI
+  language. This applies to the learning card and Word Detail (feature 20), replacing
+  feature 19's English-only detail rule.
 - Audio: English words use an English voice; Chinese UI read-aloud uses a Chinese voice.
 - Chinese font: system CJK fallback stack; do not bundle a font in v1.
 
@@ -701,7 +721,8 @@ durability.**
 
 - Not surfaced to the child by name.
 - Incorrect words resurface sooner; mastered words resurface occasionally.
-- A **Review** queue acts as a quick daily warm-up, not homework.
+- The **Monthly Review** is the surfaced review, not homework. The daily plan
+  carries no review entries.
 
 **Scheduler (SM-2-lite):**
 
@@ -714,13 +735,17 @@ durability.**
 
 **Daily session builder:**
 
-- Up to `reviewCap` (5) due reviews ordered by `nextReviewAt`.
-- Up to `newWordsPerSession` (10) new words from the lowest-order unlocked pack in the
-  selected topic.
-- Dedupe by `wordId`; cap at 15 words.
-- If there are no due reviews and no new words, show an **all caught up** state.
-- Mode assignment: all five modes in the fixed order for each new word, one for each
-  review word; deterministic per session.
+- Exactly the first `newWords` (5) unlearned words from the lowest-order unlocked pack
+  in the selected topic; the daily plan contains no review entries.
+- Dedupe by `wordId`.
+- A committed session stamps `firstSeenAt` today on its new words. If any word was
+  learned today, the builder returns today's words as **repeat** entries instead of
+  new ones, so the same five can be practised again until the next local day. They
+  carry no introduction card. If today's words are not in the selected topic, the
+  day is **all caught up**.
+- Mode assignment: the spelling builder for each new or repeat entry, then one random
+  non-spelling mode per word in a shuffled comprehensive block; deterministic per
+  session. The result aggregates both attempts under the word's single row.
 
 **Monthly Review builder:** separate; up to 20 learned words, selected per §7.4.
 
@@ -786,12 +811,9 @@ export const config = {
   streak: { graceDays: 7, tokenCoversDays: 1 },
   careTokens: { sessionsPerToken: 5, cap: 3 },
   session: {
-    reviewCap: 5,
-    newWords: 10,
-    newWordModes: [
-      'spellingBuilder', 'fillBlank', 'wordToMeaning', 'pictureMatch', 'listenChoose',
-    ],
-    maxWords: 15,
+    newWords: 5,
+    newWordModes: ['spellingBuilder'],
+    secondsPerScreen: 25,
   },
   scheduler: {
     correctDelta: 0.2,
@@ -831,7 +853,7 @@ export const config = {
 |---|---|---|
 | 1 | Character stakes | Sleep + free revival; never dead. |
 | 2 | Care Token cadence | +1 per 5 completed sessions, cap 3; freeze and quick wake. |
-| 3 | Session length | 10 new (intro + all five modes) + 5 reviews = 15 words / 65 screens, 30–40 min. Superseded the v0.2 4-new / 17-screen shape in feature 18. |
+| 3 | Session length | 5 new words (intro + spelling) + one comprehensive exercise per word = 5 unique words / 15 screens, about 10 min. The daily review block is withdrawn. Supersedes feature 18's 10-new / 65-screen shape in feature 20. |
 | 4 | Word audio | Web Speech API + IPA fallback; no bundled audio. |
 | 5 | Topic count | 5 at launch; 3 packs × 20 words per topic. |
 | 6 | ESL support | Bilingual EN + 中文, full UI and content; toggle; zh default on zh-CN. |
@@ -844,7 +866,8 @@ export const config = {
 | 13 | Repository visibility | Child-facing; facilitator sees export and diagnostics only. |
 | 14 | Multi-profile | Single-profile UI; `profileId` retained in schema. |
 | 15 | Streak reset | 7-day grace; token covers one missed day; best streak kept. |
-| 16 | Word Detail language | Meaning and definition always English; surrounding labels follow the UI language. Feature 19. |
+| 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
+| 17 | Daily word limit | One five-word set introduced per local day; after it commits, the same five can be practised again until midnight, but no new words. Feature 20. |
 
 **Additional v0.2 decisions:**
 
@@ -942,7 +965,8 @@ Hash routes only; no server rewrite.
 | Monthly Review | <5 learned | Card hidden | Do not offer |
 | Monthly Review | 5–19 learned | "Time for a monthly check-in!" | Review all, cap 20 |
 | Monthly Review | ≥20 learned | "Time for a monthly check-in!" | 20-word sample per §7.4 |
-| Session | No due reviews and no new words | "You're all caught up!" | CTA → My Words or change topic |
+| Session | Today's five already learned | "Practice again" | Replay the same five words |
+| Session | No new words left in the topic | "You're all caught up!" | CTA → My Words or change topic |
 | Speech | No English voice | "Listen is unavailable on this device." | Show IPA; substitute a non-audio mode |
 | Tricky Words (P2) | 0 | "No tricky words yet — nice!" | — |
 

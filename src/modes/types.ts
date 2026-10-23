@@ -89,8 +89,11 @@ export interface ExerciseModule<E extends Exercise> {
   mode: E["mode"]
   build(context: ModeContext): E
   check(exercise: E, answer: ExerciseAnswer): boolean
-  /** Hint level 1: drop one distractor, or reveal the first letter. */
-  hint1(exercise: E): E
+  /**
+   * Hint level 1: drop one distractor, or reveal the first letter. The chosen
+   * option is kept when a distractor is removed so its highlight survives.
+   */
+  hint1(exercise: E, preserveOptionId?: string): E
 }
 
 export interface ExerciseModules {

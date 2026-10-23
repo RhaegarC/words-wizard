@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { ExerciseView } from "../components/ExerciseView"
 import { getAllWords, getArtwork, getWord } from "../content"
@@ -39,6 +39,13 @@ export function SessionExerciseScreen() {
   const planned = state.plan.words[state.wordIndex]
   const word = planned ? getWord(planned.wordId) : undefined
   const mode = planned?.modes[state.exerciseIndex]
+  // The chosen option survives the hint that removes a distractor, so the
+  // highlight stays on the answer the child actually picked.
+  const [chosenOptionId, setChosenOptionId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setChosenOptionId(null)
+  }, [state.wordIndex, state.exerciseIndex])
 
   const exercise = useMemo(() => {
     if (!word || !mode) {
@@ -62,15 +69,19 @@ export function SessionExerciseScreen() {
     }
 
     return state.attempt.hintLevel >= 1
-      ? applyHint1(exercise.mode, exercise)
+      ? applyHint1(exercise.mode, exercise, chosenOptionId ?? undefined)
       : exercise
-  }, [exercise, state.attempt.hintLevel])
+  }, [chosenOptionId, exercise, state.attempt.hintLevel])
 
   // Every mode's check lives in its module; the host only routes the answer.
   const answer = useCallback(
     (response: ExerciseAnswer) => {
       if (!shown) {
         return
+      }
+
+      if (response.kind === "choice") {
+        setChosenOptionId(response.optionId)
       }
 
       dispatch({
@@ -126,7 +137,11 @@ export function SessionExerciseScreen() {
         <span className="session-badge">
           {planned.kind === "new"
             ? t("session.badgeNew")
-            : t("session.badgeReview")}
+            : planned.kind === "review"
+              ? t("session.badgeReview")
+              : planned.kind === "repeat"
+                ? t("session.badgeRepeat")
+                : t("session.badgeComprehensive")}
         </span>
       </div>
 
@@ -138,6 +153,7 @@ export function SessionExerciseScreen() {
         exercise={shown}
         word={word}
         disabled={disabled}
+        selectedOptionId={chosenOptionId}
         speechAvailable={speechAvailable}
         onAnswer={answer}
         onSpeak={() => speakWord(word.text)}

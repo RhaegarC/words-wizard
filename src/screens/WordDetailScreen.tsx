@@ -15,8 +15,8 @@ const STATUS_KEYS = {
 } as const
 
 /**
- * PRD §7.3. One detail screen behind both tabs. The meaning and definition are
- * always English; status and strength come from `buildWordDetail`.
+ * PRD §7.3. One detail screen behind both tabs. Meaning and definition carry
+ * both languages; status and strength come from `buildWordDetail`.
  */
 export function WordDetailScreen({
   profile,
@@ -99,11 +99,17 @@ export function WordDetailScreen({
       <dl className="word-detail-meanings">
         <div>
           <dt>{t("words.meaningLabel")}</dt>
-          <dd>{detail.meaning}</dd>
+          <dd className="word-detail-bilingual">
+            <span lang="en">{detail.meaningEn}</span>
+            <span lang="zh">{detail.meaningZh}</span>
+          </dd>
         </div>
         <div>
           <dt>{t("words.definitionLabel")}</dt>
-          <dd>{detail.definition}</dd>
+          <dd className="word-detail-bilingual">
+            <span lang="en">{detail.definitionEn}</span>
+            <span lang="zh">{detail.definitionZh}</span>
+          </dd>
         </div>
       </dl>
 

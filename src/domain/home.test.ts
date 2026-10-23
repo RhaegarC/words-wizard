@@ -144,7 +144,7 @@ function build(profile: Profile, progress: readonly Progress[]) {
 
 describe("buildHomeView", () => {
   it("reports the same due and new counts as previewSession", () => {
-    const due = Array.from({ length: 6 }, (_, index) =>
+    const due = Array.from({ length: 5 }, (_, index) =>
       makeProgress(`w-${index}`, { nextReviewAt: NOW - 1_000 - index }),
     )
     const profile = makeProfile()
@@ -153,9 +153,26 @@ describe("buildHomeView", () => {
 
     expect(view.reviewsDue).toBe(expected.reviewCount)
     expect(view.newWords).toBe(expected.newCount)
+    expect(view.practiceAgain).toBe(expected.repeatCount)
     expect(view.caughtUp).toBe(expected.caughtUp)
-    expect(view.reviewsDue).toBe(config.session.reviewCap)
-    expect(view.newWords).toBeGreaterThan(0)
+    expect(view.reviewsDue).toBe(0)
+    expect(view.newWords).toBe(config.session.newWords)
+    expect(view.caughtUp).toBe(false)
+  })
+
+  it("offers the day's five words for extra practice once they were learned", () => {
+    const learnedToday = WORDS.slice(0, config.session.newWords).map((word) =>
+      makeProgress(word.id, {
+        firstSeenAt: NOW,
+        lastSeenAt: NOW,
+        nextReviewAt: NOW + DAY,
+      }),
+    )
+    const view = build(makeProfile(), learnedToday)
+
+    expect(view.newWords).toBe(0)
+    expect(view.reviewsDue).toBe(0)
+    expect(view.practiceAgain).toBe(config.session.newWords)
     expect(view.caughtUp).toBe(false)
   })
 

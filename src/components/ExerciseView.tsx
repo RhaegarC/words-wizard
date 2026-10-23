@@ -15,6 +15,8 @@ export interface ExerciseViewProps {
   exercise: Exercise
   word: Word
   disabled: boolean
+  /** The choice the child picked, highlighted through the feedback panel. */
+  selectedOptionId: string | null
   speechAvailable: boolean
   /** The raw answer; the mode module checks it in the host. */
   onAnswer: (answer: ExerciseAnswer) => void
@@ -29,6 +31,7 @@ export function ExerciseView({
   exercise,
   word,
   disabled,
+  selectedOptionId,
   speechAvailable,
   onAnswer,
   onSpeak,
@@ -46,6 +49,7 @@ export function ExerciseView({
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={false}
             onAnswer={onAnswer}
           />
@@ -70,6 +74,7 @@ export function ExerciseView({
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={false}
             onAnswer={onAnswer}
           />
@@ -111,6 +116,7 @@ export function ExerciseView({
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={false}
             onAnswer={onAnswer}
           />
@@ -136,6 +142,7 @@ export function ExerciseView({
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={exercise.presentation === "picture"}
             onAnswer={onAnswer}
           />
@@ -147,15 +154,18 @@ export function ExerciseView({
 function ChoiceOptions({
   exercise,
   disabled,
+  selectedId,
   picture,
   onAnswer,
 }: {
   exercise: ChoiceExercise
   disabled: boolean
+  selectedId: string | null
   picture: boolean
   onAnswer: (answer: ExerciseAnswer) => void
 }) {
   const { t } = useLocale()
+  // The host owns the selection so the hint can keep that option in place.
   const choose = (optionId: string) => onAnswer({ kind: "choice", optionId })
 
   return (
@@ -170,6 +180,7 @@ function ChoiceOptions({
             key={option.id}
             disabled={disabled}
             label={t("exercise.pictureOption", { index: index + 1 })}
+            selected={option.id === selectedId}
             onChoose={() => choose(option.id)}
             wordId={option.wordId}
           />
@@ -177,7 +188,7 @@ function ChoiceOptions({
           <button
             key={option.id}
             type="button"
-            className="option-button"
+            className={`option-button ${option.id === selectedId ? "option-button-selected" : ""}`}
             disabled={disabled}
             onClick={() => choose(option.id)}
           >
@@ -193,11 +204,13 @@ function PictureOption({
   wordId,
   label,
   disabled,
+  selected,
   onChoose,
 }: {
   wordId: string
   label: string
   disabled: boolean
+  selected: boolean
   onChoose: () => void
 }) {
   const word = getWord(wordId)
@@ -209,7 +222,7 @@ function PictureOption({
   return (
     <button
       type="button"
-      className="option-button option-picture"
+      className={`option-button option-picture ${selected ? "option-button-selected" : ""}`}
       disabled={disabled}
       aria-label={label}
       onClick={onChoose}
