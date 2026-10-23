@@ -160,6 +160,29 @@ describe("buildHomeView", () => {
     expect(view.caughtUp).toBe(false)
   })
 
+  it("counts collected words for the Home collection card", () => {
+    const progress = [
+      makeProgress("w-0", { status: "learning" }),
+      makeProgress("w-1", { status: "mastered" }),
+      makeProgress("w-2", { status: "new" }),
+      // A row for a word that is no longer in the content is not collected.
+      makeProgress("gone", { status: "mastered" }),
+    ]
+
+    expect(build(makeProfile(), progress).learnedCount).toBe(2)
+    expect(build(makeProfile(), []).learnedCount).toBe(0)
+  })
+
+  it("estimates the daily session from the plan it offers", () => {
+    expect(build(makeProfile(), []).estimatedMinutes).toBe(10)
+
+    const learnedToday = WORDS.slice(0, config.session.newWords).map((word) =>
+      makeProgress(word.id, { firstSeenAt: NOW, lastSeenAt: NOW }),
+    )
+
+    expect(build(makeProfile(), learnedToday).estimatedMinutes).toBe(5)
+  })
+
   it("offers the day's five words for extra practice once they were learned", () => {
     const learnedToday = WORDS.slice(0, config.session.newWords).map((word) =>
       makeProgress(word.id, {

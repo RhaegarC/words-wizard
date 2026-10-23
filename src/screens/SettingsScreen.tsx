@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
+import { Icon } from "../components/Icon"
 import { SettingsDiagnostics } from "../components/SettingsDiagnostics"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { getAvatarSet, getContentMeta, getTopic } from "../content"
@@ -34,7 +35,7 @@ type SaveError = RecustomizeError | "save"
 type LocaleChoice = { id: Locale; label: string }
 
 const LOCALE_CHOICES: readonly LocaleChoice[] = [
-  { id: "en", label: "EN" },
+  { id: "en", label: "English" },
   { id: "zh", label: "中文" },
 ]
 
@@ -174,189 +175,212 @@ export function SettingsScreen({
   }
 
   return (
-    <section className="settings-screen">
+    <section className="settings-page">
+      <span className="eyebrow">{t("settings.eyebrow")}</span>
+      <h2 className="settings-title">{t("settings.heading")}</h2>
+
       <UpdateStatusSlot />
 
-      <section className="settings-section" aria-labelledby="settings-language">
-        <h2 id="settings-language" className="settings-heading">
-          {t("settings.language")}
-        </h2>
-        <p className="settings-copy">{t("settings.languageHint")}</p>
+      <div className="settings-grid">
+        <article className="settings-card" aria-labelledby="settings-language">
+          <header>
+            <Icon name="globe" />
+            <div>
+              <h3 id="settings-language">{t("settings.language")}</h3>
+              <p>{t("settings.languageHint")}</p>
+            </div>
+          </header>
 
-        <div
-          className="settings-toggle"
-          role="group"
-          aria-labelledby="settings-language"
-        >
-          {LOCALE_CHOICES.map((choice) => {
-            const selected = locale === choice.id
-
-            return (
-              <button
-                key={choice.id}
-                type="button"
-                className="settings-choice"
-                data-selected={selected || undefined}
-                aria-pressed={selected}
-                disabled={localeSaving}
-                onClick={() => chooseLocale(choice.id)}
-              >
-                {choice.label}
-              </button>
-            )
-          })}
-        </div>
-
-        {localeFailed ? (
-          <p role="alert" className="form-error">
-            {t("settings.localeError")}
-          </p>
-        ) : null}
-      </section>
-
-      <form
-        className="settings-section settings-form"
-        aria-labelledby="settings-buddy"
-        onSubmit={saveCharacter}
-        noValidate
-      >
-        <h2 id="settings-buddy" className="settings-heading">
-          {t("settings.customise")}
-        </h2>
-
-        <label className="field-label" htmlFor="settings-name">
-          {t("create.nameLabel")}
-        </label>
-        <input
-          id="settings-name"
-          className="name-input"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder={t("create.namePlaceholder")}
-          autoComplete="off"
-          autoCapitalize="words"
-          enterKeyHint="done"
-          aria-invalid={
-            saveError !== null &&
-            saveError !== "avatar" &&
-            saveError !== "save"
-          }
-          aria-describedby={
-            saveError !== null ? "settings-name-hint settings-save-error" : "settings-name-hint"
-          }
-        />
-        <p id="settings-name-hint" className="field-hint">
-          {t("create.nameHint")}
-        </p>
-
-        <fieldset className="avatar-fieldset">
-          <legend className="field-label">{t("create.avatarLabel")}</legend>
-          <div className="avatar-grid">
-            {avatars.map((avatar) => {
-              const selected = avatarId === avatar.id
+          <div
+            className="language-toggle"
+            role="group"
+            aria-labelledby="settings-language"
+          >
+            {LOCALE_CHOICES.map((choice) => {
+              const selected = locale === choice.id
 
               return (
-                <label
-                  key={avatar.id}
-                  className="avatar-option"
-                  data-selected={selected || undefined}
+                <button
+                  key={choice.id}
+                  type="button"
+                  className={selected ? "active" : undefined}
+                  aria-pressed={selected}
+                  disabled={localeSaving}
+                  onClick={() => chooseLocale(choice.id)}
                 >
-                  <input
-                    type="radio"
-                    name="settings-avatar"
-                    value={avatar.id}
-                    checked={selected}
-                    onChange={() => setAvatarId(avatar.id)}
-                  />
-                  <AvatarPortrait avatar={avatar} />
-                  <span className="avatar-name">
-                    {locale === "zh" ? avatar.nameZh : avatar.name}
-                  </span>
-                </label>
+                  {choice.label}
+                </button>
               )
             })}
           </div>
-        </fieldset>
 
-        {saveError !== null ? (
-          <p id="settings-save-error" className="form-error" role="alert">
-            {saveError === "save"
-              ? t("settings.saveError")
-              : t(ERROR_KEYS[saveError])}
+          {localeFailed ? (
+            <p role="alert" className="form-error">
+              {t("settings.localeError")}
+            </p>
+          ) : null}
+        </article>
+
+        <form
+          className="settings-card"
+          aria-labelledby="settings-buddy"
+          onSubmit={saveCharacter}
+          noValidate
+        >
+          <header>
+            <Icon name="user" />
+            <div>
+              <h3 id="settings-buddy">{t("settings.customise")}</h3>
+              <p>{t("settings.customiseHint")}</p>
+            </div>
+          </header>
+
+          <label className="setting-input" htmlFor="settings-name">
+            <span>{t("create.nameLabel")}</span>
+            <input
+              id="settings-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder={t("create.namePlaceholder")}
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="done"
+              aria-invalid={
+                saveError !== null &&
+                saveError !== "avatar" &&
+                saveError !== "save"
+              }
+              aria-describedby={
+                saveError !== null
+                  ? "settings-name-hint settings-save-error"
+                  : "settings-name-hint"
+              }
+            />
+          </label>
+          <p id="settings-name-hint" className="field-hint">
+            {t("create.nameHint")}
           </p>
-        ) : null}
 
-        <button type="submit" className="primary-button" disabled={saving}>
-          {saving ? t("create.saving") : t("settings.save")}
-        </button>
-      </form>
+          <fieldset className="avatar-fieldset">
+            <legend className="field-label">{t("create.avatarLabel")}</legend>
+            <div className="settings-avatars">
+              {avatars.map((avatar) => {
+                const selected = avatarId === avatar.id
 
-      <section className="settings-section" aria-labelledby="settings-topic">
-        <h2 id="settings-topic" className="settings-heading">
-          {t("settings.changeTopic")}
-        </h2>
-        <p className="settings-current">
-          {t("settings.currentTopic", { topic: topicTitle })}
-        </p>
-        <p className="settings-copy">{t("settings.changeTopicHint")}</p>
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => navigate({ id: "topics", from: "settings" })}
-        >
-          {t("settings.changeTopic")}
-        </button>
-      </section>
+                return (
+                  <label
+                    key={avatar.id}
+                    className="settings-avatar"
+                    data-selected={selected || undefined}
+                    style={{ background: avatar.pale }}
+                  >
+                    <input
+                      type="radio"
+                      name="settings-avatar"
+                      value={avatar.id}
+                      checked={selected}
+                      onChange={() => setAvatarId(avatar.id)}
+                    />
+                    <AvatarPortrait avatar={avatar} />
+                    <span className="sr-only">
+                      {locale === "zh" ? avatar.nameZh : avatar.name}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </fieldset>
 
-      <section className="settings-section" aria-labelledby="settings-backup">
-        <h2 id="settings-backup" className="settings-heading">
-          {t("settings.export")}
-        </h2>
-        <p className="settings-copy">{t("settings.exportHint")}</p>
-        <button
-          type="button"
-          className="primary-button"
-          disabled={exporting}
-          onClick={exportBackup}
-        >
-          {exporting ? t("settings.exporting") : t("settings.export")}
-        </button>
+          {saveError !== null ? (
+            <p id="settings-save-error" className="form-error" role="alert">
+              {saveError === "save"
+                ? t("settings.saveError")
+                : t(ERROR_KEYS[saveError])}
+            </p>
+          ) : null}
 
-        {exportFailed ? (
-          <p role="alert" className="form-error">
-            {t("settings.exportError")}
-          </p>
-        ) : null}
-      </section>
+          <button type="submit" className="button primary" disabled={saving}>
+            {saving ? t("create.saving") : t("settings.save")}
+          </button>
+        </form>
 
-      <SettingsDiagnostics profileId={profile.id} />
+        <article className="settings-card" aria-labelledby="settings-topic">
+          <header>
+            <Icon name="image" />
+            <div>
+              <h3 id="settings-topic">{t("settings.changeTopic")}</h3>
+              <p>{t("settings.currentTopic", { topic: topicTitle })}</p>
+            </div>
+          </header>
 
-      <section className="settings-section" aria-labelledby="settings-about">
-        <h2 id="settings-about" className="settings-heading">
-          {t("settings.about")}
-        </h2>
-        <p className="settings-copy">{t("settings.aboutBody")}</p>
+          <p className="settings-copy">{t("settings.changeTopicHint")}</p>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => navigate({ id: "topics", from: "settings" })}
+          >
+            {t("settings.changeTopic")}
+          </button>
+        </article>
 
-        <dl className="settings-facts">
-          <div>
-            <dt>{t("settings.appVersion")}</dt>
-            <dd>{APP_VERSION}</dd>
-          </div>
-          <div>
-            <dt>{t("settings.contentVersion")}</dt>
-            <dd>{getContentMeta().contentVersion}</dd>
-          </div>
-        </dl>
+        <article className="settings-card" aria-labelledby="settings-backup">
+          <header>
+            <Icon name="download" />
+            <div>
+              <h3 id="settings-backup">{t("settings.export")}</h3>
+              <p>{t("settings.exportHint")}</p>
+            </div>
+          </header>
 
-        <a
-          className="settings-link"
-          href="https://github.com/RhaegarC/words-wizard/blob/master/LICENSE"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t("settings.licence")}
-        </a>
-      </section>
+          <button
+            type="button"
+            className="button primary"
+            disabled={exporting}
+            onClick={exportBackup}
+          >
+            <Icon name="download" size={17} />{" "}
+            {exporting ? t("settings.exporting") : t("settings.export")}
+          </button>
+
+          {exportFailed ? (
+            <p role="alert" className="form-error">
+              {t("settings.exportError")}
+            </p>
+          ) : null}
+        </article>
+
+        <SettingsDiagnostics profileId={profile.id} />
+
+        <article className="settings-card" aria-labelledby="settings-about">
+          <header>
+            <Icon name="shield" />
+            <div>
+              <h3 id="settings-about">{t("settings.about")}</h3>
+              <p>{t("settings.aboutBody")}</p>
+            </div>
+          </header>
+
+          <dl className="settings-facts">
+            <div>
+              <dt>{t("settings.appVersion")}</dt>
+              <dd>{APP_VERSION}</dd>
+            </div>
+            <div>
+              <dt>{t("settings.contentVersion")}</dt>
+              <dd>{getContentMeta().contentVersion}</dd>
+            </div>
+          </dl>
+
+          <a
+            className="settings-link"
+            href="https://github.com/RhaegarC/words-wizard/blob/master/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("settings.licence")}
+          </a>
+        </article>
+      </div>
     </section>
   )
 }

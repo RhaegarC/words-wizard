@@ -28,7 +28,7 @@ export function ReviewSummaryScreen() {
   // rather than offering the daily-session fallback, which points elsewhere.
   if (state.phase !== "complete" || result === null) {
     return (
-      <section className="session-screen session-summary">
+      <section className="summary">
         <p role="status" className="session-loading">
           {t("session.saving")}
         </p>
@@ -40,7 +40,7 @@ export function ReviewSummaryScreen() {
   // host before it can reach this screen; until the commit lands, say so.
   if (summary === null) {
     return (
-      <section className="session-screen session-summary">
+      <section className="summary">
         <p role="status" className="session-loading">
           {t("session.saving")}
         </p>
@@ -55,13 +55,14 @@ export function ReviewSummaryScreen() {
   const saving = commitStatus !== "done" && commitStatus !== "error"
 
   return (
-    <section className="session-screen session-summary review-summary">
-      <p className="session-emoji" aria-hidden="true">
+    <section className="summary">
+      <p className="summary-art" aria-hidden="true">
         💛
       </p>
 
-      <h2 className="session-title">{t("review.summaryTitle")}</h2>
-      <p className="review-summary-line">
+      <span className="eyebrow">{t("review.eyebrow")}</span>
+      <h2 className="summary-title">{t("review.summaryTitle")}</h2>
+      <p className="summary-lead">
         {t("review.summary", {
           count: reviewed,
           reviewed,
@@ -70,14 +71,20 @@ export function ReviewSummaryScreen() {
         })}
       </p>
 
-      <ul className="session-summary-list">
-        <li>
-          {t("review.strong")}: {strong}
-        </li>
-        <li>
-          {t("review.needsLook")}: {needsVisit}
-        </li>
-      </ul>
+      <div className="summary-grid summary-grid-three">
+        <span>
+          <b>{reviewed}</b>
+          <small>{t("review.reviewed")}</small>
+        </span>
+        <span>
+          <b>{strong}</b>
+          <small>{t("review.strong")}</small>
+        </span>
+        <span>
+          <b>{needsVisit}</b>
+          <small>{t("review.needsLook")}</small>
+        </span>
+      </div>
 
       <p className="session-save-status" role="status" aria-live="polite">
         {commitStatus === "saving" ? t("session.saving") : null}
@@ -91,7 +98,7 @@ export function ReviewSummaryScreen() {
           </p>
           <button
             type="button"
-            className="primary-button"
+            className="button primary wide"
             ref={retryRef}
             onClick={retryCommit}
           >
@@ -99,7 +106,7 @@ export function ReviewSummaryScreen() {
           </button>
           <button
             type="button"
-            className="secondary-button"
+            className="button secondary wide"
             onClick={() => replace({ id: "home" })}
           >
             {t("session.backHome")}
@@ -108,7 +115,7 @@ export function ReviewSummaryScreen() {
       ) : (
         <button
           type="button"
-          className="primary-button"
+          className="button primary wide"
           ref={backRef}
           disabled={saving}
           onClick={() => replace({ id: "home" })}

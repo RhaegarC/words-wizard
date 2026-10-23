@@ -1,6 +1,8 @@
 import { useLocale } from "../i18n/LocaleProvider"
 import { useUpdateNotice } from "../pwa/UpdateProvider"
 
+import { Icon } from "./Icon"
+
 /**
  * PRD §8.7. A waiting worker is announced, never swapped under the child.
  * Later leaves the old worker in place; only Refresh asks for the new one.
@@ -17,12 +19,17 @@ export function UpdateStatus() {
 
   return (
     <section className="update-notice" role="status" aria-live="polite">
-      <p className="update-title">{t("update.title")}</p>
-      <p className="update-body">{t("update.body")}</p>
+      <span className="update-icon" aria-hidden="true">
+        <Icon name="download" />
+      </span>
+      <span className="update-copy">
+        <b>{t("update.title")}</b>
+        <small>{t("update.body")}</small>
+      </span>
       <div className="update-actions">
         <button
           type="button"
-          className="primary-button"
+          className="button primary"
           disabled={updating}
           onClick={refresh}
         >
@@ -30,7 +37,7 @@ export function UpdateStatus() {
         </button>
         <button
           type="button"
-          className="secondary-button"
+          className="button secondary"
           disabled={updating}
           onClick={later}
         >

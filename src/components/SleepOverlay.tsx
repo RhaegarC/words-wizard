@@ -7,6 +7,7 @@ import type { Profile } from "../domain/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 
+import { Icon } from "./Icon"
 import { useCareAction } from "./useCareAction"
 
 /**
@@ -38,32 +39,30 @@ export function SleepOverlay({
 
   return (
     <section
-      className={`sleep-overlay sleep-overlay-${character.state}`}
+      className={`care-alert ${character.state}`}
       aria-labelledby="sleep-overlay-title"
     >
-      <p className="sleep-overlay-emoji" aria-hidden="true">
-        {sleeping ? "😴" : "🥱"}
-      </p>
-      <h2
-        id="sleep-overlay-title"
-        className="sleep-overlay-title"
-        role="status"
-      >
-        {sleeping ? t("character.sleeping") : t("character.sleepy")}
-      </h2>
-      <p className="sleep-overlay-note">{t("character.neverLost")}</p>
+      <span className="care-alert-icon" aria-hidden="true">
+        <Icon name="moon" />
+      </span>
+      <span className="care-alert-copy">
+        <b id="sleep-overlay-title" role="status">
+          {sleeping ? t("character.sleeping") : t("character.sleepy")}
+        </b>
+        <small>{t("character.neverLost")}</small>
+      </span>
 
-      <div className="sleep-overlay-actions">
+      <div className="care-alert-actions">
         <button
           type="button"
-          className="primary-button"
+          className="button primary"
           onClick={() => navigate({ id: "session" })}
         >
           {t("character.practiceToWake")}
         </button>
         <button
           type="button"
-          className="secondary-button"
+          className="button secondary"
           disabled={working || !check.allowed}
           onClick={() => run(action)}
         >
@@ -75,7 +74,7 @@ export function SleepOverlay({
         </button>
       </div>
 
-      <p className="sleep-overlay-note">
+      <p className="care-alert-note">
         {profile.careTokens > 0
           ? t("character.freeRevival")
           : t("character.noTokens")}

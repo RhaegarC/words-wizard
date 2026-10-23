@@ -1,15 +1,18 @@
 import { useState } from "react"
 
+import { Brand } from "../components/Brand"
+import { Icon } from "../components/Icon"
+import { topicTone } from "../components/tone"
 import { getPacksByTopic, getTopics } from "../content"
 import { progressProvider } from "../db"
 import { resolveTopicChoice } from "../domain/firstRun"
 import type { Profile } from "../domain/types"
 import { useLocale } from "../i18n/LocaleProvider"
+import { useRouter } from "../router/RouterContext"
 
 /**
- * All five topics are open from the first run. The mastery count is zero until
- * feature 09 starts committing progress; the picker shows the pack count now
- * so the size of a topic is visible.
+ * All five topics are open from the first run. Arriving from Settings means
+ * there is somewhere to go back to; a first run continues into the app.
  */
 export function TopicPickerScreen({
   profile,
@@ -22,6 +25,7 @@ export function TopicPickerScreen({
   onChosen: (profile: Profile) => void
 }) {
   const { locale, t } = useLocale()
+  const { navigate } = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
   const topics = getTopics()
@@ -52,13 +56,27 @@ export function TopicPickerScreen({
   }
 
   return (
-    <section className="topic-picker">
+    <main className="setup-page topic-setup">
+      <Brand />
+
       {fromSettings ? (
-        <p className="settings-copy">{t("settings.changeTopicHint")}</p>
+        <button
+          type="button"
+          className="back-action"
+          onClick={() => navigate({ id: "settings" })}
+        >
+          ← {t("common.back")}
+        </button>
       ) : null}
 
+      <header className="setup-head">
+        <span className="eyebrow">{t("topics.eyebrow")}</span>
+        <h1>{t("topics.title")}</h1>
+        <p>{t("topics.subtitle")}</p>
+      </header>
+
       <ul className="topic-grid">
-        {topics.map((topic) => {
+        {topics.map((topic, index) => {
           const packCount = getPacksByTopic(topic.id).length
           const selected = profile.currentTopicId === topic.id
 
@@ -66,28 +84,31 @@ export function TopicPickerScreen({
             <li key={topic.id}>
               <button
                 type="button"
-                className="topic-card"
+                className={`topic-card ${topicTone(topic.id)}`}
                 data-selected={selected || undefined}
                 disabled={pendingId !== null}
                 aria-pressed={selected}
                 onClick={() => choose(topic.id)}
               >
-                <span className="topic-icon" aria-hidden="true">
+                <span className="topic-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="topic-art" aria-hidden="true">
                   {topic.icon}
                 </span>
-                <span className="topic-title">
-                  {locale === "zh" ? topic.titleZh : topic.title}
-                </span>
-                <span className="topic-title-alt">
-                  {locale === "zh" ? topic.title : topic.titleZh}
-                </span>
-                <span className="topic-description">
+                <strong>{locale === "zh" ? topic.titleZh : topic.title}</strong>
+                <b>{locale === "zh" ? topic.title : topic.titleZh}</b>
+                <p>
                   {locale === "zh" ? topic.descriptionZh : topic.description}
-                </span>
+                </p>
                 <span className="topic-meta">
-                  {t("topics.packCount", { count: packCount })} ·{" "}
-                  {t("topics.mastered", { count: 0 })}
+                  {selected
+                    ? t("topics.selected")
+                    : t("topics.packCount", { count: packCount })}
                 </span>
+                <i className="topic-arrow">
+                  <Icon name="arrow" size={17} />
+                </i>
               </button>
             </li>
           )
@@ -99,6 +120,6 @@ export function TopicPickerScreen({
           {t("errors.generic")}
         </p>
       ) : null}
-    </section>
+    </main>
   )
 }
