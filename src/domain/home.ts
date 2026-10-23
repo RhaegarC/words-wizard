@@ -51,6 +51,8 @@ export interface HomeView {
   stage: StageProgress
   reviewsDue: number
   newWords: number
+  /** Today's learned words, offered for extra practice. */
+  practiceAgain: number
   caughtUp: boolean
   monthlyReviewDue: boolean
   streakCount: number
@@ -86,6 +88,7 @@ export function buildHomeView(input: BuildHomeViewInput): HomeView {
     stage: stageProgress(profile.xp),
     reviewsDue: preview.reviewCount,
     newWords: preview.newCount,
+    practiceAgain: preview.repeatCount,
     caughtUp: preview.caughtUp,
     monthlyReviewDue: isMonthlyReviewDue(profile, progress, now),
     streakCount: profile.streakCount,

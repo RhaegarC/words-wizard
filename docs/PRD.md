@@ -116,8 +116,11 @@ more for that local day**:
 - Maximum **15 screens** (5 × (1 intro + 1 spelling) + 5 × 1). With no English
   voice, *Listen & choose* leaves the comprehensive pool, but the screen count
   is unchanged.
-- Once those five words are learned, Home is caught up until the next local day.
-  The daily due-review block is withdrawn; **Monthly Review** remains the
+- Once those five words are learned, the same five are offered as **extra
+  practice**: spelling plus the comprehensive block, with no introduction cards
+  (10 screens, about 5 minutes). Repeated practice is a normal session and earns
+  XP. No new words are introduced until the next local day.
+- The daily due-review block is withdrawn; **Monthly Review** remains the
   spaced-repetition surface.
 
 ### 5.1 Word Introduction
@@ -146,7 +149,8 @@ Detail. The target word, IPA, image, and audio are always present.
 5. **Listen & choose** — hear the English word → pick the matching picture or word.
 
 **Mode rotation:** a new word runs only the **spelling builder** while it is being
-introduced. After all five words, **Comprehensive Practice** gives each word one
+introduced, and a same-day repeat runs the same spelling exercise without an intro
+card. After the learning block, **Comprehensive Practice** gives each word one
 randomly chosen mode from the four non-spelling modes — picture match, word →
 meaning, fill the blank, listen & choose — and shuffles the exercises. Spelling is
 excluded so a comprehensive exercise never repeats the exercise the child has just
@@ -167,6 +171,8 @@ from the comprehensive pool and from the monthly rotation. IPA is always visible
 - Every wrong tap increments `wrongCount` and applies the SM-2-lite penalty.
 - XP: first-try correct **+2**; correct after a hint **+1**; revealed answer **0**.
 - A correct answer after any hint still increments `correctCount`.
+- The submitted answer stays visible during feedback: a built word remains in its
+  slots and a chosen option keeps its highlight. A retry clears the spelling board.
 
 ### 5.4 Session End
 
@@ -733,11 +739,13 @@ durability.**
   in the selected topic; the daily plan contains no review entries.
 - Dedupe by `wordId`.
 - A committed session stamps `firstSeenAt` today on its new words. If any word was
-  learned today, show an **all caught up** state until the next local day, even when
-  unlearned words remain.
-- Mode assignment: the spelling builder for each new word, then one random non-spelling
-  mode per word in a shuffled comprehensive block; deterministic per session. The
-  result aggregates both attempts under the word's single row.
+  learned today, the builder returns today's words as **repeat** entries instead of
+  new ones, so the same five can be practised again until the next local day. They
+  carry no introduction card. If today's words are not in the selected topic, the
+  day is **all caught up**.
+- Mode assignment: the spelling builder for each new or repeat entry, then one random
+  non-spelling mode per word in a shuffled comprehensive block; deterministic per
+  session. The result aggregates both attempts under the word's single row.
 
 **Monthly Review builder:** separate; up to 20 learned words, selected per §7.4.
 
@@ -859,7 +867,7 @@ export const config = {
 | 14 | Multi-profile | Single-profile UI; `profileId` retained in schema. |
 | 15 | Streak reset | 7-day grace; token covers one missed day; best streak kept. |
 | 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
-| 17 | Daily word limit | One five-word set per local day; after it commits, Home is caught up until midnight. Feature 20. |
+| 17 | Daily word limit | One five-word set introduced per local day; after it commits, the same five can be practised again until midnight, but no new words. Feature 20. |
 
 **Additional v0.2 decisions:**
 
@@ -957,7 +965,8 @@ Hash routes only; no server rewrite.
 | Monthly Review | <5 learned | Card hidden | Do not offer |
 | Monthly Review | 5–19 learned | "Time for a monthly check-in!" | Review all, cap 20 |
 | Monthly Review | ≥20 learned | "Time for a monthly check-in!" | 20-word sample per §7.4 |
-| Session | No new words left, or today's five already learned | "You're all caught up!" | CTA → My Words or change topic |
+| Session | Today's five already learned | "Practice again" | Replay the same five words |
+| Session | No new words left in the topic | "You're all caught up!" | CTA → My Words or change topic |
 | Speech | No English voice | "Listen is unavailable on this device." | Show IPA; substitute a non-audio mode |
 | Tricky Words (P2) | 0 | "No tricky words yet — nice!" | — |
 

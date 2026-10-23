@@ -1221,6 +1221,14 @@ body {
   cursor: default;
 }
 
+.option-button-selected,
+.option-button-selected:disabled {
+  border-color: var(--purple);
+  background: var(--pale-purple);
+  color: var(--dark-purple);
+  opacity: 1;
+}
+
 .option-picture {
   padding: 0.375rem;
 }

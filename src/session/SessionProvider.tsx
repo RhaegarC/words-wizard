@@ -105,6 +105,7 @@ const EMPTY_PLAN: SessionPlan = { words: [], caughtUp: true }
 const EMPTY_PREVIEW: SessionPreview = {
   reviewCount: 0,
   newCount: 0,
+  repeatCount: 0,
   caughtUp: true,
 }
 
@@ -239,6 +240,7 @@ export function SessionProvider({
       return {
         reviewCount: plan.words.length,
         newCount: 0,
+        repeatCount: 0,
         caughtUp: plan.words.length === 0,
       }
     }

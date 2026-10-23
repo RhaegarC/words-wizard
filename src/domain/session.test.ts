@@ -147,6 +147,10 @@ function comprehensiveOf(plan: SessionPlan) {
   return plan.words.filter((word) => word.kind === "comprehensive")
 }
 
+function repeatWordsOf(plan: SessionPlan) {
+  return plan.words.filter((word) => word.kind === "repeat")
+}
+
 function playAllCorrect(initial: SessionState): SessionState {
   let state = initial
   let guard = 0
@@ -501,7 +505,7 @@ describe("buildSession", () => {
     expect(reopened).toEqual(first)
   })
 
-  it("is caught up for the rest of the day once five new words were learned", () => {
+  it("offers the same five words for extra practice once they were learned today", () => {
     const words = Array.from({ length: 10 }, (_, index) =>
       makeWord(`n${index + 1}`),
     )
@@ -516,6 +520,42 @@ describe("buildSession", () => {
       packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
       words,
       progress: learnedToday,
+    })
+
+    const plan = buildSession(today)
+
+    expect(newWordsOf(plan)).toEqual([])
+    expect(repeatWordsOf(plan).map((word) => word.wordId)).toEqual([
+      "n1",
+      "n2",
+      "n3",
+      "n4",
+      "n5",
+    ])
+    expect(
+      repeatWordsOf(plan).every(
+        (word) => word.modes.length === 1 && word.kind === "repeat",
+      ),
+    ).toBe(true)
+    expect(comprehensiveOf(plan)).toHaveLength(5)
+    expect(plan.caughtUp).toBe(false)
+    expect(screenCount(plan)).toBe(10)
+    expect(buildSession(today)).toEqual(plan)
+  })
+
+  it("stays caught up when today's words belong to another topic", () => {
+    const words = ["a1", "b1"].map((id) => makeWord(id))
+    const learnedToday = [
+      makeProgress("a1", { firstSeenAt: NOW, lastSeenAt: NOW }),
+    ]
+    const today = makeInput({
+      packs: [
+        makePack("p1", ["a1"], 1, 0, "t1"),
+        makePack("p2", ["b1"], 1, 0, "t2"),
+      ],
+      words,
+      progress: learnedToday,
+      profile: { id: 1, currentTopicId: "t2" },
     })
 
     const plan = buildSession(today)
@@ -571,7 +611,29 @@ describe("previewSession", () => {
     expect(preview).toEqual({
       reviewCount: 0,
       newCount: newWordsOf(plan).length,
+      repeatCount: 0,
       caughtUp: plan.caughtUp,
+    })
+  })
+
+  it("reports today's learned set as repeat practice", () => {
+    const words = Array.from({ length: 8 }, (_, index) =>
+      makeWord(`n${index + 1}`),
+    )
+    const learnedToday = words.slice(0, 5).map((word) =>
+      makeProgress(word.id, { firstSeenAt: NOW, lastSeenAt: NOW }),
+    )
+    const input = makeInput({
+      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      words,
+      progress: learnedToday,
+    })
+
+    expect(previewSession(input)).toEqual({
+      reviewCount: 0,
+      newCount: 0,
+      repeatCount: 5,
+      caughtUp: false,
     })
   })
 })
@@ -867,6 +929,38 @@ describe("session reducer", () => {
     expect(result?.xpEarned).toBe(20)
     expect(result?.kind).toBe("daily")
     expect(result?.words.every((word) => word.firstAttemptCorrect)).toBe(true)
+  })
+
+  it("runs a same-day repeat without intro cards and commits one row per word", () => {
+    const words = Array.from({ length: 8 }, (_, index) =>
+      makeWord(`n${index + 1}`),
+    )
+    const learnedToday = words.slice(0, 5).map((word) =>
+      makeProgress(word.id, { firstSeenAt: NOW, lastSeenAt: NOW }),
+    )
+    const plan = planWith(
+      [makePack("p1", words.map((word) => word.id), 1, 0)],
+      words,
+      learnedToday,
+    )
+
+    const started = sessionReducer(createSessionState(plan, SEED), {
+      type: "start",
+      now: NOW,
+    })
+    const finished = playAllCorrect(started)
+
+    expect(started.phase).toBe("exercise")
+    expect(screenCount(plan)).toBe(10)
+    expect(finished.phase).toBe("complete")
+
+    const result = buildSessionResult(finished)
+
+    expect(result?.words).toHaveLength(5)
+    expect(
+      result?.words.reduce((sum, word) => sum + word.attempts.length, 0),
+    ).toBe(10)
+    expect(result?.xpEarned).toBe(20)
   })
 
   it("records a revealed attempt and moves on after confirmation", () => {

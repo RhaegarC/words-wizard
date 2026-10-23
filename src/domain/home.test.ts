@@ -153,13 +153,14 @@ describe("buildHomeView", () => {
 
     expect(view.reviewsDue).toBe(expected.reviewCount)
     expect(view.newWords).toBe(expected.newCount)
+    expect(view.practiceAgain).toBe(expected.repeatCount)
     expect(view.caughtUp).toBe(expected.caughtUp)
     expect(view.reviewsDue).toBe(0)
     expect(view.newWords).toBe(config.session.newWords)
     expect(view.caughtUp).toBe(false)
   })
 
-  it("is caught up once the day's five words were learned", () => {
+  it("offers the day's five words for extra practice once they were learned", () => {
     const learnedToday = WORDS.slice(0, config.session.newWords).map((word) =>
       makeProgress(word.id, {
         firstSeenAt: NOW,
@@ -171,7 +172,8 @@ describe("buildHomeView", () => {
 
     expect(view.newWords).toBe(0)
     expect(view.reviewsDue).toBe(0)
-    expect(view.caughtUp).toBe(true)
+    expect(view.practiceAgain).toBe(config.session.newWords)
+    expect(view.caughtUp).toBe(false)
   })
 
   it("is caught up when there is neither a review nor a new word", () => {

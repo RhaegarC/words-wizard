@@ -23,7 +23,11 @@ import {
  * `SessionResult` into one transaction.
  */
 
-export type SessionWordKind = "review" | "new" | "comprehensive"
+export type SessionWordKind =
+  | "review"
+  | "new"
+  | "repeat"
+  | "comprehensive"
 
 export interface SessionWord {
   wordId: string
@@ -40,6 +44,8 @@ export interface SessionPlan {
 export interface SessionPreview {
   reviewCount: number
   newCount: number
+  /** Words already learned today, offered as extra practice. */
+  repeatCount: number
   caughtUp: boolean
 }
 
@@ -136,8 +142,10 @@ export function availableModes(
 
 /**
  * Five new words from the lowest-order unlocked pack in the selected topic.
- * Each is introduced and practised with its per-word mode, then the whole set
- * gets one comprehensive exercise per word in a shuffled order.
+ * Once today's set has been learned, the same five come back as extra
+ * practice — without introduction cards — until the next local day. Each
+ * entry is practised with its per-word mode, then the whole set gets one
+ * comprehensive exercise per word in a shuffled order.
  */
 export function buildSession(input: BuildSessionInput): SessionPlan {
   const entries = selectEntries(input)
@@ -171,8 +179,9 @@ export function previewSession(input: BuildSessionInput): SessionPreview {
   const entries = selectEntries(input)
 
   return {
-    reviewCount: 0,
-    newCount: entries.length,
+    reviewCount: entries.filter((entry) => entry.kind === "review").length,
+    newCount: entries.filter((entry) => entry.kind === "new").length,
+    repeatCount: entries.filter((entry) => entry.kind === "repeat").length,
     caughtUp: entries.length === 0,
   }
 }
@@ -465,15 +474,17 @@ function selectEntries(input: BuildSessionInput): SessionEntry[] {
   )
 
   // A committed daily session stamps `firstSeenAt` on each new word. Once any
-  // word was learned today, the day's set is done — no second set until the
-  // next local day.
+  // word was learned today, no new set is selected until the next local day;
+  // the words learned today come back as extra practice instead.
   const today = localDateKey(input.now)
   const learnedToday = progress.some(
     (row) => localDateKey(row.firstSeenAt) === today,
   )
 
   if (learnedToday) {
-    return []
+    return selectRepeatIds(input, progressByWord)
+      .slice(0, config.session.newWords)
+      .map((wordId): SessionEntry => ({ wordId, kind: "repeat" }))
   }
 
   return selectNewWordIds(input, progressByWord)
@@ -481,29 +492,44 @@ function selectEntries(input: BuildSessionInput): SessionEntry[] {
     .map((wordId): SessionEntry => ({ wordId, kind: "new" }))
 }
 
+/** Today's learned words, in the same pack order that selected them. */
+function selectRepeatIds(
+  input: BuildSessionInput,
+  progressByWord: ReadonlyMap<string, Progress>,
+): string[] {
+  const today = localDateKey(input.now)
+  const wordsById = new Map(input.words.map((word) => [word.id, word]))
+
+  for (const pack of unlockedPacks(input, progressByWord)) {
+    const learnedToday = [
+      ...new Set(
+        pack.wordIds.filter((wordId) => {
+          const row = progressByWord.get(wordId)
+
+          return (
+            wordsById.has(wordId) &&
+            row !== undefined &&
+            localDateKey(row.firstSeenAt) === today
+          )
+        }),
+      ),
+    ]
+
+    if (learnedToday.length > 0) {
+      return learnedToday
+    }
+  }
+
+  return []
+}
+
 function selectNewWordIds(
   input: BuildSessionInput,
   progressByWord: ReadonlyMap<string, Progress>,
 ): string[] {
-  const topicId = input.profile.currentTopicId
-
-  if (topicId === null) {
-    return []
-  }
-
   const wordsById = new Map(input.words.map((word) => [word.id, word]))
-  const masteredInTopic = [...progressByWord.values()].filter(
-    (row) =>
-      row.status === "mastered" &&
-      wordsById.get(row.wordId)?.topicIds.includes(topicId) === true,
-  ).length
 
-  const unlocked = input.packs
-    .filter((pack) => pack.topicId === topicId)
-    .sort((left, right) => left.order - right.order)
-    .filter((pack) => masteredInTopic >= pack.unlockRule.value)
-
-  for (const pack of unlocked) {
+  for (const pack of unlockedPacks(input, progressByWord)) {
     const unlearned = [
       ...new Set(
         pack.wordIds.filter(
@@ -519,6 +545,30 @@ function selectNewWordIds(
   }
 
   return []
+}
+
+/** The selected topic's packs whose mastery threshold has been reached. */
+function unlockedPacks(
+  input: BuildSessionInput,
+  progressByWord: ReadonlyMap<string, Progress>,
+): Pack[] {
+  const topicId = input.profile.currentTopicId
+
+  if (topicId === null) {
+    return []
+  }
+
+  const wordsById = new Map(input.words.map((word) => [word.id, word]))
+  const masteredInTopic = [...progressByWord.values()].filter(
+    (row) =>
+      row.status === "mastered" &&
+      wordsById.get(row.wordId)?.topicIds.includes(topicId) === true,
+  ).length
+
+  return input.packs
+    .filter((pack) => pack.topicId === topicId)
+    .sort((left, right) => left.order - right.order)
+    .filter((pack) => masteredInTopic >= pack.unlockRule.value)
 }
 
 function assignNewWordModes(

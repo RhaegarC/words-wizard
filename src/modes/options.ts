@@ -80,9 +80,10 @@ export function buildOptions(spec: BuildOptionsSpec): BuiltOptions {
 /** Hint level 1 for a choice mode: remove one non-answer option. */
 export function removeDistractor<
   E extends { answerId: string; options: readonly ExerciseOption[] },
->(exercise: E): E {
+>(exercise: E, preserveOptionId?: string): E {
   const index = exercise.options.findIndex(
-    (option) => option.id !== exercise.answerId,
+    (option) =>
+      option.id !== exercise.answerId && option.id !== preserveOptionId,
   )
 
   if (index === -1) {

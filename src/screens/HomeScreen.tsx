@@ -208,10 +208,27 @@ export function HomeScreen({
         aria-labelledby="home-session-title"
       >
         <h2 id="home-session-title" className="home-session-title">
-          {view.caughtUp ? t("home.caughtUp") : t("home.todaySession")}
+          {view.practiceAgain > 0
+            ? t("home.practiceAgainTitle")
+            : view.caughtUp
+              ? t("home.caughtUp")
+              : t("home.todaySession")}
         </h2>
 
-        {view.caughtUp ? (
+        {view.practiceAgain > 0 ? (
+          <>
+            <p className="home-session-lead">
+              {t("home.practiceAgainBody", { count: view.practiceAgain })}
+            </p>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => navigate({ id: "session" })}
+            >
+              {t("home.practiceAgain")}
+            </button>
+          </>
+        ) : view.caughtUp ? (
           <>
             <p className="home-session-lead">{t("session.caughtUpBody")}</p>
             <div className="home-session-actions">
