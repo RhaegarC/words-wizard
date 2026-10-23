@@ -1,6 +1,6 @@
 import { WordArtwork } from "../components/WordArtwork"
 import { getWord } from "../content"
-import { wordDefinition, wordExample, wordMeaning } from "../i18n/content"
+import { wordExample } from "../i18n/content"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useSession } from "../session/SessionProvider"
 
@@ -28,7 +28,12 @@ export function SessionIntroScreen() {
         <WordArtwork word={word} className="word-card-art" />
 
         <div className="word-card-heading">
-          <h2 className="word-card-text">{word.text}</h2>
+          <h2 className="word-card-text">
+            {word.text}{" "}
+            <span className="word-card-translation" lang="zh">
+              {word.meaningZh}
+            </span>
+          </h2>
           <button
             type="button"
             className="listen-button"
@@ -45,12 +50,22 @@ export function SessionIntroScreen() {
           <span className="word-card-pos">{word.partOfSpeech}</span>
         </p>
 
-        <p className="word-card-meaning">{wordMeaning(word, locale)}</p>
+        <div className="word-card-meanings">
+          <p className="word-card-meaning" lang="en">
+            {word.meaningEn}
+          </p>
+          <p className="word-card-meaning word-card-meaning-zh" lang="zh">
+            {word.meaningZh}
+          </p>
+        </div>
 
         <dl className="word-card-fields">
           <div>
             <dt>{t("session.definitionLabel")}</dt>
-            <dd>{wordDefinition(word, locale)}</dd>
+            <dd className="word-card-bilingual">
+              <span lang="en">{word.definitionEn}</span>
+              <span lang="zh">{word.definitionZh}</span>
+            </dd>
           </div>
           <div>
             <dt>{t("words.example")}</dt>

@@ -127,6 +127,8 @@
   "session.aboutMinutes": "About {count} minutes",
   "session.badgeNew": "New",
   "session.badgeReview": "Review",
+  "session.badgeComprehensive": "Comprehensive",
+  "session.comprehensivePractice": "Comprehensive practice",
   "session.selfCheck": "Do you know this word?",
   "session.knowIt": "I know it",
   "session.notYet": "Not yet",

@@ -1,7 +1,9 @@
 import { config } from "../config"
 
+import { createRng, hashString, shuffle } from "./random"
 import { localDateKey } from "./time"
 import {
+  PRACTICE_MODES,
   type Pack,
   type PracticeMode,
   type Profile,
@@ -21,12 +23,12 @@ import {
  * `SessionResult` into one transaction.
  */
 
-export type SessionWordKind = "review" | "new"
+export type SessionWordKind = "review" | "new" | "comprehensive"
 
 export interface SessionWord {
   wordId: string
   kind: SessionWordKind
-  /** Every available mode in order for a new word; one mode for a review. */
+  /** The one mode this entry runs. */
   modes: PracticeMode[]
 }
 
@@ -121,43 +123,40 @@ export function sessionSeed(
 }
 
 /**
- * The fixed new-word order, with listen and choose dropped when no English
- * voice exists. This deliberately differs from the `PRACTICE_MODES` registry
- * order.
+ * Every practice mode, with listen and choose dropped when no English voice
+ * exists. The monthly review and the comprehensive block draw from this pool.
  */
 export function availableModes(
   speechAvailable: boolean,
 ): readonly PracticeMode[] {
-  return config.session.newWordModes.filter(
+  return PRACTICE_MODES.filter(
     (mode) => speechAvailable || mode !== "listenChoose",
   )
 }
 
 /**
- * Choose up to five due reviews and ten new words, then assign modes.
- *
- * Reviews are global (any topic) and ordered by `nextReviewAt`; new words come
- * from one pack only — the lowest-order unlocked pack that still has a word
- * with no progress row.
+ * Five new words from the lowest-order unlocked pack in the selected topic.
+ * Each is introduced and practised with its per-word mode, then the whole set
+ * gets one comprehensive exercise per word in a shuffled order.
  */
 export function buildSession(input: BuildSessionInput): SessionPlan {
   const entries = selectEntries(input)
-  const words = assignSessionWords(
+  const words = assignNewWordModes(entries, input.speechAvailable)
+  const comprehensive = assignComprehensive(
     entries,
     input.seed,
     input.speechAvailable,
   )
 
   return {
-    words: words.slice(0, config.session.maxWords),
-    caughtUp: words.length === 0,
+    words: [...words, ...comprehensive],
+    caughtUp: entries.length === 0,
   }
 }
 
 /**
- * Assign modes to a prepared word queue. The monthly review uses this with a
- * single review entry per word, so both session kinds share one deterministic
- * algorithm.
+ * Assign one rotating mode per prepared entry. The monthly review uses this
+ * with a single review entry per word, so its selection stays deterministic.
  */
 export function assignSessionWords(
   entries: readonly { wordId: string; kind: SessionWordKind }[],
@@ -172,13 +171,13 @@ export function previewSession(input: BuildSessionInput): SessionPreview {
   const entries = selectEntries(input)
 
   return {
-    reviewCount: entries.filter((entry) => entry.kind === "review").length,
-    newCount: entries.filter((entry) => entry.kind === "new").length,
+    reviewCount: 0,
+    newCount: entries.length,
     caughtUp: entries.length === 0,
   }
 }
 
-/** 10 × (intro + 5 exercises) + 5 reviews = 65. */
+/** 5 × (intro + spelling) + 5 comprehensive = 15. */
 export function screenCount(plan: SessionPlan): number {
   return plan.words.reduce(
     (total, word) =>
@@ -397,7 +396,11 @@ export function sessionReducer(
   }
 }
 
-/** One completion row per planned word, in session order. */
+/**
+ * One completion row per distinct word, in first-appearance order. A word met
+ * in the learning block and again in the comprehensive block contributes both
+ * attempts to the same row, so the commit applies its scheduler delta once.
+ */
 export function buildSessionResult(state: SessionState): SessionResult | null {
   if (
     state.phase !== "complete" ||
@@ -407,22 +410,31 @@ export function buildSessionResult(state: SessionState): SessionResult | null {
     return null
   }
 
-  const words: SessionWordResult[] = state.plan.words.map((word) => {
+  const seen = new Set<string>()
+  const words: SessionWordResult[] = []
+
+  for (const planned of state.plan.words) {
+    if (seen.has(planned.wordId)) {
+      continue
+    }
+
+    seen.add(planned.wordId)
+
     const attempts = state.attempts.filter(
-      (attempt) => attempt.wordId === word.wordId,
+      (attempt) => attempt.wordId === planned.wordId,
     )
     const first = attempts[0]
 
-    return {
-      wordId: word.wordId,
+    words.push({
+      wordId: planned.wordId,
       firstAttemptCorrect:
         first !== undefined &&
         first.correct &&
         first.wrongTaps === 0 &&
         first.hintLevel === 0,
       attempts,
-    }
-  })
+    })
+  }
 
   return {
     id: `${state.seed.profileId}:${state.seed.kind}:${state.seed.localDate}:${state.startedAt}`,
@@ -448,33 +460,25 @@ function selectEntries(input: BuildSessionInput): SessionEntry[] {
     profileId === undefined
       ? []
       : input.progress.filter((row) => row.profileId === profileId)
-  const wordsById = new Map(input.words.map((word) => [word.id, word]))
   const progressByWord = new Map(
     progress.map((row) => [row.wordId, row] as const),
   )
 
-  const reviews: SessionEntry[] = progress
-    .filter(
-      (row) =>
-        (row.status === "learning" || row.status === "mastered") &&
-        row.nextReviewAt <= input.now,
-    )
-    .filter((row) => wordsById.has(row.wordId))
-    .sort(
-      (left, right) =>
-        left.nextReviewAt - right.nextReviewAt ||
-        left.wordId.localeCompare(right.wordId),
-    )
-    .slice(0, config.session.reviewCap)
-    .map((row) => ({ wordId: row.wordId, kind: "review" }))
+  // A committed daily session stamps `firstSeenAt` on each new word. Once any
+  // word was learned today, the day's set is done — no second set until the
+  // next local day.
+  const today = localDateKey(input.now)
+  const learnedToday = progress.some(
+    (row) => localDateKey(row.firstSeenAt) === today,
+  )
 
-  const reviewIds = new Set(reviews.map((entry) => entry.wordId))
-  const newIds = selectNewWordIds(input, progressByWord)
-    .filter((wordId) => !reviewIds.has(wordId))
+  if (learnedToday) {
+    return []
+  }
+
+  return selectNewWordIds(input, progressByWord)
     .slice(0, config.session.newWords)
     .map((wordId): SessionEntry => ({ wordId, kind: "new" }))
-
-  return [...reviews, ...newIds]
 }
 
 function selectNewWordIds(
@@ -515,6 +519,47 @@ function selectNewWordIds(
   }
 
   return []
+}
+
+function assignNewWordModes(
+  entries: readonly SessionEntry[],
+  speechAvailable: boolean,
+): SessionWord[] {
+  const perWord: readonly PracticeMode[] = config.session.newWordModes
+  const modes = perWord.filter(
+    (mode) => speechAvailable || mode !== "listenChoose",
+  )
+
+  return entries.map((entry) => ({ ...entry, modes: [...modes] }))
+}
+
+/**
+ * One random mode per new word, then a fresh shuffle of the block. The pool is
+ * every available mode except the per-word modes (currently spelling), so a
+ * comprehensive exercise never repeats the exercise the child has just done.
+ */
+function assignComprehensive(
+  entries: readonly SessionEntry[],
+  seed: SessionSeed,
+  speechAvailable: boolean,
+): SessionWord[] {
+  const perWord = new Set<PracticeMode>(config.session.newWordModes)
+  const pool = availableModes(speechAvailable).filter(
+    (mode) => !perWord.has(mode),
+  )
+
+  if (entries.length === 0 || pool.length === 0) {
+    return []
+  }
+
+  const rng = createRng(hashString(`${sessionSeedKey(seed)}|comprehensive`))
+  const picked = entries.map((entry): SessionWord => {
+    const mode = pool[Math.floor(rng() * pool.length)]
+
+    return { wordId: entry.wordId, kind: "comprehensive", modes: [mode] }
+  })
+
+  return shuffle(picked, rng)
 }
 
 function assignModes(

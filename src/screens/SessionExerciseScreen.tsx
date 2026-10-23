@@ -126,7 +126,9 @@ export function SessionExerciseScreen() {
         <span className="session-badge">
           {planned.kind === "new"
             ? t("session.badgeNew")
-            : t("session.badgeReview")}
+            : planned.kind === "review"
+              ? t("session.badgeReview")
+              : t("session.badgeComprehensive")}
         </span>
       </div>
 

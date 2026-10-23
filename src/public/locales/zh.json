@@ -127,6 +127,8 @@
   "session.aboutMinutes": "大约 {count} 分钟",
   "session.badgeNew": "新单词",
   "session.badgeReview": "复习",
+  "session.badgeComprehensive": "综合练习",
+  "session.comprehensivePractice": "综合练习",
   "session.selfCheck": "你认识这个单词吗？",
   "session.knowIt": "我认识",
   "session.notYet": "还不太熟",

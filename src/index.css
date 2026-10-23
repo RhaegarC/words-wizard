@@ -547,6 +547,12 @@ body {
   letter-spacing: -0.01em;
 }
 
+.word-card-translation {
+  color: var(--muted);
+  font-size: 0.7em;
+  font-weight: 700;
+}
+
 .listen-button {
   display: grid;
   min-width: 44px;
@@ -581,16 +587,32 @@ body {
   font-weight: 700;
 }
 
+.word-card-meanings {
+  display: grid;
+  gap: 0.125rem;
+}
+
 .word-card-meaning {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 800;
 }
 
+.word-card-meaning-zh {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .word-card-fields {
   display: grid;
   gap: 0.625rem;
   margin: 0;
+}
+
+.word-card-bilingual,
+.word-detail-bilingual {
+  display: grid;
+  gap: 0.25rem;
 }
 
 .word-card-fields dt {

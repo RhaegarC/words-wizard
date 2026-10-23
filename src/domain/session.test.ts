@@ -139,6 +139,14 @@ function planWith(
   )
 }
 
+function newWordsOf(plan: SessionPlan) {
+  return plan.words.filter((word) => word.kind === "new")
+}
+
+function comprehensiveOf(plan: SessionPlan) {
+  return plan.words.filter((word) => word.kind === "comprehensive")
+}
+
 function playAllCorrect(initial: SessionState): SessionState {
   let state = initial
   let guard = 0
@@ -209,70 +217,60 @@ describe("exerciseSeed", () => {
 })
 
 describe("buildSession", () => {
-  it("builds five reviews plus ten new words, capped at fifteen", () => {
-    const newWords = Array.from({ length: 20 }, (_, index) =>
+  it("selects five new words, each with spelling and one comprehensive exercise", () => {
+    const words = Array.from({ length: 8 }, (_, index) =>
       makeWord(`n${index + 1}`),
-    )
-    const reviewWords = Array.from({ length: 7 }, (_, index) =>
-      makeWord(`r${index + 1}`),
-    )
-    const progress = reviewWords.map((word, index) =>
-      makeProgress(word.id, { nextReviewAt: NOW - (index + 1) * 1000 }),
     )
 
     const plan = planWith(
-      [makePack("p1", newWords.map((word) => word.id), 1, 0)],
-      [...newWords, ...reviewWords],
+      [makePack("p1", words.map((word) => word.id), 1, 0)],
+      words,
+    )
+
+    expect(newWordsOf(plan)).toHaveLength(5)
+    expect(comprehensiveOf(plan)).toHaveLength(5)
+    expect(plan.words.filter((word) => word.kind === "review")).toHaveLength(0)
+    expect(plan.caughtUp).toBe(false)
+
+    const newIds = newWordsOf(plan).map((word) => word.wordId)
+
+    expect(comprehensiveOf(plan).map((word) => word.wordId).sort()).toEqual(
+      [...newIds].sort(),
+    )
+  })
+
+  it("keeps due reviews out of the daily session", () => {
+    const words = ["r1", "r2", "n1", "n2"].map((id) => makeWord(id))
+    const progress = [
+      makeProgress("r1", { nextReviewAt: NOW - DAY }),
+      makeProgress("r2", { nextReviewAt: NOW - DAY }),
+    ]
+
+    const plan = planWith(
+      [makePack("p1", ["n1", "n2"], 1, 0)],
+      words,
       progress,
     )
 
-    expect(plan.words).toHaveLength(15)
-    expect(plan.words.filter((word) => word.kind === "review")).toHaveLength(5)
-    expect(plan.words.filter((word) => word.kind === "new")).toHaveLength(10)
-    expect(plan.caughtUp).toBe(false)
+    expect(plan.words.filter((word) => word.kind === "review")).toHaveLength(0)
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["n1", "n2"])
   })
 
-  it("orders due reviews by nextReviewAt, then by word id", () => {
-    const words = ["b", "a", "c", "d"].map((id) => makeWord(id))
-    const progress = [
-      makeProgress("b", { nextReviewAt: NOW - 10 }),
-      makeProgress("a", { nextReviewAt: NOW - 10 }),
-      makeProgress("c", { nextReviewAt: NOW - 20 }),
-      makeProgress("d", { nextReviewAt: NOW - 5 }),
-    ]
-
-    const plan = planWith([], words, progress)
-
-    expect(plan.words.map((word) => word.wordId)).toEqual([
-      "c",
-      "a",
-      "b",
-      "d",
-    ])
-  })
-
-  it("ignores reviews that are not due, are new, or have no content", () => {
-    const words = ["due", "future", "fresh", "mastered"].map((id) =>
-      makeWord(id),
-    )
+  it("is caught up when there are no new words, even with due reviews", () => {
+    const words = ["due", "mastered"].map((id) => makeWord(id))
     const progress = [
       makeProgress("due", { nextReviewAt: NOW }),
-      makeProgress("future", { nextReviewAt: NOW + 1 }),
-      makeProgress("fresh", { status: "new", nextReviewAt: NOW - DAY }),
       makeProgress("mastered", {
         status: "mastered",
         strength: 0.9,
         nextReviewAt: NOW - DAY,
       }),
-      makeProgress("missing", { nextReviewAt: NOW - DAY }),
     ]
 
     const plan = planWith([], words, progress)
 
-    expect(plan.words.map((word) => word.wordId)).toEqual([
-      "mastered",
-      "due",
-    ])
+    expect(plan.words).toEqual([])
+    expect(plan.caughtUp).toBe(true)
   })
 
   it("reports caught up when nothing is due and nothing is new", () => {
@@ -333,7 +331,11 @@ describe("buildSession", () => {
       progress,
     )
 
-    expect(plan.words.map((word) => word.wordId)).toEqual(["b1", "b2", "b3"])
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual([
+      "b1",
+      "b2",
+      "b3",
+    ])
   })
 
   it("keeps pack 3 locked at twenty-nine and opens it at thirty", () => {
@@ -374,7 +376,7 @@ describe("buildSession", () => {
       ],
     )
 
-    expect(opened.words.map((word) => word.wordId)).toEqual(["c1", "c2"])
+    expect(newWordsOf(opened).map((word) => word.wordId)).toEqual(["c1", "c2"])
   })
 
   it("never selects from a locked pack when the open pack has no new words", () => {
@@ -412,7 +414,7 @@ describe("buildSession", () => {
       progress,
     )
 
-    expect(plan.words.map((word) => word.wordId)).toEqual(["n2", "n3"])
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["n2", "n3"])
   })
 
   it("dedupes a word repeated in a pack", () => {
@@ -423,7 +425,7 @@ describe("buildSession", () => {
       words,
     )
 
-    expect(plan.words.map((word) => word.wordId)).toEqual([
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual([
       "d1",
       "d2",
       "d3",
@@ -449,7 +451,7 @@ describe("buildSession", () => {
       progress,
     )
 
-    expect(plan.words.map((word) => word.wordId)).toEqual(["a1", "a2"])
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a1", "a2"])
   })
 
   it("counts mastery across the topic, not just one pack", () => {
@@ -474,7 +476,83 @@ describe("buildSession", () => {
       progress,
     )
 
-    expect(plan.words.map((word) => word.wordId)).toEqual(["c1"])
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["c1"])
+  })
+
+  it("stays on the same five words while the day's session is unfinished", () => {
+    const words = Array.from({ length: 10 }, (_, index) =>
+      makeWord(`n${index + 1}`),
+    )
+    const input = makeInput({
+      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      words,
+    })
+
+    const first = buildSession(input)
+    const reopened = buildSession(input)
+
+    expect(newWordsOf(first).map((word) => word.wordId)).toEqual([
+      "n1",
+      "n2",
+      "n3",
+      "n4",
+      "n5",
+    ])
+    expect(reopened).toEqual(first)
+  })
+
+  it("is caught up for the rest of the day once five new words were learned", () => {
+    const words = Array.from({ length: 10 }, (_, index) =>
+      makeWord(`n${index + 1}`),
+    )
+    const learnedToday = words.slice(0, 5).map((word) =>
+      makeProgress(word.id, {
+        firstSeenAt: NOW,
+        lastSeenAt: NOW,
+        nextReviewAt: NOW + DAY,
+      }),
+    )
+    const today = makeInput({
+      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      words,
+      progress: learnedToday,
+    })
+
+    const plan = buildSession(today)
+
+    expect(plan.words).toEqual([])
+    expect(plan.caughtUp).toBe(true)
+  })
+
+  it("offers the next five words on the following local day", () => {
+    const words = Array.from({ length: 10 }, (_, index) =>
+      makeWord(`n${index + 1}`),
+    )
+    const learnedToday = words.slice(0, 5).map((word) =>
+      makeProgress(word.id, {
+        firstSeenAt: NOW,
+        lastSeenAt: NOW,
+        nextReviewAt: NOW + DAY,
+      }),
+    )
+    const tomorrow = makeInput({
+      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      words,
+      progress: learnedToday,
+      now: NOW + DAY,
+      seed: { ...SEED, localDate: localDateKey(NOW + DAY) },
+    })
+
+    const plan = buildSession(tomorrow)
+
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual([
+      "n6",
+      "n7",
+      "n8",
+      "n9",
+      "n10",
+    ])
+    expect(plan.caughtUp).toBe(false)
   })
 })
 
@@ -491,8 +569,8 @@ describe("previewSession", () => {
     const preview = previewSession(input)
 
     expect(preview).toEqual({
-      reviewCount: plan.words.filter((word) => word.kind === "review").length,
-      newCount: plan.words.filter((word) => word.kind === "new").length,
+      reviewCount: 0,
+      newCount: newWordsOf(plan).length,
       caughtUp: plan.caughtUp,
     })
   })
@@ -510,64 +588,64 @@ describe("mode assignment", () => {
     expect(buildSession(input)).toEqual(buildSession(input))
   })
 
-  it("runs every new word through all five modes in the fixed order", () => {
-    const words = ["r1", "r2", "n1", "n2"].map((id) => makeWord(id))
+  it("practises each new word by spelling, then one non-spelling mode", () => {
+    const words = ["n1", "n2"].map((id) => makeWord(id))
     const plan = planWith(
       [makePack("p1", ["n1", "n2"], 1, 0)],
       words,
-      [makeProgress("r1"), makeProgress("r2")],
     )
 
-    for (const word of plan.words) {
-      if (word.kind === "new") {
-        expect(word.modes).toEqual([
-          "spellingBuilder",
-          "fillBlank",
-          "wordToMeaning",
-          "pictureMatch",
-          "listenChoose",
-        ])
-      } else {
-        expect(word.modes).toHaveLength(1)
-      }
+    for (const word of newWordsOf(plan)) {
+      expect(word.modes).toEqual(["spellingBuilder"])
+    }
+
+    for (const word of comprehensiveOf(plan)) {
+      expect(word.modes).toHaveLength(1)
+      expect(word.modes).not.toContain("spellingBuilder")
     }
   })
 
-  it("never repeats a mode back-to-back when an alternative exists", () => {
-    const words = Array.from({ length: 9 }, (_, index) =>
+  it("shuffles the comprehensive block without losing or repeating a word", () => {
+    const words = Array.from({ length: 5 }, (_, index) =>
       makeWord(`n${index + 1}`),
     )
     const plan = planWith(
       [makePack("p1", words.map((word) => word.id), 1, 0)],
       words,
     )
-    const modes = plan.words.flatMap((word) => word.modes)
+    const comprehensive = comprehensiveOf(plan)
 
-    for (let index = 1; index < modes.length; index += 1) {
-      expect(modes[index]).not.toBe(modes[index - 1])
-    }
+    expect(comprehensive).toHaveLength(5)
+    expect(new Set(comprehensive.map((word) => word.wordId)).size).toBe(5)
+    expect(comprehensive.map((word) => word.wordId).sort()).toEqual([
+      "n1",
+      "n2",
+      "n3",
+      "n4",
+      "n5",
+    ])
   })
 
-  it("excludes listen and choose when no English voice exists", () => {
-    const words = ["r1", "n1"].map((id) => makeWord(id))
+  it("excludes listen and choose from every mode when no English voice exists", () => {
+    const words = ["n1", "n2"].map((id) => makeWord(id))
     const input = makeInput({
       words,
-      packs: [makePack("p1", ["n1"], 1, 0)],
-      progress: [makeProgress("r1")],
+      packs: [makePack("p1", ["n1", "n2"], 1, 0)],
       speechAvailable: false,
     })
     const plan = buildSession(input)
     const modes = plan.words.flatMap((word) => word.modes)
-    const newWord = plan.words.find((word) => word.kind === "new")
 
     expect(modes).not.toContain("listenChoose")
-    expect(modes.length).toBeGreaterThan(0)
-    expect(newWord?.modes).toEqual([
-      "spellingBuilder",
-      "fillBlank",
-      "wordToMeaning",
-      "pictureMatch",
-    ])
+    expect(newWordsOf(plan).every((word) => word.modes.length === 1)).toBe(true)
+    expect(
+      comprehensiveOf(plan).every(
+        (word) =>
+          word.modes.length === 1 &&
+          word.modes[0] !== "spellingBuilder" &&
+          word.modes[0] !== "listenChoose",
+      ),
+    ).toBe(true)
   })
 
   it("offers listen and choose only when speech is available", () => {
@@ -590,6 +668,7 @@ describe("estimatedMinutes", () => {
   }
 
   it("rounds the screen count up to the next five minutes", () => {
+    expect(estimatedMinutes(planOfScreens(15))).toBe(10)
     expect(estimatedMinutes(planOfScreens(17))).toBe(10)
     expect(estimatedMinutes(planOfScreens(55))).toBe(25)
     expect(estimatedMinutes(planOfScreens(65))).toBe(30)
@@ -724,11 +803,19 @@ describe("attempt feedback ladder", () => {
 })
 
 function oneWordPlan(kind: "review" | "new"): SessionState {
-  const word = makeWord(kind === "new" ? "n1" : "r1")
+  if (kind === "review") {
+    return createSessionState(
+      {
+        words: [{ wordId: "r1", kind: "review", modes: ["fillBlank"] }],
+        caughtUp: false,
+      },
+      SEED,
+    )
+  }
+
   const plan = planWith(
-    kind === "new" ? [makePack("p1", ["n1"], 1, 0)] : [],
-    [word],
-    kind === "review" ? [makeProgress("r1")] : [],
+    [makePack("p1", ["n1"], 1, 0)],
+    [makeWord("n1")],
   )
 
   return createSessionState(plan, SEED)
@@ -750,17 +837,13 @@ describe("session reducer", () => {
     expect(hasIntro(fresh)).toBe(true)
   })
 
-  it("runs a full session of five reviews and ten new words to completion", () => {
-    const reviewWords = Array.from({ length: 5 }, (_, index) =>
-      makeWord(`r${index + 1}`),
-    )
-    const newWords = Array.from({ length: 10 }, (_, index) =>
+  it("runs five new words and their comprehensive block to completion", () => {
+    const newWords = Array.from({ length: 5 }, (_, index) =>
       makeWord(`n${index + 1}`),
     )
     const plan = planWith(
       [makePack("p1", newWords.map((word) => word.id), 1, 0)],
-      [...reviewWords, ...newWords],
-      reviewWords.map((word) => makeProgress(word.id)),
+      newWords,
     )
 
     const started = sessionReducer(createSessionState(plan, SEED), {
@@ -769,7 +852,7 @@ describe("session reducer", () => {
     })
     const finished = playAllCorrect(started)
 
-    expect(screenCount(plan)).toBe(65)
+    expect(screenCount(plan)).toBe(15)
     expect(finished.phase).toBe("complete")
     expect(finished.startedAt).toBe(NOW)
     expect(finished.completedAt).not.toBeNull()
@@ -777,11 +860,11 @@ describe("session reducer", () => {
     const result = buildSessionResult(finished)
 
     expect(result).not.toBeNull()
-    expect(result?.words).toHaveLength(15)
+    expect(result?.words).toHaveLength(5)
     expect(result?.words.reduce((sum, word) => sum + word.attempts.length, 0)).toBe(
-      55,
+      10,
     )
-    expect(result?.xpEarned).toBe(110)
+    expect(result?.xpEarned).toBe(20)
     expect(result?.kind).toBe("daily")
     expect(result?.words.every((word) => word.firstAttemptCorrect)).toBe(true)
   })
@@ -822,7 +905,8 @@ describe("session reducer", () => {
       xp: 0,
     })
     expect(state.phase).toBe("exercise")
-    expect(state.exerciseIndex).toBe(1)
+    expect(state.wordIndex).toBe(1)
+    expect(state.exerciseIndex).toBe(0)
   })
 
   it("keeps hints while the child tries the same exercise again", () => {
@@ -859,12 +943,13 @@ describe("session reducer", () => {
     expect(isLastExercise(state)).toBe(true)
   })
 
-  it("builds one result row per word with its first-attempt flag", () => {
+  it("builds one result row per word, aggregating spelling and comprehensive attempts", () => {
     let state = sessionReducer(oneWordPlan("new"), {
       type: "start",
       now: NOW,
     })
     state = sessionReducer(state, { type: "continueIntro" })
+    // Spelling: one miss then a correct answer.
     state = sessionReducer(state, { type: "answer", correct: false })
     state = sessionReducer(state, {
       type: "continueFeedback",
@@ -875,33 +960,20 @@ describe("session reducer", () => {
       type: "continueFeedback",
       now: NOW + 2,
     })
+    // Comprehensive: first-try correct.
     state = sessionReducer(state, { type: "answer", correct: true })
     state = sessionReducer(state, {
       type: "continueFeedback",
       now: NOW + 3,
     })
-    state = sessionReducer(state, { type: "answer", correct: true })
-    state = sessionReducer(state, {
-      type: "continueFeedback",
-      now: NOW + 4,
-    })
-    state = sessionReducer(state, { type: "answer", correct: true })
-    state = sessionReducer(state, {
-      type: "continueFeedback",
-      now: NOW + 5,
-    })
-    state = sessionReducer(state, { type: "answer", correct: true })
-    state = sessionReducer(state, {
-      type: "continueFeedback",
-      now: NOW + 6,
-    })
 
     const result = buildSessionResult(state)
     const row = result?.words[0] as SessionWordResult
 
+    expect(result?.words).toHaveLength(1)
     expect(row.firstAttemptCorrect).toBe(false)
-    expect(row.attempts).toHaveLength(5)
-    expect(result?.xpEarned).toBe(9)
+    expect(row.attempts).toHaveLength(2)
+    expect(result?.xpEarned).toBe(3)
   })
 
   it("discards everything when the child confirms leaving", () => {

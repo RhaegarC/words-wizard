@@ -176,8 +176,10 @@ export function hasActiveFilters(filters: WordFilters): boolean {
 export interface WordDetailView {
   text: string
   phonetic: string
-  meaning: string
-  definition: string
+  meaningEn: string
+  meaningZh: string
+  definitionEn: string
+  definitionZh: string
   example: WordExample
   image: string
   topicIds: readonly string[]
@@ -186,9 +188,9 @@ export interface WordDetailView {
 }
 
 /**
- * Everything the detail screen shows, independent of storage. The meaning and
- * definition stay English in both UI languages so the detail view is always the
- * English reference; only surrounding labels are localized.
+ * Everything the detail screen shows, independent of storage. Both language
+ * versions of the meaning and definition travel together so the detail view is
+ * readable whichever UI language is active; only the labels are localized.
  */
 export function buildWordDetail(
   word: Word,
@@ -197,8 +199,10 @@ export function buildWordDetail(
   return {
     text: word.text,
     phonetic: word.phonetic,
-    meaning: word.meaningEn,
-    definition: word.definitionEn,
+    meaningEn: word.meaningEn,
+    meaningZh: word.meaningZh,
+    definitionEn: word.definitionEn,
+    definitionZh: word.definitionZh,
     example: word.examples[0],
     image: word.image,
     topicIds: word.topicIds,

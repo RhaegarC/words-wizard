@@ -71,6 +71,14 @@ export function SessionLandingScreen() {
             {t("session.newWords", { count: preview.newCount })}
           </li>
         ) : null}
+        {preview.newCount > 0 ? (
+          <li className="session-fact">
+            <span className="session-fact-badge" aria-hidden="true">
+              🧩
+            </span>
+            {t("session.comprehensivePractice")}
+          </li>
+        ) : null}
       </ul>
 
       <p className="session-meta">
