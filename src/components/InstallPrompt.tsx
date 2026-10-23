@@ -16,6 +16,8 @@ import { readInstallEnvironment } from "../pwa/environment"
 import { installSession } from "../pwa/installSession"
 import { useRouter } from "../router/RouterContext"
 
+import { Icon } from "./Icon"
+
 /**
  * PRD §8.5. The card on Home is the repeated prompt; the screen is where the
  * platform steps and Chromium's native prompt live. Neither blocks Practice:
@@ -110,12 +112,59 @@ export function InstallPrompt({
     onContinue?.()
   }
 
+  if (variant === "card") {
+    return (
+      <section
+        className="install-banner"
+        aria-labelledby="install-prompt-title-card"
+      >
+        <span className="install-banner-icon" aria-hidden="true">
+          <Icon name="download" size={22} />
+        </span>
+        <div className="install-banner-copy">
+          <b id="install-prompt-title-card">
+            {installed ? t("install.installed") : t("install.title")}
+          </b>
+          {installed ? null : <p>{t("install.body")}</p>}
+        </div>
+        <div className="install-banner-actions">
+          {installed ? null : (
+            <>
+              <button
+                type="button"
+                className="button primary"
+                onClick={() => navigate({ id: "install" })}
+              >
+                {t("install.openSteps")}
+              </button>
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => installSession.dismiss()}
+              >
+                {t("install.notNow")}
+              </button>
+            </>
+          )}
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section
-      className={`install-prompt install-prompt-${variant}`}
-      aria-labelledby={`install-prompt-title-${variant}`}
+      className="install-card"
+      aria-labelledby="install-prompt-title-screen"
     >
-      <h2 id={`install-prompt-title-${variant}`} className="install-title">
+      <div className="install-art" aria-hidden="true">
+        <Icon name="download" size={42} />
+        <span>
+          <Icon name="sparkle" />
+        </span>
+      </div>
+
+      <span className="eyebrow">{t("install.eyebrow")}</span>
+      <h2 id="install-prompt-title-screen" className="install-title">
         {installed ? t("install.installed") : t("install.title")}
       </h2>
 
@@ -126,12 +175,15 @@ export function InstallPrompt({
             {persisted === false ? t("install.whyDenied") : t("install.why")}
           </p>
 
-          {variant === "screen" && steps.length > 0 ? (
+          {steps.length > 0 ? (
             <>
               <h3 className="install-steps-title">{t("install.stepsTitle")}</h3>
               <ol className="install-steps">
-                {steps.map((key) => (
-                  <li key={key}>{t(key)}</li>
+                {steps.map((key, index) => (
+                  <li key={key}>
+                    <b>{index + 1}</b>
+                    <span>{t(key)}</span>
+                  </li>
                 ))}
               </ol>
             </>
@@ -149,7 +201,7 @@ export function InstallPrompt({
         {!installed && context === "chromium-installable" ? (
           <button
             type="button"
-            className="primary-button"
+            className="button primary wide"
             disabled={installing}
             onClick={install}
           >
@@ -157,37 +209,18 @@ export function InstallPrompt({
           </button>
         ) : null}
 
-        {variant === "screen" ? (
-          <button
-            type="button"
-            className={
-              installed || context === "chromium-installable"
-                ? "secondary-button"
-                : "primary-button"
-            }
-            onClick={continueOn}
-          >
-            {installed ? t("install.continue") : t("install.continueInBrowser")}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => navigate({ id: "install" })}
-          >
-            {t("install.openSteps")}
-          </button>
-        )}
-
-        {!installed && variant === "card" ? (
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => installSession.dismiss()}
-          >
-            {t("install.notNow")}
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className={
+            installed || context === "chromium-installable"
+              ? "button secondary wide"
+              : "button primary wide"
+          }
+          onClick={continueOn}
+        >
+          {installed ? t("install.continue") : t("install.continueInBrowser")}{" "}
+          <Icon name="arrow" />
+        </button>
       </div>
     </section>
   )

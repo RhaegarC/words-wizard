@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { ExerciseView } from "../components/ExerciseView"
+import { Icon } from "../components/Icon"
 import { getAllWords, getArtwork, getWord } from "../content"
 import { exerciseSeed, isLastExercise } from "../domain/session"
 import type { PracticeMode, Word } from "../domain/types"
@@ -14,6 +15,7 @@ import {
   type Exercise,
   type ExerciseAnswer,
 } from "../modes"
+import { useRouter } from "../router/RouterContext"
 import { useSession } from "../session/SessionProvider"
 
 import { SessionFallback } from "./SessionFallback"
@@ -35,6 +37,7 @@ const hasApprovedArt = (word: Word) => getArtwork(word.id)?.status === "approved
  */
 export function SessionExerciseScreen() {
   const { locale, t } = useLocale()
+  const { navigate } = useRouter()
   const { state, dispatch, speechAvailable, speakWord } = useSession()
   const planned = state.plan.words[state.wordIndex]
   const word = planned ? getWord(planned.wordId) : undefined
@@ -107,6 +110,13 @@ export function SessionExerciseScreen() {
     0,
   )
   const exerciseNumber = Math.min(state.attempts.length + 1, totalExercises)
+  const percent = Math.round(
+    ((exerciseNumber - 1) / Math.max(totalExercises, 1)) * 100,
+  )
+  const progressLabel = t("session.progress", {
+    current: exerciseNumber,
+    total: totalExercises,
+  })
   const showAnswer = state.feedback === "reveal"
   const disabled = state.feedback !== null
   let hint = t("feedback.hint1Choice")
@@ -126,95 +136,114 @@ export function SessionExerciseScreen() {
   }
 
   return (
-    <section className="session-screen">
-      <div className="session-progress-row">
-        <span className="session-progress-label">
-          {t("session.progress", {
-            current: exerciseNumber,
-            total: totalExercises,
-          })}
-        </span>
-        <span className="session-badge">
-          {planned.kind === "new"
-            ? t("session.badgeNew")
-            : planned.kind === "review"
-              ? t("session.badgeReview")
-              : planned.kind === "repeat"
-                ? t("session.badgeRepeat")
-                : t("session.badgeComprehensive")}
-        </span>
+    <section className="practice">
+      <header>
+        <button
+          type="button"
+          className="practice-exit"
+          aria-label={t("session.exitTitle")}
+          onClick={() => navigate({ id: "home" })}
+        >
+          ←
+        </button>
+        <div
+          className="practice-progress"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={percent}
+          aria-label={progressLabel}
+        >
+          <i style={{ width: `${percent}%` }} />
+        </div>
+        <b>{progressLabel}</b>
+      </header>
+
+      <div className="exercise">
+        <div className="exercise-meta">
+          <span className="eyebrow">{t(MODE_KEYS[mode])}</span>
+          <span className="session-badge">
+            {planned.kind === "new"
+              ? t("session.badgeNew")
+              : planned.kind === "review"
+                ? t("session.badgeReview")
+                : planned.kind === "repeat"
+                  ? t("session.badgeRepeat")
+                  : t("session.badgeComprehensive")}
+          </span>
+        </div>
+
+        <ExerciseView
+          // A new exercise starts from clean local UI state (spelling tiles).
+          key={`${state.wordIndex}:${state.exerciseIndex}`}
+          exercise={shown}
+          word={word}
+          disabled={disabled}
+          selectedOptionId={chosenOptionId}
+          speechAvailable={speechAvailable}
+          onAnswer={answer}
+          onSpeak={() => speakWord(word.text)}
+        />
       </div>
-
-      <p className="session-mode-label">{t(MODE_KEYS[mode])}</p>
-
-      <ExerciseView
-        // A new exercise starts from clean local UI state (spelling tiles).
-        key={`${state.wordIndex}:${state.exerciseIndex}`}
-        exercise={shown}
-        word={word}
-        disabled={disabled}
-        selectedOptionId={chosenOptionId}
-        speechAvailable={speechAvailable}
-        onAnswer={answer}
-        onSpeak={() => speakWord(word.text)}
-      />
 
       {state.feedback === null ? null : (
         <div
-          className="feedback-panel"
-          data-kind={state.feedback}
+          className={`feedback ${state.feedback === "correct" ? "success" : ""}`}
           role="status"
           aria-live="polite"
         >
-          {state.feedback === "correct" ? (
-            <>
-              <p className="feedback-title">{t("feedback.correct")}</p>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={() =>
-                  dispatch({ type: "continueFeedback", now: Date.now() })
-                }
-              >
-                {isLastExercise(state) ? t("session.finish") : t("session.next")}
-              </button>
-            </>
-          ) : null}
+          <span className="feedback-copy">
+            <b>
+              {state.feedback === "correct"
+                ? t("feedback.correct")
+                : state.feedback === "hint"
+                  ? t("feedback.almost")
+                  : t("session.revealTitle")}
+            </b>
 
-          {state.feedback === "hint" ? (
-            <>
-              <p className="feedback-title">{t("feedback.almost")}</p>
-              <p className="feedback-hint">{hint}</p>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={() =>
-                  dispatch({ type: "continueFeedback", now: Date.now() })
-                }
-              >
-                {t("common.retry")}
-              </button>
-            </>
-          ) : null}
-
-          {showAnswer ? (
-            <>
-              <p className="feedback-title">{t("session.revealTitle")}</p>
-              <p className="feedback-answer">
+            {state.feedback === "hint" ? <small>{hint}</small> : null}
+            {showAnswer ? (
+              <small>
                 {t("feedback.correctAnswer", {
                   answer: `${word.text} — ${wordMeaning(word, locale)}`,
                 })}
-              </p>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={() =>
-                  dispatch({ type: "confirmReveal", now: Date.now() })
-                }
-              >
-                {t("session.gotIt")}
-              </button>
-            </>
+              </small>
+            ) : null}
+          </span>
+
+          {state.feedback === "correct" ? (
+            <button
+              type="button"
+              className="button primary"
+              onClick={() =>
+                dispatch({ type: "continueFeedback", now: Date.now() })
+              }
+            >
+              {isLastExercise(state) ? t("session.finish") : t("session.next")}
+              <Icon name="arrow" size={17} />
+            </button>
+          ) : null}
+
+          {state.feedback === "hint" ? (
+            <button
+              type="button"
+              className="button primary"
+              onClick={() =>
+                dispatch({ type: "continueFeedback", now: Date.now() })
+              }
+            >
+              {t("common.retry")}
+            </button>
+          ) : null}
+
+          {showAnswer ? (
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => dispatch({ type: "confirmReveal", now: Date.now() })}
+            >
+              {t("session.gotIt")}
+            </button>
           ) : null}
         </div>
       )}

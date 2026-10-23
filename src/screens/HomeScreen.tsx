@@ -1,12 +1,14 @@
 import { useEffect, useRef } from "react"
 
 import { AvatarStage } from "../components/AvatarStage"
+import { Icon } from "../components/Icon"
 import { InstallPromptSlot } from "../components/InstallPromptSlot"
 import { SleepOverlay } from "../components/SleepOverlay"
+import { topicTone } from "../components/tone"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { config } from "../config"
-import { getHomeContent } from "../content"
+import { getHomeContent, getTopic } from "../content"
 import { progressProvider } from "../db"
 import { METRIC_NAMES } from "../db/metrics"
 import { buildHomeView } from "../domain/home"
@@ -105,56 +107,101 @@ export function HomeScreen({
   const sessionsToNextToken = view.tokenProgress.sessionsToNextToken
   const showTokenHint =
     view.tokenProgress.showHint && sessionsToNextToken !== null
+  const topic =
+    profile.currentTopicId === null
+      ? undefined
+      : getTopic(profile.currentTopicId)
+  const topicTitle =
+    topic === undefined
+      ? t("settings.noTopic")
+      : locale === "zh"
+        ? topic.titleZh
+        : topic.title
+
+  const questTitle =
+    view.practiceAgain > 0
+      ? t("home.practiceAgainTitle")
+      : view.caughtUp
+        ? t("home.caughtUp")
+        : t("home.todaySession")
 
   return (
     <section className="home-screen">
-      <header className="home-buddy">
-        <button
-          type="button"
-          className="home-buddy-button"
-          aria-label={`${profile.characterName} — ${stageName}`}
-          onClick={() => navigate({ id: "character" })}
-        >
+      <header className="topbar">
+        <div className="topbar-copy">
+          <span className="eyebrow">
+            {t("home.welcomeBack")}, {profile.name}!
+          </span>
+          <h2 className="topbar-title">{t("home.adventure")}</h2>
+        </div>
+
+        <div className="top-stats">
+          <span className="top-stat top-stat-streak">
+            <Icon name="flame" />
+            <b>{view.streakCount}</b>
+            <small>{t("home.streak")}</small>
+          </span>
+          <span className="top-stat top-stat-token">
+            <Icon name="heart" />
+            <b>
+              {view.careTokens}
+              <span aria-hidden="true"> / </span>
+              {config.careTokens.cap}
+            </b>
+            <small>{t("home.careTokens")}</small>
+          </span>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={t("home.settings")}
+            onClick={() => navigate({ id: "settings" })}
+          >
+            <Icon name="settings" />
+          </button>
+        </div>
+      </header>
+
+      <section className="hero" aria-labelledby="home-buddy-name">
+        <div className="hero-pet">
           <AvatarStage
             avatar={avatar}
             stage={view.character.stage}
             alt={`${avatarName} — ${stageName}`}
             stageLabel={stageName}
-            className="home-buddy-art"
+            className="hero-stage"
           />
-          <span className="home-buddy-cta">{profile.characterName}</span>
-        </button>
+        </div>
 
-        <div className="home-buddy-info">
-          <h2 className="home-buddy-name">{profile.characterName}</h2>
-          <p
-            className={`character-state character-state-${view.character.state}`}
-            role="status"
-          >
+        <div className="hero-copy">
+          <span className="hero-tag">
+            <Icon name="sparkle" size={15} />
+            {stageName}
+          </span>
+          <h2 id="home-buddy-name" className="hero-name">
+            {profile.characterName}
+          </h2>
+          <p className={`hero-state character-state-${view.character.state}`}>
             {t(STATE_KEYS[view.character.state])}
           </p>
+          <p className="hero-grow">{t("home.grow")}</p>
 
+          <div className="growth-label">
+            <span>{stageStatus}</span>
+            <b>{stagePercent}%</b>
+          </div>
           <div
-            className="stage-progress"
+            className="progress"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={stagePercent}
-            aria-labelledby="home-buddy-stage"
+            aria-label={stageStatus}
           >
-            <span
-              className="stage-progress-fill"
-              style={{ width: `${stagePercent}%` }}
-            />
+            <i style={{ width: `${stagePercent}%` }} />
           </div>
-          <p id="home-buddy-stage" className="home-buddy-stage">
-            {stageName} · {stageStatus}
-          </p>
 
-          <div className="home-meter">
-            <span id="home-vitality-label" className="home-meter-label">
-              {t("character.vitality")}
-            </span>
+          <div className="hero-meter">
+            <span id="home-vitality-label">{t("character.vitality")}</span>
             <div
               className="vitality-bar"
               role="progressbar"
@@ -170,28 +217,34 @@ export function HomeScreen({
             </div>
           </div>
 
-          <p className="home-quiet">
-            <span>
-              {t("home.streak")} ·{" "}
-              <strong>
-                {t("home.streakDays", { count: view.streakCount })}
-              </strong>
-            </span>
-            <span>
-              {t("home.careTokenCount", {
-                count: view.careTokens,
-                total: view.tokenProgress.cap,
-              })}
-            </span>
-          </p>
-
           {showTokenHint ? (
-            <p className="home-token-hint">
+            <p className="hero-hint">
               {t("home.tokenHint", { count: sessionsToNextToken })}
             </p>
           ) : null}
         </div>
-      </header>
+
+        <button
+          type="button"
+          className="hero-link"
+          onClick={() => navigate({ id: "character" })}
+        >
+          {t("home.visitBuddy")} <Icon name="arrow" size={17} />
+        </button>
+      </section>
+
+      <section className="topic-strip">
+        <span className={`topic-mini ${topicTone(profile.currentTopicId)}`}>
+          <span aria-hidden="true">{topic?.icon ?? "🗺️"}</span>
+        </span>
+        <div>
+          <small>{t("home.currentWorld")}</small>
+          <b>{topicTitle}</b>
+        </div>
+        <button type="button" onClick={() => navigate({ id: "topics" })}>
+          {t("home.changeTopic")}
+        </button>
+      </section>
 
       <SleepOverlay profile={profile} onProfileUpdated={onProfileUpdated} />
 
@@ -202,130 +255,145 @@ export function HomeScreen({
       ) : null}
 
       <UpdateStatusSlot />
+      <InstallPromptSlot />
 
-      <section
-        className="home-session-card"
-        aria-labelledby="home-session-title"
-      >
-        <h2 id="home-session-title" className="home-session-title">
-          {view.practiceAgain > 0
-            ? t("home.practiceAgainTitle")
-            : view.caughtUp
-              ? t("home.caughtUp")
-              : t("home.todaySession")}
-        </h2>
+      <section className="today" aria-labelledby="home-session-title">
+        <header>
+          <div>
+            <span className="eyebrow">{t("home.todayQuest")}</span>
+            <h2>{t("home.little")}</h2>
+          </div>
+          {view.caughtUp ? null : (
+            <span className="time-pill">
+              {t("session.aboutMinutes", {
+                count: view.estimatedMinutes,
+              })}
+            </span>
+          )}
+        </header>
 
-        {view.practiceAgain > 0 ? (
-          <>
-            <p className="home-session-lead">
-              {t("home.practiceAgainBody", { count: view.practiceAgain })}
-            </p>
-            <button
-              type="button"
-              className="primary-button"
-              onClick={() => navigate({ id: "session" })}
-            >
-              {t("home.practiceAgain")}
-            </button>
-          </>
-        ) : view.caughtUp ? (
-          <>
-            <p className="home-session-lead">{t("session.caughtUpBody")}</p>
-            <div className="home-session-actions">
+        <article className="quest">
+          <span className="quest-icon" aria-hidden="true">
+            <Icon name="book" size={28} />
+          </span>
+
+          <div className="quest-copy">
+            <h3 id="home-session-title">{questTitle}</h3>
+
+            {view.practiceAgain > 0 ? (
+              <>
+                <p>
+                  {t("home.practiceAgainBody", { count: view.practiceAgain })}
+                </p>
+                <div className="quest-chips">
+                  <span>
+                    {t("session.practiceAgainWords", {
+                      count: view.practiceAgain,
+                    })}
+                  </span>
+                  <span>{t("session.comprehensivePractice")}</span>
+                </div>
+              </>
+            ) : view.caughtUp ? (
+              <p>{t("session.caughtUpBody")}</p>
+            ) : (
+              <>
+                <p>{t("session.questBody")}</p>
+                <div className="quest-chips">
+                  {view.reviewsDue > 0 ? (
+                    <span>
+                      {t("session.reviewCount", { count: view.reviewsDue })}
+                    </span>
+                  ) : null}
+                  {view.newWords > 0 ? (
+                    <span>
+                      {t("session.newWords", { count: view.newWords })}
+                    </span>
+                  ) : null}
+                  <span>{t("session.comprehensivePractice")}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {view.caughtUp && view.practiceAgain === 0 ? (
+            <div className="quest-actions">
               <button
                 type="button"
-                className="secondary-button"
+                className="button secondary"
                 onClick={() => navigate({ id: "words", tab: "collection" })}
               >
                 {t("home.myWords")}
               </button>
               <button
                 type="button"
-                className="secondary-button"
+                className="button secondary"
                 onClick={() => navigate({ id: "topics" })}
               >
                 {t("home.changeTopic")}
               </button>
             </div>
-          </>
-        ) : (
-          <>
-            <ul className="home-session-counts">
-              {view.reviewsDue > 0 ? (
-                <li className="home-session-count">
-                  <span aria-hidden="true">🔁</span>{" "}
-                  {t("session.reviewCount", { count: view.reviewsDue })}
-                </li>
-              ) : null}
-              {view.newWords > 0 ? (
-                <li className="home-session-count">
-                  <span aria-hidden="true">✨</span>{" "}
-                  {t("session.newWords", { count: view.newWords })}
-                </li>
-              ) : null}
-            </ul>
+          ) : (
             <button
               type="button"
-              className="primary-button"
+              className="button primary"
               onClick={() => navigate({ id: "session" })}
             >
-              {t("home.practice")}
+              <Icon name="play" size={19} />
+              {view.practiceAgain > 0
+                ? t("home.practiceAgain")
+                : t("home.practice")}
             </button>
-          </>
-        )}
+          )}
+        </article>
       </section>
 
-      <InstallPromptSlot />
-
-      <nav className="home-cards" aria-label={t("home.shortcuts")}>
-        {view.monthlyReviewDue ? (
-          <button
-            type="button"
-            className="home-card home-review-card"
-            onClick={() => navigate({ id: "review" })}
-          >
-            <span className="home-card-icon" aria-hidden="true">
-              📅
-            </span>
-            <span className="home-card-title">{t("review.title")}</span>
-            <span className="home-card-note">{t("home.reviewDue")}</span>
-          </button>
-        ) : null}
-
+      <section className="feature-grid">
         <button
           type="button"
-          className="home-card"
+          className="feature-card"
           onClick={() => navigate({ id: "words", tab: "collection" })}
         >
-          <span className="home-card-icon" aria-hidden="true">
-            📚
+          <i className="feature-icon feature-icon-words" aria-hidden="true">
+            <Icon name="book" size={28} />
+          </i>
+          <span className="feature-copy">
+            <small>{t("home.yourCollection")}</small>
+            <b>{t("home.learnedCount", { count: view.learnedCount })}</b>
+            <em>{t("home.seeWords")}</em>
           </span>
-          <span className="home-card-title">{t("home.myWords")}</span>
+          <Icon name="arrow" />
         </button>
 
         <button
           type="button"
-          className="home-card"
-          onClick={() => navigate({ id: "topics" })}
+          className="feature-card feature-card-review"
+          disabled={!view.monthlyReviewDue}
+          onClick={() => {
+            if (view.monthlyReviewDue) {
+              navigate({ id: "review" })
+            }
+          }}
         >
-          <span className="home-card-icon" aria-hidden="true">
-            🗺️
+          <i className="feature-icon feature-icon-review" aria-hidden="true">
+            <Icon name="sparkle" size={28} />
+          </i>
+          <span className="feature-copy">
+            <small>{t("review.title")}</small>
+            <b>
+              {view.monthlyReviewDue
+                ? t("home.reviewReady")
+                : t("home.reviewLocked")}
+            </b>
+            <em>
+              {view.monthlyReviewDue ? t("home.reviewNote") : ""}
+            </em>
           </span>
-          <span className="home-card-title">{t("home.changeTopic")}</span>
-        </button>
-
-        <button
-          type="button"
-          className="home-card"
-          onClick={() => navigate({ id: "settings" })}
-        >
-          <span className="home-card-icon" aria-hidden="true">
-            ⚙️
+          <span className="feature-pill">
+            {view.monthlyReviewDue ? t("home.reviewDueShort") : "—"}
           </span>
-          <span className="home-card-title">{t("home.settings")}</span>
         </button>
-      </nav>
-
+      </section>
     </section>
   )
 }

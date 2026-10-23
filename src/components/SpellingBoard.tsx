@@ -121,7 +121,7 @@ export function SpellingBoard({
       ) : null}
 
       <div
-        className="spelling-slots"
+        className="letter-slots"
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => {
           event.preventDefault()
@@ -158,7 +158,7 @@ export function SpellingBoard({
         )}
       </div>
 
-      <div className="spelling-pool">
+      <div className="letter-bank">
         {pool.map((tile) => (
           <button
             key={tile.id}

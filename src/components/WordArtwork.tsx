@@ -2,6 +2,8 @@ import { getArtwork } from "../content"
 import { resolveArtwork } from "../domain/content/artwork"
 import type { Word } from "../domain/types"
 
+import { topicTone } from "./tone"
+
 export type WordArtworkProps = {
   word: Word
   className?: string
@@ -19,7 +21,13 @@ export type WordArtworkProps = {
  */
 export function WordArtwork({ word, className, alt }: WordArtworkProps) {
   const artwork = resolveArtwork(word, getArtwork(word.id))
-  const classes = ["word-artwork", className].filter(Boolean).join(" ")
+  const classes = [
+    "word-artwork",
+    `tone-${topicTone(word.topicIds[0])}`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ")
   const label = alt ?? word.text
   const decorative = label === ""
 

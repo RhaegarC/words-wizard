@@ -36,7 +36,7 @@ export function SessionSummaryScreen() {
 
   if (summary === null) {
     return (
-      <section className="session-screen session-summary">
+      <section className="summary">
         <p role="status" className="session-loading">
           {t("session.saving")}
         </p>
@@ -52,36 +52,53 @@ export function SessionSummaryScreen() {
   const saving = commitStatus !== "done" && commitStatus !== "error"
 
   return (
-    <section className="session-screen session-summary">
-      <p className="session-emoji" aria-hidden="true">
+    <section className="summary">
+      <p className="summary-art" aria-hidden="true">
         🎉
       </p>
 
-      <h2 className="session-title">{t("session.summaryTitle")}</h2>
-      <p className="session-xp">
+      <span className="eyebrow">{t("session.questEyebrow")}</span>
+      <h2 className="summary-title">{t("session.summaryTitle")}</h2>
+      <p className="summary-xp">
         {t("session.xpEarned", { count: summary.xpEarned })}
       </p>
 
-      <ul className="session-summary-list">
-        <li>
-          {t("session.wordsCompleted", { count: summary.wordsPracticed })}
-        </li>
-        <li>{t("session.wordsMastered", { count: summary.wordsMastered })}</li>
-        <li>
-          {t("home.streak")}:{" "}
-          {t("home.streakDays", { count: summary.streakCount })}
-        </li>
-      </ul>
+      <div className="summary-grid">
+        <span>
+          <b>{summary.wordsPracticed}</b>
+          <small>{t("session.wordsCompletedLabel")}</small>
+        </span>
+        <span>
+          <b>{summary.wordsMastered}</b>
+          <small>{t("session.wordsMasteredLabel")}</small>
+        </span>
+        <span>
+          <b>{summary.streakCount}</b>
+          <small>{t("home.streak")}</small>
+        </span>
+        <span>
+          <b>
+            {summary.careTokens}
+            <span aria-hidden="true"> / </span>
+            {config.careTokens.cap}
+          </b>
+          <small>{t("home.careTokens")}</small>
+        </span>
+      </div>
 
-      <div className="session-stage">
-        <p className="session-stage-names">
-          {stageChanged ? `${stageBefore} → ${stageAfter}` : stageAfter}
-        </p>
-        {stageChanged ? (
-          <p className="session-stage-up">{t("session.stageUp")}</p>
-        ) : null}
+      <div className="summary-stage">
+        <div className="growth-label">
+          <span>
+            {stageChanged ? `${stageBefore} → ${stageAfter}` : stageAfter}
+          </span>
+          {stageChanged ? (
+            <b className="session-stage-up">{t("session.stageUp")}</b>
+          ) : (
+            <b>{percent}%</b>
+          )}
+        </div>
         <div
-          className="stage-progress"
+          className="progress"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
@@ -95,10 +112,7 @@ export function SessionSummaryScreen() {
                 })
           }
         >
-          <span
-            className="stage-progress-fill"
-            style={{ width: `${percent}%` }}
-          />
+          <i style={{ width: `${percent}%` }} />
         </div>
       </div>
 
@@ -126,7 +140,7 @@ export function SessionSummaryScreen() {
           </p>
           <button
             type="button"
-            className="primary-button"
+            className="button primary wide"
             ref={retryRef}
             onClick={retryCommit}
           >
@@ -134,7 +148,7 @@ export function SessionSummaryScreen() {
           </button>
           <button
             type="button"
-            className="secondary-button"
+            className="button secondary wide"
             onClick={() => navigate({ id: "home" })}
           >
             {t("session.backHome")}
@@ -143,7 +157,7 @@ export function SessionSummaryScreen() {
       ) : (
         <button
           type="button"
-          className="primary-button"
+          className="button primary wide"
           ref={backRef}
           disabled={saving}
           onClick={() => navigate({ id: "home" })}

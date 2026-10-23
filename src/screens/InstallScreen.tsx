@@ -1,3 +1,4 @@
+import { Brand } from "../components/Brand"
 import { InstallPrompt } from "../components/InstallPrompt"
 import type { Profile } from "../domain/types"
 import { useRouter } from "../router/RouterContext"
@@ -11,13 +12,18 @@ export function InstallScreen({ profile }: { profile: Profile }) {
   const { navigate } = useRouter()
 
   return (
-    <InstallPrompt
-      variant="screen"
-      onContinue={() =>
-        navigate(
-          profile.currentTopicId === null ? { id: "topics" } : { id: "home" },
-        )
-      }
-    />
+    <main className="setup-page">
+      <Brand />
+      <InstallPrompt
+        variant="screen"
+        onContinue={() =>
+          navigate(
+            profile.currentTopicId === null
+              ? { id: "topics" }
+              : { id: "home" },
+          )
+        }
+      />
+    </main>
   )
 }

@@ -9,10 +9,11 @@ import {
 import { RouteTable } from "./dev/RouteTable"
 import type { Profile } from "./domain/types"
 import { useLocale } from "./i18n/LocaleProvider"
+import { Brand } from "./components/Brand"
 import { UpdateProvider } from "./pwa/UpdateProvider"
 import { resolveRoute } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
-import { buildHash, parentOf, titleKeyFor } from "./router/routes"
+import { buildHash, titleKeyFor } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
@@ -137,6 +138,7 @@ export default function App() {
   if (boot === null) {
     return (
       <main className="boot-screen">
+        <Brand />
         <p role={bootFailed ? "alert" : "status"}>
           {bootFailed ? t("errors.storageUnavailable") : t("common.loading")}
         </p>
@@ -148,7 +150,6 @@ export default function App() {
   const hasProfile = profile !== null
   const hasTopic = profile !== null && profile.currentTopicId !== null
   const route = resolveRoute(requested, hasProfile, hasTopic)
-  const parent = hasTopic ? parentOf(route) : null
   const router = { navigate, replace, leaveGuard }
 
   if (import.meta.env.DEV && hash === DEV_ROUTE_TABLE_HASH) {
@@ -210,15 +211,24 @@ export default function App() {
       <PlaceholderScreen route={route} />
     )
 
-  const shell = (
-    <AppShell
-      title={t(titleKeyFor(route))}
-      routeKey={buildHash(route)}
-      onBack={parent ? () => navigate(parent) : undefined}
-    >
-      {screen}
-    </AppShell>
-  )
+  // First-run screens are their own full-page layouts; everything else lives
+  // inside the sidebar frame.
+  const standalone =
+    route.id === "create" || route.id === "install" || route.id === "topics"
+
+  const shell =
+    profile === null || standalone ? (
+      screen
+    ) : (
+      <AppShell
+        profile={profile}
+        route={route}
+        title={t(titleKeyFor(route))}
+        routeKey={buildHash(route)}
+      >
+        {screen}
+      </AppShell>
+    )
 
   const inSession =
     route.id === "session" ||
