@@ -1,6 +1,6 @@
 # Feature 20 — Five Words a Day & Comprehensive Practice
 
-> Priority: Must · Mission 1 · **Status: In progress**
+> Priority: Must · Mission 1 · **Status: Done — merged in PR #47**
 > Depends on: 07, 08, 09, 12, 18
 
 ## Summary
