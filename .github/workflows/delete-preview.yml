@@ -1,0 +1,83 @@
+name: Delete Cloudflare preview
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: delete-preview-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: false
+
+jobs:
+  delete-preview:
+    # Merged PRs from this repository only; Cloudflare does not build forks.
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete preview deployments for the merged branch
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PROJECT: words-wizard
+        run: |
+          set -euo pipefail
+
+          if [ -z "${BRANCH}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID}" ] || [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "BRANCH, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN must be set." >&2
+            exit 1
+          fi
+
+          api="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PROJECT}"
+          ids_file="$(mktemp)"
+          page=1
+
+          while :; do
+            status="$(curl -sS -o /tmp/deployments.json -w '%{http_code}' \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "${api}/deployments?page=${page}&per_page=25")"
+
+            if [ "${status:-0}" -ge 400 ] || [ "$(jq -r '.success' /tmp/deployments.json)" != "true" ]; then
+              echo "Cloudflare API failed (${status}): $(jq -r '.errors[]?.message' /tmp/deployments.json | paste -sd '; ' -)" >&2
+              exit 1
+            fi
+
+            jq -r --arg branch "${BRANCH}" \
+              '.result[]? | select(.environment == "preview" and .deployment_trigger.metadata.branch == $branch) | .id' \
+              /tmp/deployments.json >> "${ids_file}"
+
+            total_pages="$(jq -r '.result_info.total_pages // 1' /tmp/deployments.json)"
+            page=$((page + 1))
+            [ "${page}" -le "${total_pages}" ] || break
+          done
+
+          if [ ! -s "${ids_file}" ]; then
+            echo "No preview deployments found for \"${BRANCH}\"."
+            exit 0
+          fi
+
+          count=0
+          while IFS= read -r id; do
+            [ -n "${id}" ] || continue
+
+            status="$(curl -sS -o /tmp/delete.json -w '%{http_code}' -X DELETE \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "${api}/deployments/${id}")"
+
+            if [ "${status:-0}" -ge 400 ] || [ "$(jq -r '.success' /tmp/delete.json)" != "true" ]; then
+              echo "Deleting ${id} failed (${status}): $(jq -r '.errors[]?.message' /tmp/delete.json | paste -sd '; ' -)" >&2
+              exit 1
+            fi
+
+            echo "Deleted preview deployment ${id}."
+            count=$((count + 1))
+          done < "${ids_file}"
+
+          echo "Deleted ${count} preview deployment(s) for \"${BRANCH}\"."
