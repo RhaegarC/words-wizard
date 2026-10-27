@@ -669,7 +669,7 @@ durability.**
 ### 8.7 Offline Updates & Service Worker
 
 - Precache the app shell, bundled JSON, locales, and **all illustrations**
-  (~300 word images + 6 buddy portraits).
+  (~300 word images + 8 buddy portraits).
 - Image target: **WebP, ~512 px, ~20–40 KB each**, roughly 10–15 MB total. Measure first
   load on an iPad.
 - Content and app updates ship as version bumps. A new service worker **does not**
@@ -859,7 +859,7 @@ export const config = {
 | 6 | ESL support | Bilingual EN + 中文, full UI and content; toggle; zh default on zh-CN. |
 | 7 | iPad onboarding | Strong, repeated install prompt; never a hard gate. |
 | 8 | Never-practiced dormancy | In-app only; no notifications. |
-| 9 | Avatar set and stage art | 6 buddy portraits (filename = character name); each stage maps to the portrait. Replaced the 3 × 5 stage set in feature 19. |
+| 9 | Avatar set and stage art | 8 buddy portraits (filename = character name); each stage maps to the portrait. Replaced the 3 × 5 stage set in feature 19; Radahn and Warden added 2026-10-27. |
 | 10 | XP tuning | First-try 2, hint 1, mastery 10, session 5; 50/300/900/2000. |
 | 11 | Monthly Review cadence | Rolling 28 days; ≥5 learned; cap 20. |
 | 12 | Mastery demotion | Strength < 0.5. |

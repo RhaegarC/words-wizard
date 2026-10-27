@@ -26,7 +26,7 @@ and its toolchain is independent of the production app.
 - **Offline PWA:** IndexedDB via Dexie, no backend, no accounts, no sync, no telemetry.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
 - **Cloudflare Pages** hosting, with hash routing.
-- **315 illustrations:** ~300 word images plus 3 avatars × 5 stages, AI-generated and
+- **Illustrations:** ~300 word images plus 8 buddy portraits, AI-generated and
   human-reviewed.
 
 ## Repository layout
