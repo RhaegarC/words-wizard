@@ -76,7 +76,16 @@ function makePacks(): Pack[] {
 }
 
 function makeAvatars(): Avatar[] {
-  return ["alex", "cody", "creeper", "malenia", "may", "steve"].map((id) => ({
+  return [
+    "alex",
+    "cody",
+    "creeper",
+    "malenia",
+    "may",
+    "radahn",
+    "steve",
+    "warden",
+  ].map((id) => ({
     id,
     name: capitalise(id),
     nameZh: id,
@@ -365,7 +374,7 @@ describe("validateContent", () => {
     )
   })
 
-  it("requires six avatars", () => {
+  it("requires eight avatars", () => {
     const bundle = makeBundle()
     bundle.avatars.pop()
 
