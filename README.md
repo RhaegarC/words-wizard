@@ -36,7 +36,7 @@ and its toolchain is independent of the production app.
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1 sprint index, the ordered feature specs, the backlog, and completed features under `archive/` |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [src/](src/) | **Everything the app needs**: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `index.html`, React code, `src/public/` static assets, `src/scripts/` utilities, and the generated `src/dist/` build |
+| [src/](src/) | **Everything the app needs**: the package, `pnpm-lock.yaml`, TypeScript/Vite configs, `src/page/` (React SPA and assets), `src/shared/` (pure domain), `src/worker/` (API, added in feature 21), and the generated `src/dist/` build |
 | Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |
 | [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
@@ -74,9 +74,9 @@ pnpm install
 pnpm dev
 ```
 
-The dev server serves on **http://localhost:8443**. Every app file — `package.json`,
-`tsconfig.json`, `vite.config.ts`, `index.html`, React code, and static assets — lives under
-`src/`. The repository root stays clean.
+The dev server serves on **http://localhost:8443**. The package and build configs live in
+`src/`; the React app and its assets live in `src/page/`, and pure domain code lives in
+`src/shared/`. The repository root stays clean.
 
 | Command | What it does |
 |---|---|
@@ -84,9 +84,9 @@ The dev server serves on **http://localhost:8443**. Every app file — `package.
 | `pnpm build` | Production build into `src/dist/` |
 | `pnpm preview` | Serve the built `src/dist/` on port 8443 |
 | `pnpm validate:content` | Check the bundled content JSON; runs before `pnpm build` |
-| `pnpm test` | Vitest, single run (`**/*.test.ts` under `src/`) |
+| `pnpm test` | Vitest, single run (page, shared, and worker tests) |
 | `pnpm test:watch` | Vitest in watch mode |
-| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm typecheck` | `tsc --noEmit` for the page and test projects |
 | `pnpm format` | Format with oxfmt |
 
 ### Local data
@@ -125,7 +125,7 @@ pnpm dev
 The root app uses **Vitest** for pure domain logic — XP and stage derivation, vitality and
 sleep, streak grace, Care Token ledger, SM-2 scheduling, session building, Monthly Review
 selection, Collection selectors, i18n key completeness, and content integrity. Tests live
-beside the code as `src/**/*.test.ts` and run offline.
+beside the code as `src/page/**/*.test.ts` and `src/shared/**/*.test.ts` and run offline.
 
 **Manual end-to-end checks** on iPad Safari and Edge remain the tier for install, offline
 behavior, IndexedDB persistence, service-worker updates, and Web Speech. There is no
@@ -157,7 +157,7 @@ with automatic TLS and are not part of this setup.
 Pull requests to `develop` still run `.github/workflows/ci.yml`: frozen pnpm install,
 `typecheck`, `test`, `validate:content`, `build`, and `check:dist`.
 
-`src/public/_headers` — copied into the build — carries the cache policy. Hash routing means
+`src/page/public/_headers` — copied into the build — carries the cache policy. Hash routing means
 no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real
 404. Cloudflare serves MIME types itself, so no per-extension upload step is needed. The
 service worker precaches the shell, content, locales, and all illustrations. `check:dist`
