@@ -3,6 +3,12 @@
 > Priority: Must (release blocker) · Mission 1 · **Status: In progress — Craft & Build reviewed and signed off; Explore & Discover authored, teacher review pending**
 > Depends on: 04 (schema and validator). Authoring can run in parallel from feature 04; it must land
 > before any public release.
+>
+> **Mission 2 update (planned):** content authoring moves to versioned D1 migrations in
+> [feature 22](22-d1-content-store.md). The validator and review gates below stay; the `src/content/`
+> file paths and the `pnpm validate:content` loop are Mission 1's and are rewritten by feature 22.
+> **Do not start the remaining authoring until feature 22 lands**, so new words are written once,
+> directly into D1. See the [Mission 2 sprint](00-mission-2-sprint.md).
 
 ## Summary
 

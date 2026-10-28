@@ -1,7 +1,11 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–16 and 18–20 done and archived; feature 17 content production under way with two of five topics authored.**
-> Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
+> Status: **Mission 1 is historical.** Features 01–16 and 18–20 are done and archived; feature 17
+> content production continues inside [Mission 2](00-mission-2-sprint.md), which makes the product
+> online and supersedes this mission's offline-first, no-account, Dexie-only posture.
+> Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins;
+> where Mission 2 disagrees with both, the [Mission 2 sprint](00-mission-2-sprint.md) wins until
+> PRD v0.3 lands.
 
 ## Goal
 
