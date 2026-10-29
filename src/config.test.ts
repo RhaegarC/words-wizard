@@ -33,23 +33,12 @@ describe("config", () => {
     })
   })
 
-  it("matches the PRD §5 session caps", () => {
+  it("matches the PRD §5 five-word daily session", () => {
     expect(config.session).toEqual({
-      reviewCap: 5,
-      newWords: 10,
-      newWordModes: [
-        "spellingBuilder",
-        "fillBlank",
-        "wordToMeaning",
-        "pictureMatch",
-        "listenChoose",
-      ],
-      maxWords: 15,
+      newWords: 5,
+      newWordModes: ["spellingBuilder"],
       secondsPerScreen: 25,
     })
-    expect(config.session.reviewCap + config.session.newWords).toBe(
-      config.session.maxWords,
-    )
   })
 
   it("matches the PRD §7.1 streak and §7.2 dormancy rules", () => {

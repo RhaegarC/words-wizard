@@ -51,22 +51,26 @@ export function checkAnswer(
   return checkNarrowed(exercise, answer)
 }
 
-export function applyHint1(mode: PracticeMode, exercise: Exercise): Exercise {
+export function applyHint1(
+  mode: PracticeMode,
+  exercise: Exercise,
+  preserveOptionId?: string,
+): Exercise {
   if (exercise.mode !== mode) {
     return exercise
   }
 
   switch (exercise.mode) {
     case "pictureMatch":
-      return MODULES.pictureMatch.hint1(exercise)
+      return MODULES.pictureMatch.hint1(exercise, preserveOptionId)
     case "wordToMeaning":
-      return MODULES.wordToMeaning.hint1(exercise)
+      return MODULES.wordToMeaning.hint1(exercise, preserveOptionId)
     case "spellingBuilder":
       return MODULES.spellingBuilder.hint1(exercise)
     case "fillBlank":
       return MODULES.fillBlank.hint1(exercise)
     case "listenChoose":
-      return MODULES.listenChoose.hint1(exercise)
+      return MODULES.listenChoose.hint1(exercise, preserveOptionId)
   }
 }
 

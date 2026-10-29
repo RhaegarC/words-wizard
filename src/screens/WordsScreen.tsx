@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
+import { Icon } from "../components/Icon"
+import { topicTone } from "../components/tone"
 import { WordArtwork } from "../components/WordArtwork"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { getAllWords, getTopics } from "../content"
@@ -73,6 +75,16 @@ export function WordsScreen({
 
   const meaningFor = (word: CollectedWord["word"], active: Locale) =>
     active === "zh" ? word.meaningZh : word.meaningEn
+  const definitionFor = (word: CollectedWord["word"], active: Locale) =>
+    active === "zh" ? word.definitionZh : word.definitionEn
+
+  const collected = progress === null ? null : getCollected(progress, WORDS)
+  const mastered = progress === null ? null : getMastered(progress, WORDS)
+  const heading = t(
+    tab === "collection" ? "words.collectionTitle" : "words.wordBookTitle",
+  )
+  const tabCount =
+    tab === "collection" ? (collected?.length ?? 0) : (mastered?.length ?? 0)
 
   let content: ReactNode
 
@@ -89,10 +101,10 @@ export function WordsScreen({
       </p>
     )
   } else if (tab === "collection") {
-    const collected = getCollected(progress, WORDS)
+    const entries = collected ?? []
     const counts = countByStatus(progress, WORDS)
-    const topicCounts = countByTopic(collected)
-    const visible = applyFilters(collected, filters, Date.now())
+    const topicCounts = countByTopic(entries)
+    const visible = applyFilters(entries, filters, Date.now())
 
     content =
       counts.total === 0 ? (
@@ -103,22 +115,6 @@ export function WordsScreen({
         />
       ) : (
         <>
-          <header className="words-summary">
-            <p className="words-total">
-              {t("words.collectedCount", { count: counts.total })}
-            </p>
-            <ul className="words-counts">
-              <li className="words-count words-count-learning">
-                <span>{t("words.learning")}</span>
-                <strong>{counts.learning}</strong>
-              </li>
-              <li className="words-count words-count-mastered">
-                <span>{t("words.mastered")}</span>
-                <strong>{counts.mastered}</strong>
-              </li>
-            </ul>
-          </header>
-
           {topicCounts.length > 0 ? (
             <section
               className="words-breakdown"
@@ -136,7 +132,10 @@ export function WordsScreen({
                   }
 
                   return (
-                    <li key={topicId} className="words-topic-count">
+                    <li
+                      key={topicId}
+                      className={`words-topic-count ${topicTone(topicId)}`}
+                    >
                       <span aria-hidden="true">{topic.icon}</span>{" "}
                       {locale === "zh" ? topic.titleZh : topic.title}
                       <strong>{count}</strong>
@@ -229,7 +228,7 @@ export function WordsScreen({
             <ul
               ref={listRef}
               tabIndex={-1}
-              className="words-list"
+              className="word-grid"
               aria-label={t("words.collectionTitle")}
             >
               {visible.map((entry) => {
@@ -237,49 +236,39 @@ export function WordsScreen({
 
                 return (
                   <li key={entry.word.id}>
-                    <button
-                      type="button"
-                      className="words-row"
-                      onClick={() =>
-                        navigate({
-                          id: "word-detail",
-                          wordId: entry.word.id,
-                          tab: "collection",
-                        })
-                      }
-                    >
-                      <WordArtwork
-                        word={entry.word}
-                        className="words-row-art"
-                        alt=""
-                      />
-                      <span className="words-row-body">
-                        <span className="words-row-word">
-                          {entry.word.text}
-                        </span>
-                        <span className="words-row-meaning">
-                          {meaningFor(entry.word, locale)}
-                        </span>
-                        <span
-                          className="words-strength"
-                          role="progressbar"
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={percent}
-                          aria-label={t("words.strength")}
-                        >
-                          <span
-                            className="words-strength-fill"
-                            style={{ width: `${percent}%` }}
-                          />
-                        </span>
-                      </span>
+                  <button
+                    type="button"
+                    className={`word-tile ${topicTone(entry.word.topicIds[0])}`}
+                    onClick={() =>
+                      navigate({
+                        id: "word-detail",
+                        wordId: entry.word.id,
+                        tab: "collection",
+                      })
+                    }
+                  >
+                    <WordArtwork
+                      word={entry.word}
+                      className="tile-art"
+                      alt=""
+                    />
+                    <small>{t(STATUS_KEYS[entry.progress.status])}</small>
+                    <h3>{entry.word.text}</h3>
+                    <strong>{meaningFor(entry.word, locale)}</strong>
+                    <p>{definitionFor(entry.word, locale)}</p>
+                    <footer>
                       <span
-                        className={`words-badge words-badge-${entry.progress.status}`}
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={percent}
+                        aria-label={t("words.strength")}
                       >
-                        {t(STATUS_KEYS[entry.progress.status])}
+                        <i style={{ width: `${percent}%` }} />
                       </span>
-                    </button>
+                      <em>{t("words.strength")}</em>
+                    </footer>
+                  </button>
                   </li>
                 )
               })}
@@ -288,22 +277,25 @@ export function WordsScreen({
         </>
       )
   } else {
-    const mastered = getMastered(progress, WORDS)
+    const entries = mastered ?? []
 
     content =
-      mastered.length === 0 ? (
+      entries.length === 0 ? (
         <EmptyState
           message={t("words.emptyWordBook")}
           action={t("words.startSession")}
           onAction={() => navigate({ id: "session" })}
         />
       ) : (
-        <ul className="wordbook-grid">
-          {mastered.map((entry) => (
-            <li key={entry.word.id}>
+        <ul className="word-grid book-grid">
+          {entries.map((entry) => {
+            const percent = Math.round(entry.progress.strength * 100)
+
+            return (
+              <li key={entry.word.id}>
               <button
                 type="button"
-                className="wordbook-card"
+                className={`word-tile ${topicTone(entry.word.topicIds[0])}`}
                 onClick={() =>
                   navigate({
                     id: "word-detail",
@@ -312,54 +304,82 @@ export function WordsScreen({
                   })
                 }
               >
-                <WordArtwork
-                  word={entry.word}
-                  className="wordbook-art"
-                  alt=""
-                />
-                <span className="wordbook-word">{entry.word.text}</span>
-                <span className="wordbook-meaning">
-                  {meaningFor(entry.word, locale)}
-                </span>
+                <WordArtwork word={entry.word} className="tile-art" alt="" />
+                <small>{t("words.mastered")}</small>
+                <h3>{entry.word.text}</h3>
+                <strong>{meaningFor(entry.word, locale)}</strong>
+                <p>{definitionFor(entry.word, locale)}</p>
+                <footer>
+                  <span
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={percent}
+                    aria-label={t("words.strength")}
+                  >
+                    <i style={{ width: `${percent}%` }} />
+                  </span>
+                  <em>{t("words.strength")}</em>
+                </footer>
               </button>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )
   }
 
   return (
-    <section className="words-screen">
-      <nav className="words-tabs" aria-label={t("words.tabsLabel")}>
+    <section className="word-page">
+      <header>
+        <div>
+          <span className="eyebrow">{t("words.pageEyebrow")}</span>
+          <h2>{heading}</h2>
+          <p>
+            {tab === "collection"
+              ? t("words.collectedCount", { count: tabCount })
+              : t("words.bookBannerBody")}
+          </p>
+        </div>
+        <aside>
+          <Icon name="book" size={22} />
+          <b>{tabCount}</b>
+          <span>{t("words.allWords")}</span>
+        </aside>
+      </header>
+
+      <nav className="word-tabs" aria-label={t("words.tabsLabel")}>
         <button
           type="button"
-          className="words-tab"
+          className={tab === "collection" ? "active" : undefined}
           aria-current={tab === "collection" ? "page" : undefined}
           onClick={() => navigate({ id: "words", tab: "collection" })}
         >
           {t("words.collectionTitle")}
+          <small>{collected?.length ?? 0}</small>
         </button>
         <button
           type="button"
-          className="words-tab"
+          className={tab === "wordbook" ? "active" : undefined}
           aria-current={tab === "wordbook" ? "page" : undefined}
           onClick={() => navigate({ id: "words", tab: "wordbook" })}
         >
           {t("words.wordBookTitle")}
+          <small>{mastered?.length ?? 0}</small>
         </button>
       </nav>
 
-      <div
-        role="region"
-        className="words-panel"
-        aria-label={t(
-          tab === "collection"
-            ? "words.collectionTitle"
-            : "words.wordBookTitle",
-        )}
-      >
-        {content}
-      </div>
+      {tab === "wordbook" ? (
+        <div className="book-banner">
+          <Icon name="sparkle" />
+          <span>
+            <b>{t("words.bookBannerTitle")}</b>
+            <small>{t("words.bookBannerBody")}</small>
+          </span>
+        </div>
+      ) : null}
+
+      <div className="words-panel">{content}</div>
     </section>
   )
 }
@@ -376,7 +396,7 @@ function EmptyState({
   return (
     <div className="words-empty">
       <p className="words-empty-copy">{message}</p>
-      <button type="button" className="primary-button" onClick={onAction}>
+      <button type="button" className="button primary" onClick={onAction}>
         {action}
       </button>
     </div>

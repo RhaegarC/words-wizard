@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useState, type DragEvent } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+} from "react"
 
 import { useLocale } from "../i18n/LocaleProvider"
 import type { SpellingExercise } from "../modes"
@@ -35,6 +42,17 @@ export function SpellingBoard({
   )
   const placedIds = new Set(placed.filter((id): id is string => id !== null))
   const pool = exercise.tiles.filter((tile) => !placedIds.has(tile.id))
+  const wasDisabled = useRef(disabled)
+
+  // The completed word stays visible through the correct/retry/reveal
+  // feedback. Only a retry clears the board, so the child starts fresh.
+  useEffect(() => {
+    if (wasDisabled.current && !disabled) {
+      setPlaced(Array.from({ length: slotCount }, () => null))
+    }
+
+    wasDisabled.current = disabled
+  }, [disabled, slotCount])
 
   const commit = useCallback(
     (next: readonly (string | null)[]) => {
@@ -44,13 +62,14 @@ export function SpellingBoard({
       }
 
       // The board's job ends at "the word is complete"; correctness belongs
-      // to the mode module. Clearing here also gives a retry a fresh board.
+      // to the mode module. The letters stay in place until the exercise
+      // advances or a retry re-enables the board.
+      setPlaced(next)
       onComplete(
         next.map((id) => tilesById.get(id as string)?.letter ?? ""),
       )
-      setPlaced(Array.from({ length: slotCount }, () => null))
     },
-    [onComplete, slotCount, tilesById],
+    [onComplete, tilesById],
   )
 
   const placeAt = (tileId: string, slot?: number) => {
@@ -102,7 +121,7 @@ export function SpellingBoard({
       ) : null}
 
       <div
-        className="spelling-slots"
+        className="letter-slots"
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => {
           event.preventDefault()
@@ -139,7 +158,7 @@ export function SpellingBoard({
         )}
       </div>
 
-      <div className="spelling-pool">
+      <div className="letter-bank">
         {pool.map((tile) => (
           <button
             key={tile.id}

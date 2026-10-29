@@ -8,6 +8,7 @@ import type {
   ExerciseAnswer,
 } from "../modes"
 
+import { Icon } from "./Icon"
 import { SpellingBoard } from "./SpellingBoard"
 import { WordArtwork } from "./WordArtwork"
 
@@ -15,6 +16,8 @@ export interface ExerciseViewProps {
   exercise: Exercise
   word: Word
   disabled: boolean
+  /** The choice the child picked, highlighted through the feedback panel. */
+  selectedOptionId: string | null
   speechAvailable: boolean
   /** The raw answer; the mode module checks it in the host. */
   onAnswer: (answer: ExerciseAnswer) => void
@@ -29,6 +32,7 @@ export function ExerciseView({
   exercise,
   word,
   disabled,
+  selectedOptionId,
   speechAvailable,
   onAnswer,
   onSpeak,
@@ -38,108 +42,104 @@ export function ExerciseView({
   switch (exercise.mode) {
     case "pictureMatch":
       return (
-        <>
-          <div className="exercise-card">
-            <WordArtwork word={word} alt="" className="exercise-art" />
-            <p className="exercise-prompt">{t("exercise.picturePrompt")}</p>
+        <div className="exercise-card">
+          <div className="exercise-art">
+            <WordArtwork word={word} alt="" className="exercise-art-inner" />
           </div>
+          <p className="exercise-prompt">{t("exercise.picturePrompt")}</p>
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={false}
             onAnswer={onAnswer}
           />
-        </>
+        </div>
       )
 
     case "wordToMeaning":
       return (
-        <>
-          <div className="exercise-card">
-            <div className="exercise-heading">
-              <h2 className="exercise-word">{word.text}</h2>
-              <ListenButton
-                disabled={!speechAvailable}
-                label={`${t("session.listen")}: ${word.text}`}
-                onSpeak={onSpeak}
-              />
-            </div>
-            <p className="exercise-phonetic">{word.phonetic}</p>
-            <p className="exercise-prompt">{t("exercise.meaningPrompt")}</p>
+        <div className="exercise-card">
+          <div className="word-heading">
+            <h2>{word.text}</h2>
+            <ListenButton
+              disabled={!speechAvailable}
+              label={`${t("session.listen")}: ${word.text}`}
+              onSpeak={onSpeak}
+            />
           </div>
+          <p className="phonetic">{word.phonetic}</p>
+          <p className="exercise-prompt">{t("exercise.meaningPrompt")}</p>
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={false}
             onAnswer={onAnswer}
           />
-        </>
+        </div>
       )
 
     case "spellingBuilder":
       return (
-        <>
-          <div className="exercise-card">
-            <WordArtwork word={word} alt="" className="exercise-art" />
-            <p className="exercise-meaning">{wordMeaning(word, locale)}</p>
-            <p className="exercise-prompt">{t("exercise.spellingPrompt")}</p>
+        <div className="exercise-card">
+          <div className="exercise-art">
+            <WordArtwork word={word} alt="" className="exercise-art-inner" />
           </div>
+          <p className="meaning-clue">{wordMeaning(word, locale)}</p>
+          <p className="exercise-prompt">{t("exercise.spellingPrompt")}</p>
           <SpellingBoard
             exercise={exercise}
             disabled={disabled}
             onComplete={(letters) => onAnswer({ kind: "letters", letters })}
           />
-        </>
+        </div>
       )
 
     case "fillBlank":
       return (
-        <>
-          <div className="exercise-card">
-            <p className="exercise-sentence">
-              {exercise.before}
-              <span className="exercise-blank" aria-label={t("exercise.blank")}>
-                ______
-              </span>
-              {exercise.after}
-            </p>
-            <p className="exercise-translation" lang="zh">
-              {exercise.translationZh}
-            </p>
-            <p className="exercise-prompt">{t("exercise.fillBlankPrompt")}</p>
-          </div>
+        <div className="exercise-card">
+          <p className="fill-sentence">
+            {exercise.before}
+            <b aria-label={t("exercise.blank")}>______</b>
+            {exercise.after}
+          </p>
+          <p className="exercise-translation" lang="zh">
+            {exercise.translationZh}
+          </p>
+          <p className="exercise-prompt">{t("exercise.fillBlankPrompt")}</p>
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={false}
             onAnswer={onAnswer}
           />
-        </>
+        </div>
       )
 
     case "listenChoose":
       return (
-        <>
-          <div className="exercise-card exercise-listen-card">
-            <ListenButton
-              disabled={!speechAvailable}
-              label={t("exercise.playWord")}
-              onSpeak={onSpeak}
-              large
-            />
-            {/* If audio fails, IPA is the fallback cue — never the spelling. */}
-            {speechAvailable ? null : (
-              <p className="exercise-phonetic">{word.phonetic}</p>
-            )}
-            <p className="exercise-prompt">{t("exercise.listenPrompt")}</p>
-          </div>
+        <div className="exercise-card exercise-listen-card">
+          <ListenButton
+            disabled={!speechAvailable}
+            label={t("exercise.playWord")}
+            onSpeak={onSpeak}
+            large
+          />
+          {/* If audio fails, IPA is the fallback cue — never the spelling. */}
+          {speechAvailable ? null : (
+            <p className="phonetic">{word.phonetic}</p>
+          )}
+          <p className="exercise-prompt">{t("exercise.listenPrompt")}</p>
           <ChoiceOptions
             exercise={exercise}
             disabled={disabled}
+            selectedId={selectedOptionId}
             picture={exercise.presentation === "picture"}
             onAnswer={onAnswer}
           />
-        </>
+        </div>
       )
   }
 }
@@ -147,44 +147,61 @@ export function ExerciseView({
 function ChoiceOptions({
   exercise,
   disabled,
+  selectedId,
   picture,
   onAnswer,
 }: {
   exercise: ChoiceExercise
   disabled: boolean
+  selectedId: string | null
   picture: boolean
   onAnswer: (answer: ExerciseAnswer) => void
 }) {
   const { t } = useLocale()
+  // The host owns the selection so the hint can keep that option in place.
   const choose = (optionId: string) => onAnswer({ kind: "choice", optionId })
 
-  return (
-    <div
-      className="exercise-options"
-      role="group"
-      aria-label={t("exercise.chooseOne")}
-    >
-      {exercise.options.map((option, index) =>
-        picture ? (
+  if (picture) {
+    return (
+      <div
+        className="picture-options"
+        role="group"
+        aria-label={t("exercise.chooseOne")}
+      >
+        {exercise.options.map((option, index) => (
           <PictureOption
             key={option.id}
             disabled={disabled}
             label={t("exercise.pictureOption", { index: index + 1 })}
+            selected={option.id === selectedId}
             onChoose={() => choose(option.id)}
             wordId={option.wordId}
           />
-        ) : (
-          <button
-            key={option.id}
-            type="button"
-            className="option-button"
-            disabled={disabled}
-            onClick={() => choose(option.id)}
-          >
-            {option.label}
-          </button>
-        ),
-      )}
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="answers"
+      role="group"
+      aria-label={t("exercise.chooseOne")}
+    >
+      {exercise.options.map((option, index) => (
+        <button
+          key={option.id}
+          type="button"
+          className={`option-button ${
+            option.id === selectedId ? "option-button-selected" : ""
+          }`}
+          disabled={disabled}
+          onClick={() => choose(option.id)}
+        >
+          <i aria-hidden="true">{String.fromCharCode(65 + index)}</i>
+          <span>{option.label}</span>
+        </button>
+      ))}
     </div>
   )
 }
@@ -193,11 +210,13 @@ function PictureOption({
   wordId,
   label,
   disabled,
+  selected,
   onChoose,
 }: {
   wordId: string
   label: string
   disabled: boolean
+  selected: boolean
   onChoose: () => void
 }) {
   const word = getWord(wordId)
@@ -209,7 +228,7 @@ function PictureOption({
   return (
     <button
       type="button"
-      className="option-button option-picture"
+      className={`option-picture ${selected ? "option-button-selected" : ""}`}
       disabled={disabled}
       aria-label={label}
       onClick={onChoose}
@@ -233,12 +252,13 @@ function ListenButton({
   return (
     <button
       type="button"
-      className={`listen-button ${large ? "listen-button-large" : ""}`}
+      className={`listen-button ${large ? "listen big" : ""}`}
       disabled={disabled}
       aria-label={label}
       onClick={onSpeak}
     >
-      <span aria-hidden="true">🔊</span>
+      <Icon name="volume" />
+      {large ? <span>{label}</span> : null}
     </button>
   )
 }

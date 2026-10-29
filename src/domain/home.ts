@@ -4,7 +4,7 @@ import { deriveCharacterState } from "./character"
 import type { Avatar } from "./content/types"
 import { isMonthlyReviewDue } from "./monthlyReview"
 import { stageProgress, type StageProgress } from "./progression"
-import { previewSession, sessionSeed } from "./session"
+import { buildSession, estimatedMinutes, sessionSeed } from "./session"
 import type { CharacterState, Pack, Profile, Progress, Word } from "./types"
 
 /**
@@ -51,6 +51,12 @@ export interface HomeView {
   stage: StageProgress
   reviewsDue: number
   newWords: number
+  /** Today's learned words, offered for extra practice. */
+  practiceAgain: number
+  /** What the daily session would take, for the Home estimate. */
+  estimatedMinutes: number
+  /** Words in the collection: seen at least once, and still in the content. */
+  learnedCount: number
   caughtUp: boolean
   monthlyReviewDue: boolean
   streakCount: number
@@ -61,16 +67,22 @@ export interface HomeView {
 
 export function buildHomeView(input: BuildHomeViewInput): HomeView {
   const { profile, progress, content, now, config } = input
-  const preview = previewSession({
+  // Home promises exactly what the session builder will deliver, including
+  // its duration, so it asks the builder rather than re-deriving counts.
+  const plan = buildSession({
     profile,
     progress,
     packs: content.packs,
     words: content.words,
     now,
     seed: sessionSeed(profile.id ?? -1, now, "daily", content.contentVersion),
-    // The preview never assigns modes, so speech capability is irrelevant here.
+    // Modes are not shown on Home, so speech capability is irrelevant here.
     speechAvailable: false,
   })
+  const wordIds = new Set(content.words.map((word) => word.id))
+  const learnedCount = progress.filter(
+    (row) => row.status !== "new" && wordIds.has(row.wordId),
+  ).length
 
   const sessionsPerToken = config.careTokens.sessionsPerToken
   const atCap = profile.careTokens >= config.careTokens.cap
@@ -84,9 +96,12 @@ export function buildHomeView(input: BuildHomeViewInput): HomeView {
     avatar: content.avatars.find((avatar) => avatar.id === profile.avatar),
     character: deriveCharacterState(profile, now),
     stage: stageProgress(profile.xp),
-    reviewsDue: preview.reviewCount,
-    newWords: preview.newCount,
-    caughtUp: preview.caughtUp,
+    reviewsDue: plan.words.filter((word) => word.kind === "review").length,
+    newWords: plan.words.filter((word) => word.kind === "new").length,
+    practiceAgain: plan.words.filter((word) => word.kind === "repeat").length,
+    estimatedMinutes: estimatedMinutes(plan),
+    learnedCount,
+    caughtUp: plan.caughtUp,
     monthlyReviewDue: isMonthlyReviewDue(profile, progress, now),
     streakCount: profile.streakCount,
     bestStreak: profile.bestStreak,

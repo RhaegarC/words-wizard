@@ -1,12 +1,12 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
-> Status: **In progress — features 01–16, 18, and 19 done and archived; feature 17 content production under way with two of five topics authored.**
+> Status: **In progress — features 01–16 and 18–20 done and archived; feature 17 content production under way with two of five topics authored.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins.
 
 ## Goal
 
 Ship the offline-first MVP: a Chinese-speaking child aged 9–12 creates a word buddy, picks a
-topic, completes a bilingual session (30–40 minutes at the full daily shape), and finds their progress, XP, streak, and
+topic, completes a bilingual session (five words in about 10 minutes), and finds their progress, XP, streak, and
 Care Tokens intact after closing the app. No backend, no accounts, no network at runtime.
 
 The work is ordered so each feature is a **vertical slice** that can be demonstrated on a
@@ -18,8 +18,8 @@ parallel from feature 04 because it is authoring work, not code.
 - [ ] The app, toolchain, and build output live under `src/`; `cd src && pnpm build` produces
       `src/dist/` and the build carries no Figma Make plugins.
 - [ ] A first run goes: character creation → install prompt → topic picker → Home.
-- [ ] A full session runs end to end: 5 reviews + 10 new words, intro cards, all five modes
-      per new word in the fixed order, escalating hints, summary.
+- [ ] A full session runs end to end: 5 new words, intro cards, a spelling exercise
+      per word, a shuffled comprehensive block, escalating hints, summary.
 - [ ] Progress commits once, at session end, in a single Dexie transaction; a reload shows the new state.
 - [ ] XP, stage, streak, vitality, sleep state, and Care Tokens follow PRD §7 and §9 exactly.
 - [ ] My Words (Collection + Word Book + Word Detail) and Monthly Review are usable.
@@ -56,6 +56,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 17 | [Content production: 300 words & 315 illustrations](17-content-production.md) | In progress — Craft & Build reviewed, Explore & Discover authored | 04 (authoring runs in parallel) |
 | 18 | [Spelling-first five-mode practice & 10-word sessions](archive/18-spelling-practice-and-session-size.md) | Done | 07, 08 |
 | 19 | [Buddy portraits, settings return & detail polish](archive/19-buddy-portraits-and-settings-polish.md) | Done | 03, 06, 12, 14, 15 |
+| 20 | [Five words a day & comprehensive practice](archive/20-five-word-daily-and-comprehensive.md) | Done | 07, 08, 09, 12, 18 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
 

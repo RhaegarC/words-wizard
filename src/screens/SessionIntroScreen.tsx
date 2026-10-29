@@ -1,6 +1,7 @@
+import { Icon } from "../components/Icon"
 import { WordArtwork } from "../components/WordArtwork"
 import { getWord } from "../content"
-import { wordDefinition, wordExample, wordMeaning } from "../i18n/content"
+import { wordExample } from "../i18n/content"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useSession } from "../session/SessionProvider"
 
@@ -21,51 +22,49 @@ export function SessionIntroScreen() {
   }
 
   return (
-    <section className="session-screen">
-      <p className="session-badge">{t("session.badgeNew")}</p>
+    <article className="intro-card">
+      <WordArtwork word={word} className="intro-art" />
 
-      <article className="word-card">
-        <WordArtwork word={word} className="word-card-art" />
+      <span className="eyebrow">{t("session.meetWord")}</span>
 
-        <div className="word-card-heading">
-          <h2 className="word-card-text">{word.text}</h2>
-          <button
-            type="button"
-            className="listen-button"
-            onClick={() => speakWord(word.text)}
-            disabled={!speechAvailable}
-            aria-label={`${t("session.listen")}: ${word.text}`}
-          >
-            <span aria-hidden="true">🔊</span>
-          </button>
-        </div>
+      <div className="word-heading">
+        <h2>{word.text}</h2>
+        <strong lang="zh">{word.meaningZh}</strong>
+        <button
+          type="button"
+          className="word-hear"
+          onClick={() => speakWord(word.text)}
+          disabled={!speechAvailable}
+          aria-label={`${t("session.listen")}: ${word.text}`}
+        >
+          <Icon name="volume" />
+        </button>
+      </div>
 
-        <p className="word-card-phonetic">
-          {word.phonetic}
-          <span className="word-card-pos">{word.partOfSpeech}</span>
+      <p className="phonetic">
+        {word.phonetic} · {word.partOfSpeech}
+      </p>
+
+      <div className="bilingual-definition">
+        <p>
+          <b>EN</b>
+          {word.definitionEn}
         </p>
+        <p>
+          <b>中文</b>
+          {word.definitionZh}
+        </p>
+      </div>
 
-        <p className="word-card-meaning">{wordMeaning(word, locale)}</p>
-
-        <dl className="word-card-fields">
-          <div>
-            <dt>{t("session.definitionLabel")}</dt>
-            <dd>{wordDefinition(word, locale)}</dd>
-          </div>
-          <div>
-            <dt>{t("words.example")}</dt>
-            <dd>{wordExample(word, locale)}</dd>
-          </div>
-        </dl>
-      </article>
+      <blockquote>{wordExample(word, locale)}</blockquote>
 
       <button
         type="button"
-        className="primary-button"
+        className="button primary"
         onClick={() => dispatch({ type: "continueIntro" })}
       >
-        {t("common.continue")}
+        {t("session.startSpelling")} <Icon name="arrow" />
       </button>
-    </section>
+    </article>
   )
 }

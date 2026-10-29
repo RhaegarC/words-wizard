@@ -475,6 +475,39 @@ describe("hint level 1", () => {
     }
   })
 
+  it("keeps the option the child chose when a distractor is removed", () => {
+    const target = makeWord("target")
+    const words = wordSet(target, 6)
+    const exercise = asChoice(
+      buildExercise("wordToMeaning", context(target, words)),
+    )
+    const selected = exercise.options.find(
+      (option) => option.id !== exercise.answerId,
+    )
+
+    if (!selected) {
+      throw new Error("expected a distractor")
+    }
+
+    const withoutChoice = asChoice(applyHint1("wordToMeaning", exercise))
+
+    expect(
+      withoutChoice.options.some((option) => option.id === selected.id),
+    ).toBe(false)
+
+    const hinted = asChoice(
+      applyHint1("wordToMeaning", exercise, selected.id),
+    )
+
+    expect(hinted.options).toHaveLength(exercise.options.length - 1)
+    expect(hinted.options.some((option) => option.id === selected.id)).toBe(
+      true,
+    )
+    expect(
+      hinted.options.some((option) => option.id === exercise.answerId),
+    ).toBe(true)
+  })
+
   it("reveals only the first letter for spelling", () => {
     const target = makeWord("bag", { text: "bag" })
     const exercise = buildExercise(

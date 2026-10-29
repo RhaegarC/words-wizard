@@ -22,17 +22,10 @@ export const config = {
     hintWithin: 2,
   },
   session: {
-    reviewCap: 5,
-    newWords: 10,
-    /** The full practice sequence every new word runs, in order. */
-    newWordModes: [
-      "spellingBuilder",
-      "fillBlank",
-      "wordToMeaning",
-      "pictureMatch",
-      "listenChoose",
-    ],
-    maxWords: 15,
+    /** New words in one daily set; the day is complete after they are learned. */
+    newWords: 5,
+    /** The only mode a new word runs while it is being introduced. */
+    newWordModes: ["spellingBuilder"],
     /** Used only to turn a session's screen count into a rough time estimate. */
     secondsPerScreen: 25,
   },

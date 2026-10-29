@@ -274,14 +274,16 @@ describe("buildWordDetail", () => {
     image: "w2.png",
   })
 
-  it("always uses the English meaning and definition, and carries both languages of the example", () => {
+  it("carries both languages of the meaning and definition, and both of the example", () => {
     const detail = buildWordDetail(
       word,
       makeProgress("w2", { status: "mastered", strength: 0.85 }),
     )
 
-    expect(detail.meaning).toBe("meaning w2")
-    expect(detail.definition).toBe("definition w2")
+    expect(detail.meaningEn).toBe("meaning w2")
+    expect(detail.meaningZh).toBe("意思 w2")
+    expect(detail.definitionEn).toBe("definition w2")
+    expect(detail.definitionZh).toBe("解释 w2")
     expect(detail.example).toEqual(word.examples[0])
     expect(detail.example.en).toBe("An example with w2.")
     expect(detail.example.zh).toBe("一个包含 w2 的例句。")

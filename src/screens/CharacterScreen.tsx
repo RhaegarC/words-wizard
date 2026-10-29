@@ -1,4 +1,5 @@
 import { AvatarStage } from "../components/AvatarStage"
+import { Icon } from "../components/Icon"
 import { useCareAction } from "../components/useCareAction"
 import { config } from "../config"
 import { getAvatarSet } from "../content"
@@ -51,122 +52,147 @@ export function CharacterScreen({
       : t("character.workingTowards", {
           next: t(stageMessageKey(progress.nextStage)),
         })
+  const nextStageName =
+    progress.nextStage === null
+      ? t("character.maxStage")
+      : t(stageMessageKey(progress.nextStage))
   const freeze = canFreeze(profile, now)
   const wake = canQuickWake(profile, now)
   const working = pending !== null
 
   return (
-    <section className="character-screen">
-      <AvatarStage
-        avatar={avatar}
-        stage={character.stage}
-        alt={`${avatarName} — ${stageName}`}
-        stageLabel={stageName}
-      />
+    <section className="buddy">
+      <div className={`buddy-art ${character.state}`}>
+        <AvatarStage
+          avatar={avatar}
+          stage={character.stage}
+          alt={`${avatarName} — ${stageName}`}
+          stageLabel={stageName}
+          className="buddy-stage"
+        />
+        {character.state === "awake" ? null : (
+          <span className="sleep-mark">
+            <Icon name="moon" />{" "}
+            {character.state === "sleeping" ? "Z z z" : "…"}
+          </span>
+        )}
+      </div>
 
-      <header className="character-identity">
-        <h2 className="character-name">{profile.characterName}</h2>
-        <p
-          className={`character-state character-state-${character.state}`}
-          role="status"
-        >
+      <div className="buddy-copy">
+        <span className="eyebrow">{t("character.eyebrow")}</span>
+        <h2 className="buddy-name">{profile.characterName}</h2>
+        <p className="buddy-meta">
+          {stageName} · {avatarName}
+        </p>
+        <p className={`buddy-state character-state-${character.state}`} role="status">
           {t(STATE_KEYS[character.state])}
         </p>
-      </header>
 
-      <div className="character-block">
-        <div className="character-inline">
-          <span className="character-label">{t("character.vitality")}</span>
-          <span className="character-value">{character.vitality} / 100</span>
-        </div>
-        <div
-          className="vitality-bar"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={character.vitality}
-          aria-label={t("character.vitality")}
-        >
-          <span
-            className="vitality-fill"
-            style={{ width: `${character.vitality}%` }}
-          />
-        </div>
-      </div>
+        <article className="buddy-card">
+          <header>
+            <span>{t("character.nextStage")}</span>
+            <b>{nextStageName}</b>
+          </header>
+          <div
+            className="progress"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+            aria-label={stageStatus}
+          >
+            <i style={{ width: `${percent}%` }} />
+          </div>
+          <small>{stageStatus}</small>
+        </article>
 
-      <div className="character-block">
-        <div className="character-inline">
-          <span className="character-label">{stageName}</span>
-          <span className="character-value">{stageStatus}</span>
+        <div className="vitality">
+          <header>
+            <span>{t("character.vitality")}</span>
+            <b>
+              {character.state === "awake"
+                ? t("character.vitalityAwake")
+                : character.state === "sleepy"
+                  ? t("character.vitalitySleepy")
+                  : t("character.vitalitySleeping")}
+            </b>
+          </header>
+          <div
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={character.vitality}
+            aria-label={t("character.vitality")}
+          >
+            <i style={{ width: `${character.vitality}%` }} />
+          </div>
         </div>
-        <div
-          className="stage-progress"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={percent}
-          aria-label={stageStatus}
-        >
-          <span
-            className="stage-progress-fill"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
 
-      <div className="character-block">
-        <div className="character-inline">
-          <span className="character-label">{t("character.careTokens")}</span>
-          <span className="character-value">
-            {profile.careTokens} / {config.careTokens.cap}
-          </span>
+        <aside className="buddy-stats">
+          <div className="buddy-stat buddy-stat-tokens">
+            <Icon name="heart" />
+            <b>
+              {profile.careTokens} / {config.careTokens.cap}
+            </b>
+            <small>
+              {t("character.tokensProgress", {
+                count: profile.sessionsSinceLastToken,
+                total: config.careTokens.sessionsPerToken,
+              })}
+            </small>
+          </div>
+          <div className="buddy-stat buddy-stat-streak">
+            <Icon name="flame" />
+            <b>{t("home.streakDays", { count: profile.streakCount })}</b>
+            <small>
+              {t("character.bestStreak", { count: profile.bestStreak })}
+            </small>
+          </div>
+        </aside>
+
+        <div className="care-actions">
+          {freeze.allowed ? (
+            <button
+              type="button"
+              className="button secondary"
+              disabled={working}
+              onClick={() => run("freeze")}
+            >
+              <Icon name="shield" size={17} />{" "}
+              {pending === "freeze" ? t("character.working") : t("character.freeze")}
+            </button>
+          ) : null}
+
+          {wake.allowed ? (
+            <button
+              type="button"
+              className="button primary"
+              disabled={working}
+              onClick={() => run("wake")}
+            >
+              {pending === "wake" ? t("character.working") : t("character.wake")}
+            </button>
+          ) : null}
         </div>
-        <p className="character-hint">
+
+        {freeze.allowed ? (
+          <p className="buddy-hint">{t("character.freezeHint")}</p>
+        ) : null}
+        {wake.allowed ? (
+          <p className="buddy-hint">{t("character.wakeHint")}</p>
+        ) : null}
+        <p className="buddy-hint">
           {profile.careTokens === 0
             ? t("character.noTokens")
             : t("character.freeRevival")}
         </p>
-      </div>
 
-      <div className="character-actions">
-        {freeze.allowed ? (
-          <>
-            <button
-              type="button"
-              className="secondary-button"
-              disabled={working}
-              onClick={() => run("freeze")}
-            >
-              {pending === "freeze"
-                ? t("character.working")
-                : t("character.freeze")}
-            </button>
-            <p className="character-hint">{t("character.freezeHint")}</p>
-          </>
-        ) : null}
-
-        {wake.allowed ? (
-          <>
-            <button
-              type="button"
-              className="primary-button"
-              disabled={working}
-              onClick={() => run("wake")}
-            >
-              {pending === "wake"
-                ? t("character.working")
-                : t("character.wake")}
-            </button>
-            <p className="character-hint">{t("character.wakeHint")}</p>
-          </>
+        {failed ? (
+          <p className="character-error" role="alert">
+            {t("character.actionFailed")}
+          </p>
         ) : null}
       </div>
-
-      {failed ? (
-        <p className="character-error" role="alert">
-          {t("character.actionFailed")}
-        </p>
-      ) : null}
     </section>
   )
 }

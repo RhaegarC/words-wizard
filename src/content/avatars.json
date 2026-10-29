@@ -70,6 +70,20 @@
     }
   },
   {
+    "id": "radahn",
+    "name": "Radahn",
+    "nameZh": "Radahn",
+    "color": "#b8863b",
+    "pale": "#f6e7c9",
+    "stages": {
+      "egg": "art/avatars/radahn.jpeg",
+      "hatchling": "art/avatars/radahn.jpeg",
+      "juvenile": "art/avatars/radahn.jpeg",
+      "adult": "art/avatars/radahn.jpeg",
+      "legendary": "art/avatars/radahn.jpeg"
+    }
+  },
+  {
     "id": "steve",
     "name": "Steve",
     "nameZh": "Steve",
@@ -81,6 +95,20 @@
       "juvenile": "art/avatars/steve.jpeg",
       "adult": "art/avatars/steve.jpeg",
       "legendary": "art/avatars/steve.jpeg"
+    }
+  },
+  {
+    "id": "warden",
+    "name": "Warden",
+    "nameZh": "Warden",
+    "color": "#3e5c74",
+    "pale": "#dbe6ee",
+    "stages": {
+      "egg": "art/avatars/warden.jpeg",
+      "hatchling": "art/avatars/warden.jpeg",
+      "juvenile": "art/avatars/warden.jpeg",
+      "adult": "art/avatars/warden.jpeg",
+      "legendary": "art/avatars/warden.jpeg"
     }
   }
 ]

@@ -11,6 +11,8 @@ import { useLocale } from "../i18n/LocaleProvider"
 import { METRIC_LABEL_KEYS } from "../i18n/metrics"
 import { hasEnglishVoice } from "../speech"
 
+import { Icon } from "./Icon"
+
 interface DiagnosticsData {
   installed: boolean
   persisted: boolean | null
@@ -61,11 +63,14 @@ export function SettingsDiagnostics({
   }, [profileId, reloadKey])
 
   return (
-    <section className="settings-section" aria-labelledby="settings-diagnostics">
-      <h2 id="settings-diagnostics" className="settings-heading">
-        {t("settings.diagnostics")}
-      </h2>
-      <p className="settings-copy">{t("settings.diagnosticsHint")}</p>
+    <article className="settings-card" aria-labelledby="settings-diagnostics">
+      <header>
+        <Icon name="chart" />
+        <div>
+          <h3 id="settings-diagnostics">{t("settings.diagnostics")}</h3>
+          <p>{t("settings.diagnosticsHint")}</p>
+        </div>
+      </header>
 
       {failed ? (
         <p role="alert" className="form-error">
@@ -77,56 +82,54 @@ export function SettingsDiagnostics({
         </p>
       ) : (
         <>
-          <dl className="settings-facts">
-            <div>
-              <dt>{t("settings.installStatus")}</dt>
-              <dd>
-                {data.installed ? t("settings.installed") : t("settings.browserTab")}
-              </dd>
-            </div>
-            <div>
-              <dt>{t("settings.persistence")}</dt>
-              <dd>
+          <ul className="diagnostics">
+            <li>
+              <span>{t("settings.installStatus")}</span>
+              <b className={data.installed ? "good" : undefined}>
+                {data.installed
+                  ? t("settings.installed")
+                  : t("settings.browserTab")}
+              </b>
+            </li>
+            <li>
+              <span>{t("settings.persistence")}</span>
+              <b className={data.persisted ? "good" : undefined}>
                 {data.persisted === null
                   ? t("settings.unknown")
                   : data.persisted
                     ? t("settings.yes")
                     : t("settings.no")}
-              </dd>
-            </div>
-            <div>
-              <dt>{t("settings.storageUsage")}</dt>
-              <dd>{formatBytes(data.usage) ?? t("settings.unknown")}</dd>
-            </div>
-            <div>
-              <dt>{t("settings.storageQuota")}</dt>
-              <dd>{formatBytes(data.quota) ?? t("settings.unknown")}</dd>
-            </div>
-            <div>
-              <dt>{t("settings.speech")}</dt>
-              <dd>
+              </b>
+            </li>
+            <li>
+              <span>{t("settings.storageUsage")}</span>
+              <b>{formatBytes(data.usage) ?? t("settings.unknown")}</b>
+            </li>
+            <li>
+              <span>{t("settings.storageQuota")}</span>
+              <b>{formatBytes(data.quota) ?? t("settings.unknown")}</b>
+            </li>
+            <li>
+              <span>{t("settings.speech")}</span>
+              <b className={data.speechAvailable ? "good" : undefined}>
                 {data.speechAvailable ? t("settings.yes") : t("settings.no")}
-              </dd>
-            </div>
-            <div>
-              <dt>{t("settings.profiles")}</dt>
-              <dd>{data.counts.profiles}</dd>
-            </div>
-            <div>
-              <dt>{t("settings.progressRows")}</dt>
-              <dd>{data.counts.progress}</dd>
-            </div>
-            <div>
-              <dt>{t("settings.metricRows")}</dt>
-              <dd>{data.counts.metrics}</dd>
-            </div>
-            <div>
-              <dt>{t("settings.deviceRows")}</dt>
-              <dd>{data.counts.device}</dd>
-            </div>
-          </dl>
+              </b>
+            </li>
+            <li>
+              <span>{t("settings.progressRows")}</span>
+              <b>{data.counts.progress}</b>
+            </li>
+            <li>
+              <span>{t("settings.metricRows")}</span>
+              <b>{data.counts.metrics}</b>
+            </li>
+            <li>
+              <span>{t("settings.deviceRows")}</span>
+              <b>{data.counts.device}</b>
+            </li>
+          </ul>
 
-          <h3 className="settings-subheading">{t("settings.counters")}</h3>
+          <h4 className="settings-subheading">{t("settings.counters")}</h4>
           <dl className="settings-facts">
             {counterRows(data.metrics).map((row) => (
               <div key={row.name}>
@@ -140,12 +143,12 @@ export function SettingsDiagnostics({
 
       <button
         type="button"
-        className="secondary-button"
+        className="button secondary"
         onClick={() => setReloadKey((key) => key + 1)}
       >
         {t("settings.refresh")}
       </button>
-    </section>
+    </article>
   )
 }
 

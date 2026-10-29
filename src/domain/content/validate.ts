@@ -18,7 +18,7 @@ const REQUIRED_TOPICS = 5
 const PACKS_PER_TOPIC = 3
 const SLOTS_PER_PACK = 20
 const FINAL_WORD_CAP = 300
-const REQUIRED_AVATARS = 6
+const REQUIRED_AVATARS = 8
 
 const WORD_TEXT_FIELDS = [
   "text",
