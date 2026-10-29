@@ -55,6 +55,15 @@ describe("deployment configuration", () => {
       const text = read(new URL(name, workflowsDir))
 
       expect(text, name).not.toContain("wrangler pages deploy")
+
+      // The preview-cleanup job is not a deployment: it deletes preview
+      // deployments after a merge and can never publish one. It is the only
+      // workflow allowed the account's credentials, and only to delete.
+      if (name === "delete-preview.yml") {
+        expect(text, name).toContain("-X DELETE")
+        continue
+      }
+
       expect(text, name).not.toContain("CLOUDFLARE_API_TOKEN")
       expect(text, name).not.toContain("CLOUDFLARE_ACCOUNT_ID")
     }
