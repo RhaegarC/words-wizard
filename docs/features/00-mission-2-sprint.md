@@ -107,7 +107,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
 | 0 | Repository restructure into `page/`, `worker/`, `shared/` | Done | — |
-| 21 | [Worker foundation & Entra token validation](21-worker-foundation.md) | Planned | Phase 0 |
+| 21 | [Worker foundation & Entra token validation](21-worker-foundation.md) | In review | Phase 0 |
 | 22 | [D1 content store & content API](22-d1-content-store.md) | Planned | 21 |
 | 23 | [User profile, progress & session commit](23-user-data-api.md) | Planned | 21, 22 |
 | 24 | [Client online integration](24-client-online-integration.md) | Planned | 22, 23 |

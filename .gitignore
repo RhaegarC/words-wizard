@@ -12,6 +12,7 @@ coverage/
 
 # Test / tooling caches
 .vite/
+.wrangler/
 *.tsbuildinfo
 
 # Editor and OS files
