@@ -1,6 +1,6 @@
 # Feature 21 — Worker Foundation & Entra Token Validation
 
-> Priority: Must · Mission 2 · **Status: Planned — documentation only**
+> Priority: Must · Mission 2 · **Status: Implemented — in review**
 > Depends on: Phase 0 (repository restructure). Blocks: 22, 23.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
@@ -25,60 +25,60 @@ silently falling back to anonymous access.
 
 ### Runtime and configuration
 
-- [ ] `src/worker/index.ts` exports a Hono app as the Worker's `fetch` handler; it compiles under
+- [x] `src/worker/index.ts` exports a Hono app as the Worker's `fetch` handler; it compiles under
       `tsconfig.worker.json` and runs with `wrangler dev`.
-- [ ] Configuration is read from Worker vars through one module (`src/worker/config.ts`):
+- [x] Configuration is read from Worker vars through one module (`src/worker/config.ts`):
       `JWKS_URL`, `TOKEN_ISSUER`, `EXPECTED_AUDIENCE`, `EXPECTED_TENANT`, and `ALLOWED_ORIGINS`
       (comma-separated). Values are validated once per isolate and cached.
-- [ ] A missing or blank required var makes the request fail with a `500` in the error envelope,
+- [x] A missing or blank required var makes the request fail with a `500` in the error envelope,
       and the log line names the missing key. The failure does not bypass Hono's error handler, and
       there is no anonymous or permissive fallback.
-- [ ] `JWKS_URL`, issuer, audience, and tenant are configuration, never hard-coded, so the verifier
+- [x] `JWKS_URL`, issuer, audience, and tenant are configuration, never hard-coded, so the verifier
       can point at a local JWKS server in tests.
-- [ ] `src/worker/wrangler.jsonc` names the Worker, the `DB` D1 binding (unused until feature 22),
+- [x] `src/worker/wrangler.jsonc` names the Worker, the `DB` D1 binding (unused until feature 22),
       the `wordsapi.nioh.uk` custom domain (activated in feature 25), and the vars above as
       non-secret configuration.
-- [ ] `drizzle.config.ts` points at `src/worker/db/schema.ts` and `src/worker/drizzle/`; feature 21
+- [x] `drizzle.config.ts` points at `src/worker/db/schema.ts` and `src/worker/drizzle/`; feature 21
       creates an empty schema module so the config resolves, and features 22–23 add the tables.
-- [ ] `pnpm worker:typecheck` exists and runs in CI.
+- [x] `pnpm worker:typecheck` exists and runs in CI.
 
 ### Public surface and errors
 
-- [ ] `GET /health` returns `200` with `{ "ok": true }`, no authentication, and `Cache-Control:
+- [x] `GET /health` returns `200` with `{ "ok": true }`, no authentication, and `Cache-Control:
       no-store`. Feature 22 adds `contentVersion` once D1 holds content.
-- [ ] Unknown routes return `404` and known paths with a wrong method return `405`, both in the
+- [x] Unknown routes return `404` and known paths with a wrong method return `405`, both in the
       error envelope.
-- [ ] Every error response is `{ "error": { "code": string, "message": string } }`. Codes are
+- [x] Every error response is `{ "error": { "code": string, "message": string } }`. Codes are
       stable identifiers (`unauthorized`, `config_missing`, `not_found`, `method_not_allowed`,
       `internal`); messages are safe for a client and leak no stack trace, var value, or token.
-- [ ] An unexpected handler exception becomes `500 internal` with a generic message; details go to
+- [x] An unexpected handler exception becomes `500 internal` with a generic message; details go to
       `console.error`, never to the response.
 
 ### CORS
 
-- [ ] Only exact origins listed in `ALLOWED_ORIGINS` receive `Access-Control-Allow-Origin`:
+- [x] Only exact origins listed in `ALLOWED_ORIGINS` receive `Access-Control-Allow-Origin`:
       `https://words.nioh.uk` and `http://localhost:8443` by default. There is no wildcard.
-- [ ] `Access-Control-Allow-Methods` is `GET,POST,PATCH,OPTIONS`;
+- [x] `Access-Control-Allow-Methods` is `GET,POST,PATCH,OPTIONS`;
       `Access-Control-Allow-Headers` is `Authorization, Content-Type, If-None-Match`;
       `Access-Control-Max-Age` is set; `Access-Control-Allow-Credentials` is absent.
-- [ ] `OPTIONS` from an allowed origin returns `204` without requiring a token. `OPTIONS` from an
+- [x] `OPTIONS` from an allowed origin returns `204` without requiring a token. `OPTIONS` from an
       unlisted origin returns `204` without CORS headers, so the browser blocks the real request.
-- [ ] Responses vary on `Origin`.
+- [x] Responses vary on `Origin`.
 
 ### Token validation
 
-- [ ] Only `Authorization: Bearer <jwt>` is accepted. Cookies and query parameters are ignored.
-- [ ] The signature is verified with `jose`'s `createRemoteJWKSet` against `JWKS_URL`, with
+- [x] Only `Authorization: Bearer <jwt>` is accepted. Cookies and query parameters are ignored.
+- [x] The signature is verified with `jose`'s `createRemoteJWKSet` against `JWKS_URL`, with
       `algorithms: ["RS256"]` and a 60-second clock tolerance.
-- [ ] Issuer must equal `TOKEN_ISSUER` exactly; audience must equal `EXPECTED_AUDIENCE`; the `tid`
+- [x] Issuer must equal `TOKEN_ISSUER` exactly; audience must equal `EXPECTED_AUDIENCE`; the `tid`
       claim must equal `EXPECTED_TENANT`; `scp` must contain `access_as_user`. A v1 token, a token
       from another tenant, or a token minted for another API is rejected.
-- [ ] `exp` and `nbf` are enforced; an expired or not-yet-valid token is rejected.
-- [ ] A missing, malformed, non-Bearer, or badly signed token returns `401 unauthorized` with
+- [x] `exp` and `nbf` are enforced; an expired or not-yet-valid token is rejected.
+- [x] A missing, malformed, non-Bearer, or badly signed token returns `401 unauthorized` with
       `WWW-Authenticate: Bearer` and no CORS-dependent body leakage.
-- [ ] The authenticated principal is the `oid` claim, exposed to handlers as a typed context value.
+- [x] The authenticated principal is the `oid` claim, exposed to handlers as a typed context value.
       No request body, path parameter, or header may choose the user key.
-- [ ] Token verification is a pure function with an injectable JWKS resolver, so every rejection
+- [x] Token verification is a pure function with an injectable JWKS resolver, so every rejection
       path runs offline against a locally minted RSA key pair.
 
 ## API surface in this feature

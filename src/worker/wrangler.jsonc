@@ -1,0 +1,30 @@
+// Cloudflare Worker configuration. Paths are relative to this file.
+//
+// The Entra values below are placeholders on purpose: feature 25 records the
+// real tenant id, client id, issuer, and JWKS URL in docs/operations.md and
+// replaces these. Nothing here is secret.
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "words-wizard-api",
+  "main": "index.ts",
+  "compatibility_date": "2025-01-01",
+  "vars": {
+    "JWKS_URL": "https://login.microsoftonline.com/REPLACE_WITH_TENANT_ID/discovery/v2.0/keys",
+    "TOKEN_ISSUER": "https://login.microsoftonline.com/REPLACE_WITH_TENANT_ID/v2.0",
+    "EXPECTED_AUDIENCE": "REPLACE_WITH_CLIENT_ID",
+    "EXPECTED_TENANT": "REPLACE_WITH_TENANT_ID",
+    "ALLOWED_ORIGINS": "https://words.nioh.uk,http://localhost:8443"
+  },
+  // The binding exists from feature 21 so later code and migrations have a
+  // stable name; the database id is filled in by feature 25.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "words-wizard",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Activated when the Worker is first deployed in feature 25.
+  "routes": [{ "pattern": "wordsapi.nioh.uk", "custom_domain": true }]
+}
