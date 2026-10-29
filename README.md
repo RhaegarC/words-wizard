@@ -1,10 +1,11 @@
 # Words Wizard
 
-A bilingual (English + 中文) offline-first PWA that helps Chinese-speaking children
-aged 9–12 learn English vocabulary through short, game-like sessions with a virtual
-word buddy.
+A bilingual (English + 中文) PWA that helps Chinese-speaking children aged 9–12 learn English
+vocabulary through short, game-like sessions with a virtual word buddy.
 
-**Status:** MVP requirements locked in [docs/PRD.md](docs/PRD.md) (v0.2). The production app is
+**Status:** Mission 1 requirements are locked in [docs/PRD.md](docs/PRD.md) (v0.2); Mission 2 makes
+the app online with Entra ID sign-in and Cloudflare D1 (see
+[docs/features/00-mission-2-sprint.md](docs/features/00-mission-2-sprint.md)). The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
 and its toolchain is independent of the production app.
@@ -13,8 +14,9 @@ and its toolchain is independent of the production app.
 
 ## What v1 is
 
-- **5 topics × 3 packs × 20 words** (300 word slots) drawn from the Cambridge
-  Starters/Movers/Flyers 2025 allowlist.
+- **Topics and day-sized packs with no fixed counts**, drawn from the Cambridge
+  Starters/Movers/Flyers 2025 allowlist. A word may appear in packs of several topics; each pack
+  introduces it anew.
 - **Fully bilingual:** English + 中文 UI and content, with a Settings toggle.
 - **Five practice modes:** picture match, word → meaning, spelling builder,
   fill-the-blank, and listen & choose.
@@ -23,11 +25,12 @@ and its toolchain is independent of the production app.
 - **My Words:** a countable Collection tab and an illustrated, mastered-only Word Book
   tab.
 - **Monthly Review:** a 20-word retention check every 28 days.
-- **Offline PWA:** IndexedDB via Dexie, no backend, no accounts, no sync, no telemetry.
+- **Online PWA:** Microsoft Entra ID sign-in, a Cloudflare Worker API, and D1 for content and
+  per-user progress. There is no offline practice and no Dexie store after Mission 2.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
-- **Cloudflare Pages** hosting, with hash routing.
-- **Illustrations:** ~300 word images plus 8 buddy portraits, AI-generated and
-  human-reviewed.
+- **Cloudflare Pages + Worker** hosting, with hash routing.
+- **Illustrations:** word images served from R2 URLs (emoji fallback until authored) plus 8 buddy
+  portraits, AI-generated and human-reviewed.
 
 ## Repository layout
 
@@ -42,27 +45,21 @@ and its toolchain is independent of the production app.
 
 ## Current content state
 
-The content set is incomplete and is the critical path for the MVP. Everything in
-[docs/sample_data/content/](docs/sample_data/content/) is scaffolding, not the v1
-content set:
+Content is the critical path for the MVP. Everything in
+[docs/sample_data/content/](docs/sample_data/content/) is Mission 1 scaffolding; it is not the
+target content set.
 
-- 5 topics and 20 packs exist (4 packs per topic, 25 slots per pack = 500 slots), but
-  only **57 words** are authored; **360 distinct referenced word IDs are missing**.
-- Three of the five topics have no words yet.
-- The sample words use the older English-only shape (`audioUrl`, `imageUrl`, a single
-  `definition`, and string examples) with no IPA or Chinese fields. They will be
-  migrated to the v0.2 bilingual schema; pronunciation will be synthesized, so no
-  audio files are needed.
-- The sample's 4-packs-of-25 shape is **not** the target. Target: **15 packs
-  (3 per topic) × 20 words = 300 slots**, bilingual glosses, definitions, and examples,
-  plus 300 word illustrations.
-- No illustration assets exist yet.
+Mission 2 stores the vocabulary in four D1 tables — `topics`, `packs`, `words`, and `pack_words`
+— with no fixed count of any of them. Topics are the offline categories; packs are day-sized
+sub-categories, and a pack may span several days. One row represents one headword; a word may
+belong to packs of several topics and is introduced anew in each, while mastery stays at word
+level. See [feature 22](docs/features/22-d1-content-store.md).
 
-Content is authored AI-assisted and then reviewed in full by a Chinese-speaking English
-teacher. `pnpm validate:content` enforces schema completeness, ID integrity, both
-languages, image existence, unlock values, and forbidden IP terms; it runs automatically
-before every build. Cambridge allowlist membership is verified during content review
-(feature 17) rather than by the validator.
+Content is authored AI-assisted, reviewed in full by a Chinese-speaking English teacher, and
+committed as reviewed migration SQL. The integrity gate assembles the bundle from D1 and runs
+`validateContent`: structural rules always, editorial rules (Cambridge allowlist, abstract-word
+coverage, first example containing the headword, forbidden IP terms) at `dataset: "final"`.
+`docs/sample_data/vocab.json` is reference input for the topic and headword list, not a seed file.
 
 ## Run the app
 
@@ -83,19 +80,24 @@ The dev server serves on **http://localhost:8443**. The package and build config
 | `pnpm dev` | Vite dev server on port 8443 |
 | `pnpm build` | Production build into `src/dist/` |
 | `pnpm preview` | Serve the built `src/dist/` on port 8443 |
-| `pnpm validate:content` | Check the bundled content JSON; runs before `pnpm build` |
 | `pnpm test` | Vitest, single run (page, shared, and worker tests) |
 | `pnpm test:watch` | Vitest in watch mode |
-| `pnpm typecheck` | `tsc --noEmit` for the page and test projects |
+| `pnpm typecheck` | `tsc --noEmit` for the page, test, and worker projects |
+| `pnpm worker:dev` | Wrangler dev server for the Worker |
+| `pnpm worker:typecheck` | `tsc --noEmit` for the Worker only |
 | `pnpm format` | Format with oxfmt |
+
+Content lives in D1. Apply migrations locally with
+`pnpm exec wrangler d1 migrations apply DB --local --config worker/wrangler.jsonc`; content
+integrity is checked by the database-tier tests, not by a prebuild step.
 
 ### Local data
 
-The app stores everything in IndexedDB under the database name `WordsWizardDB`. The
-Figma prototype used the same name on the same port with an incompatible version-1
-schema (`profiles` only). Dexie will not reinterpret a version it did not create, so if
-you ever ran the prototype in this browser, **clear site data for `localhost:8443` once**
-before running the app. Demo records from the prototype are deliberately not migrated.
+Mission 1 stored everything in IndexedDB under the database name `WordsWizardDB`. Mission 2
+moves content and progress to D1; feature 24 deletes the old database once on first load and shows
+a notice. The Figma prototype used the same name on the same port with an incompatible version-1
+schema (`profiles` only), so if you ran the prototype in this browser, **clear site data for
+`localhost:8443` once**. Demo records from the prototype are deliberately not migrated.
 
 The dev-only route table at `#/__routes` can seed a profile with one committed session
 and can drop the database, which is the quickest way to check first-run routing and
@@ -122,14 +124,17 @@ pnpm dev
 
 ## Testing
 
-The root app uses **Vitest** for pure domain logic — XP and stage derivation, vitality and
-sleep, streak grace, Care Token ledger, SM-2 scheduling, session building, Monthly Review
-selection, Collection selectors, i18n key completeness, and content integrity. Tests live
-beside the code as `src/page/**/*.test.ts` and `src/shared/**/*.test.ts` and run offline.
+The app uses **Vitest** across its tiers: pure domain logic (XP and stage derivation, vitality
+and sleep, streak grace, Care Token ledger, SM-2 scheduling, session building, Monthly Review
+selection, Collection selectors, i18n key completeness), the content validator, the D1 schema
+and generated SQL, a local D1 database, and a host tier that boots the Worker under
+`wrangler dev`. Tests live beside the code as `src/page/**/*.test.ts`, `src/shared/**/*.test.ts`,
+and `src/worker/**/*.test.ts`. The container-free tiers run offline; the database and host tiers
+skip visibly when their engine is unavailable.
 
-**Manual end-to-end checks** on iPad Safari and Edge remain the tier for install, offline
-behavior, IndexedDB persistence, service-worker updates, and Web Speech. There is no
-component-test suite; UI is verified in the browser.
+**Manual end-to-end checks** on iPad Safari and Edge remain the tier for install, Entra sign-in,
+online-only boot, service-worker updates, and Web Speech. There is no component-test suite; UI is
+verified in the browser.
 
 ## Deployment
 
@@ -143,7 +148,7 @@ Cloudflare Pages project settings:
 
 - **Production branch:** `master`
 - **Root directory:** `src` (the package manifest lives there)
-- **Build command:** `pnpm build` (its `prebuild` runs `validate:content`)
+- **Build command:** `pnpm build`
 - **Build output directory:** `dist`
 - **Environment:** Node 22 and pnpm 10
 - **Preview deployments:** off — a preview URL would publish the dev dataset and its
@@ -155,16 +160,17 @@ commit; the app holds no server-side state. Custom domains are attached to the P
 with automatic TLS and are not part of this setup.
 
 Pull requests to `develop` still run `.github/workflows/ci.yml`: frozen pnpm install,
-`typecheck`, `test`, `validate:content`, `build`, and `check:dist`.
+`typecheck`, `test`, `build`, and `check:dist`.
 
 `src/page/public/_headers` — copied into the build — carries the cache policy. Hash routing means
 no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real
 404. Cloudflare serves MIME types itself, so no per-extension upload step is needed. The
-service worker precaches the shell, content, locales, and all illustrations. `check:dist`
+service worker precaches the shell, locales, and the remaining bundled art; D1 content and R2
+images are fetched at runtime. `check:dist`
 fails the build if the shell, worker, hashed assets, locales, icons, or `_headers` are
 missing. After a deploy, run `pnpm check:deploy` to fetch `/`, a hashed asset, and one
-`.webp` and assert their status, content type, and cache policy; it intentionally fails until
-feature 17 supplies artwork.
+`.webp` and assert their status, content type, and cache policy; it intentionally fails until the
+remaining bundled art exists.
 
 ## Key decisions
 
@@ -174,11 +180,11 @@ The most important changes from the original concept:
 - Bilingual UI and content, not English-only.
 - Web Speech API instead of bundled audio.
 - A strong, repeated install prompt instead of a hard installation gate.
-- Five topics and all five practice modes in the MVP.
+- Topics are the offline categories; all five practice modes ship in the MVP.
 - Character stage and vitality are derived, never stored.
 - Monthly Review is on a rolling 28-day cycle.
 - Single-profile UI; `profileId` stays in the schema for a future switcher.
-- Local metrics only; no telemetry.
+- Per-user metrics in D1; no telemetry.
 
 ## License
 

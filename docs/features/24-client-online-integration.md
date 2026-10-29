@@ -28,9 +28,9 @@ in, sign out, and read what is stored about my child.
 1. `msal.handleRedirectPromise()` — complete a returning sign-in.
 2. No signed-in account → `#/signin`; a signed-in account on `#/signin` goes to `#/create` or
    `#/home`.
-3. Signed in → `Promise.all([fetchContent(), fetchMe()])`. Any failure (offline, API down, bad
-   token that cannot be renewed) shows a retry screen with an offline/error message; nothing else
-   renders.
+3. Signed in → `Promise.all([fetchContent(), fetchMe()])`. `fetchMe` returns the profile, progress,
+   metrics, and pack introductions. Any failure (offline, API down, bad token that cannot be
+   renewed) shows a retry screen with an offline/error message; nothing else renders.
 4. `loadContent(bundle)` then the route guard: `profile === null` → `#/create`; otherwise `#/home`.
 5. Drain the pending-commit outbox; a pending commit is applied before the home screen offers a new
    session.
@@ -63,7 +63,7 @@ screens and `SessionProvider` keep their shape:
 
 | Method | Behaviour |
 |---|---|
-| `getProfile` / `getProgress` / `getAllProgress` / `getMetrics` | Read the cached `GET /v1/me` snapshot; refresh on boot and after a write |
+| `getProfile` / `getProgress` / `getAllProgress` / `getMetrics` / `getIntroductions` | Read the cached `GET /v1/me` snapshot; refresh on boot and after a write |
 | `createProfile` | `POST /v1/me/profile`; an existing profile is returned, never a duplicate |
 | `updateProfile` | `PATCH /v1/me/profile` with a whitelisted patch |
 | `commitSession` | `POST /v1/me/sessions`; on a network/5xx failure, park the payload in the outbox |
@@ -95,6 +95,11 @@ screens and `SessionProvider` keep their shape:
 - The accessor API from feature 22 is unchanged; screens barely change.
 - Content is requested once per boot; no content is persisted in IndexedDB or `localStorage`.
 - A failed load is the retry screen, never an empty library.
+- Word images come from `Word.image` (a URL, ultimately R2). A null image renders the `emoji`, then
+  the first letter; there is no artwork manifest to consult.
+- The provider keeps the pack introductions from `/v1/me` and passes them into `buildSession`, which
+  uses them to decide the first unlocked pack and which words are already introduced. The
+  progress-derived fallback named in feature 22 is deleted here.
 
 ## Outbox
 
@@ -111,6 +116,8 @@ screens and `SessionProvider` keep their shape:
 - The summary screen states one of: saved, waiting to save, retry failed. A child never sees an
   unqualified "done" for a session that is only in the outbox.
 - A payload that no longer validates after an app update is dropped with a message; it is not sent.
+- The payload includes the session's `introductions`; a replay inserts none twice because the server
+  keys them by `(user, pack, word)`.
 - The outbox stores nothing except pending commit payloads, and it is cleared on sign-out.
 
 ## Dexie removal and local data
@@ -139,8 +146,9 @@ screens and `SessionProvider` keep their shape:
 
 - The service worker precaches the app shell, locales, icons, and manifest only; API responses are
   never precached.
-- `/art/*` uses a runtime `CacheFirst` strategy for performance; it is not an offline-practice
-  path, and the offline screen still blocks boot.
+- `/art/*` uses a runtime `CacheFirst` strategy for the remaining bundled art (avatar portraits);
+  word images served from R2 get the same strategy with an expiration cap. Neither is an
+  offline-practice path, and the offline screen still blocks boot.
 - The update prompt and the waiting-worker behaviour from feature 15 are unchanged.
 - Offline boot (no network, or content/me fetch failure) shows the blocking retry screen.
 
@@ -153,8 +161,11 @@ screens and `SessionProvider` keep their shape:
 - [ ] Content and `/v1/me` load in parallel; either failing shows the retry screen.
 - [ ] A fresh identity is sent to `#/create`; creating a character writes it through the API.
 - [ ] A completed session commits through the API and the summary reflects the returned state.
+- [ ] A completed session commits its introductions; the next pack unlocks only when every word of
+      the previous pack has been introduced; introducing the same word in a second topic creates a
+      second introduction without a second `progress` row.
 - [ ] A commit that fails for network/5xx is in the outbox, visible on the summary, and applied
-      exactly once on reconnect; a replay changes no counter.
+      exactly once on reconnect; a replay changes no counter and adds no introduction.
 - [ ] A `401` re-authenticates once and retries; a second failure returns to sign-in.
 - [ ] `localStorage` holds only device flags and the outbox; no profile or progress is persisted
       there.
@@ -173,22 +184,24 @@ screens and `SessionProvider` keep their shape:
    fixtures to a fake `fetch` for unit tests, keeping the store tier real in the seam test.
 3. Add `api/outbox.ts` with enqueue/drain/clear/retry and its unit tests.
 4. Add `api/content.ts` and the ETag handling; wire `loadContent` in boot.
-5. Rewrite `App.tsx` boot order and `router/guard.ts` for auth states; add `SignInScreen`.
-6. Change identity types to `string` across shared and page; update `sessionSeed` and deterministic
+5. Carry `introductions` from `/v1/me` through the provider into `buildSession`; delete the
+   progress-derived fallback and update the session-builder tests.
+6. Rewrite `App.tsx` boot order and `router/guard.ts` for auth states; add `SignInScreen`.
+7. Change identity types to `string` across shared and page; update `sessionSeed` and deterministic
    tests.
-7. Delete the Dexie modules and dependency; adapt lifecycle, diagnostics, and dev store; add the
+8. Delete the Dexie modules and dependency; adapt lifecycle, diagnostics, and dev store; add the
    one-time database deletion and notice.
-8. Update Settings (account, sign-out, privacy link) and the i18n catalogues.
-9. Update the PWA config: shell-only precache, art runtime cache, offline screen.
-10. Add the client↔Worker↔D1 seam test.
-11. Run the manual E2E checklist below and record it in the PR.
+9. Update Settings (account, sign-out, privacy link) and the i18n catalogues.
+10. Update the PWA config: shell-only precache, art and R2 image runtime cache, offline screen.
+11. Add the client↔Worker↔D1 seam test.
+12. Run the manual E2E checklist below and record it in the PR.
 
 ## Tests
 
 | Tier | What it proves |
 |---|---|
-| **Unit** (always) | Token helper uses silent then redirect; guard maps auth/profile states to routes; provider maps API responses and error envelopes; outbox enqueues only retryable failures, drains once, clears on 2xx, pauses on 401, drops an invalid payload; content loader validates the bundle and rejects a malformed one; identity helpers accept strings and never parse numbers. |
-| **Host / seam** (always) | The `wrangler dev` harness from features 21–23 plus a local JWKS token: `ApiProgressProvider` fetches a real content bundle, creates a profile, commits a session, replays the outbox payload, and re-reads `/v1/me` — proving the client, Worker, and D1 agree on the contract. |
+| **Unit** (always) | Token helper uses silent then redirect; guard maps auth/profile states to routes; provider maps API responses and error envelopes; outbox enqueues only retryable failures, drains once, clears on 2xx, pauses on 401, drops an invalid payload; content loader validates the bundle and rejects a malformed one; identity helpers accept strings and never parse numbers; `buildSession` uses introduction rows for sequential unlock and no longer derives them from progress. |
+| **Host / seam** (always) | The `wrangler dev` harness from features 21–23 plus a local JWKS token: `ApiProgressProvider` fetches a real content bundle, creates a profile, commits a session with introductions, replays the outbox payload, and re-reads `/v1/me` — proving the client, Worker, and D1 agree on the contract and that the next pack unlocks. |
 | **Manual** (per environment) | Real Entra sign-in and redirect; silent renew; two tenant accounts on one browser; a second device sees the same profile; offline boot; a commit parked and applied exactly once after reconnect; sign-out clears the browser session and leaves D1 untouched. |
 
 The seam test exists because no other tier drives request → provider → Worker → D1 in one run. It is
@@ -201,6 +214,8 @@ provider tests prove the mapping, but only this test proves they are wired to ea
   before the router changes.
 - Outbox enqueue/drain/replay before the provider uses it.
 - The "401 refreshes once, second 401 signs out" test before the client retry logic.
+- The sequential-unlock session tests (first pack only; the next unlocks at completion; a shared
+  word introduced in a second topic) before the provider supplies introductions.
 - The seam test before the provider is pointed at the harness.
 
 ## Non-goals

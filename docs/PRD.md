@@ -70,8 +70,8 @@ character and one progress record.
 
 1. Word library is static content; progress is dynamic per learner. Words are never
    mutated by learning.
-2. Themes are kid-chosen vocabulary topics framed by game genre (de-branded), not real
-   game IP. Five topics ship at launch.
+2. Themes are kid-chosen vocabulary topics drawn from real-world categories (the offline word
+   list's categories), never game IP. The topic count is open.
 3. Storage: IndexedDB via Dexie.js. No localStorage for progress. No SQLite.
 4. PWA + Add to Home Screen is the primary delivery model. Installation is a strong,
    repeated prompt, not a hard gate; `navigator.storage.persist()` supports it.
@@ -91,8 +91,9 @@ character and one progress record.
 11. Pronunciation uses the **Web Speech API** (`speechSynthesis`), with an IPA fallback.
     No bundled audio files in v1. Local speech voices work offline; if none is
     available, the app shows IPA and substitutes a non-audio mode.
-12. Word images are **bundled illustrations** (AI-generated, human-reviewed), with a
-    styled placeholder tile until each is approved.
+12. Word images are AI-generated, human-reviewed, and served from R2; `words.image` holds the
+    URL, and an emoji/first-letter tile fills in until one exists. Buddy portraits remain bundled
+    with the app.
 13. The UI and content are **fully bilingual (EN/中文)**. Chinese is the default on
     zh-CN devices; a Settings toggle switches languages.
 14. The app is hosted on **Cloudflare Pages**. Navigation uses hash routes, so every
@@ -211,39 +212,47 @@ non-fused steps that follow.
 
 ### 6.1 Structure
 
+Mission 2 moves this model into D1 (feature 22). The physical tables are `topics`, `packs`,
+`words`, and `pack_words`; there is no separate word-topic or word-example table.
+
 ```
 Topic
-  └── Pack (3 per topic, 20 words each)
-        └── Word
+  └── Pack (a day-sized sub-category; no fixed size)
+        └── Word        (via pack_words, ordered by position)
 ```
 
-- **5 topics at launch:** Craft & Build, Explore & Discover, Puzzle & Mystery,
-  Co-op Quest, Battle & Survive.
-- **60 word slots per topic, 300 slots total.** Cross-topic sharing via shared word IDs
-  is allowed, so the number of distinct records may be lower than 300.
-- Progress is keyed by `wordId`, so a shared word carries its progress across topics.
-- All five topics are choosable from the start.
-- Within a topic: pack 1 is open; pack 2 unlocks at **15 words mastered in that topic**;
-  pack 3 at **30 words mastered in that topic**.
+- **Topics are the offline categories:** Animals, The body and the face, Clothes, Colours,
+  Family & friends, Food & drink, Health, Numbers, The home, Materials, Names, Places &
+  directions, and School. The list is open; content may add topics later.
+- **Packs have no fixed size.** A pack is a sub-category of about five words for one day's
+  practice; a longer pack simply spans several days.
+- **A word may belong to packs of several topics.** It is introduced anew in each pack;
+  mastery and scheduling stay at word level, keyed by `wordId`.
+- All topics are choosable from the start unless archived.
+- Within a topic, packs are ordered by `packs.sort_order` (the API calls it `Pack.order`). The
+  first is open; each later pack unlocks when **every word of the previous pack has been
+  introduced to that user**. Mastery counts are not used.
 
 ### 6.2 Theme / Topic Rules
 
-- Topics are framed by game genre, never by real game IP.
-  - Allowed: "Craft & Build," "Co-op Quest," "Battle & Survive," "Explore & Discover,"
-    "Race & Speed," "Puzzle & Mystery."
-  - Forbidden: game names, logos, characters, or game-specific slang (e.g.,
-    "Minecraft," "creeper," "redstone").
-- **Usefulness test:** each topic must yield ~60 genuinely useful English words.
-- Word mix per topic: ~80% core useful words, ~20% thematic flavor words that are
-  still real words (e.g., diamond, torch, portal, treasure, dungeon).
-- **Abstract/emotional words are required** in every topic (e.g., brave, proud,
-  together, careful).
+- Topics are the real-world categories of the offline word list (`docs/sample_data/vocab.json`),
+  never a game genre or a game IP.
+  - Examples: Animals, Food & drink, The home, School, Places & directions.
+- **Forbidden anywhere in content:** game names, logos, characters, or game-specific slang
+  (e.g., "Minecraft," "creeper," "redstone").
+- **Usefulness test:** each topic must yield enough genuinely useful English words for its packs.
+  There is no fixed count; coverage is an editorial decision.
+- Word mix per topic is reviewed, not counted: mostly core useful words, with a smaller share of
+  thematic flavour words that are still real words.
+- **Abstract/emotional words are required** in every topic (e.g., brave, proud, together,
+  careful), and each pack's final third includes one.
 - Each pack starts concrete and ends with abstract/emotional words.
 
 ### 6.3 Vocabulary Source
 
 - The **Cambridge English Starters/Movers/Flyers 2025** word list in
-  `docs/sample_data/` is the allowlist.
+  `docs/sample_data/` is the allowlist; the generated copy lives at
+  `src/shared/content/rules/cambridge-allowlist.json`.
 - App level 1/2/3 maps to Starters/Movers/Flyers. A word's level is its Cambridge band,
   not its pack order.
 - The topic usefulness test and 80/20 mix are applied within the allowlist.
@@ -261,15 +270,17 @@ Word {
   meaningZh: string                // short Chinese gloss
   definitionEn: string             // kid-friendly, one sentence
   definitionZh: string             // kid-friendly Chinese, one sentence
-  examples: { en: string; zh: string }[]
-  image: string                    // bundled illustration path
-  emoji?: string                   // optional placeholder / fallback
+  examples: { en: string; zh: string }[]   // stored as a JSON column
+  image: string | null             // R2 URL; null until art exists
+  emoji?: string                   // transitional placeholder / fallback
   level: 1 | 2 | 3                 // Starters | Movers | Flyers
-  tags: string[]
-  topicIds: string[]
+  tags: string[]                   // stored as a JSON column
+  topicIds: string[]               // derived from active pack membership, never stored
 }
 ```
 
+- One row per headword; `text` is unique case-insensitively. `partOfSpeech` and the meanings are
+  free text and may list several senses.
 - `audioUrl` is removed. Pronunciation is synthesized from `text`.
 - Future recorded audio can add `audioUrl?: string` without breaking existing records.
 - v1 words are single words; phrases and sentences are Phase 3.
@@ -278,43 +289,58 @@ Word {
 
 ```ts
 Topic {
-  id: string
-  title: string                    // kid-facing English genre label
+  id: string                       // immutable slug
+  title: string                    // kid-facing category label
   titleZh: string
   icon: string
   description: string
   descriptionZh: string
-  packIds: string[]
+  sortOrder: number
+  createdAt: number
+  updatedAt: number
+  archivedAt: number | null
 }
 
 Pack {
-  id: string
+  id: string                       // immutable slug
   title: string
   titleZh: string
   topicId: string
-  wordIds: string[]
-  order: number
-  unlockRule: { type: 'masteryCount'; value: 0 | 15 | 30 }
+  wordIds: string[]                // derived from pack_words.position
+  order: number                    // packs.sort_order; the API keeps this name
+  createdAt: number
+  updatedAt: number
+  archivedAt: number | null
 }
 ```
 
-Only `masteryCount` is used in v1. A future `packComplete` variant is a
-schema-compatible addition.
+- `Topic.packIds` is not stored; a topic's packs are the rows whose `topicId` matches.
+- There is no unlock rule column. Unlock is sequential completion, computed from the user's
+  introductions (see §6.1 and §9).
+- Ids are immutable and never reused. Display text is editable; removal is `archivedAt`, never a
+  hard delete.
+- `sortOrder` need not be unique; ordering is `(sortOrder, id)`.
 
 ### 6.6 Content Storage & Authoring
 
-- Word library, topics, and packs are **bundled read-only JSON**
-  (`content/topics.json`, `content/packs.json`, `content/words.json`) behind a
-  data-access layer (`getWordsByTopic()`, `getPack()`, etc.).
-- The data-access layer is abstracted so content can move to a CMS later without
-  changing UI code.
-- Content updates ship as app version bumps; the service worker precaches the new JSON.
+- Cloudflare D1 is authoritative for topics, packs, words, and pack membership. The SPA
+  loads one bundle from the public `GET /v1/content` at boot and reads it through a
+  data-access layer (`getWordsByTopic()`, `getPack()`, etc.); nothing is bundled as JSON.
+- The data-access layer is abstracted so a future admin portal or CMS can manage content
+  without changing UI code.
+- Content updates ship as reviewed D1 migrations; the API's `ETag` and `contentVersion` make a
+  stale cache detectable, and a content correction needs no app rebuild.
 - **Authoring:** AI-assisted generation from a fixed prompt and the Cambridge allowlist,
-  followed by full review by a Chinese-speaking English teacher.
-- **Validation test** enforces: 5 topics × 3 packs × 20 word slots; unique IDs; every
-  `pack.wordIds` entry exists; every `topicIds` entry exists; levels 1–3; both languages
-  non-empty; every example has both `en` and `zh`; every `image` file exists; no
-  forbidden IP terms; unlock values are 0/15/30.
+  followed by full review by a Chinese-speaking English teacher. The reviewed rows are committed
+  as migration SQL.
+- **Validation** runs against the assembled D1 bundle. Structural rules always apply: unique
+  ids, unique case-insensitive headwords, resolving references, non-empty bilingual fields,
+  paired examples, levels 1–3, every served word in at least one pack, contiguous positions.
+  Editorial rules apply at `dataset = 'final'`: Cambridge allowlist, abstract/emotional coverage,
+  first example containing the headword, forbidden IP terms. There are no fixed topic, pack, or
+  word counts.
+- **Future:** a teacher/admin portal manages topics, packs, and words and owns artwork approval;
+  it is not part of Mission 2.
 
 ---
 
@@ -338,7 +364,8 @@ schema-compatible addition.
   - Return within **7 days** and it continues.
   - After 7 days, the current streak ends and a new one starts; `bestStreak` is kept.
   - A Care Token can cover one missed day (§7.5).
-- **Pack unlocks:** per-topic mastery counts, as in §6.1.
+- **Pack unlocks:** sequential by completion, as in §6.1 — the next pack opens when every word of
+  the previous pack has been introduced to this user. Mastery counts do not gate packs.
 - **Badges:** deferred to Phase 2.
 - **Character customization:** avatar re-selection in Settings. The stage name and
   progress bar are the growth layer; the buddy portrait does not change per stage.
@@ -521,6 +548,11 @@ One token type, one currency, two spend options.
 ---
 
 ## 8. Technical Architecture
+
+> **Mission 2 supersedes §8.2–§8.7:** content and user data move from Dexie to D1 behind a
+> Cloudflare Worker, and the app becomes online-required. See the
+> [Mission 2 sprint](features/00-mission-2-sprint.md) and features 22–24. Feature 25 rewrites
+> these sections into PRD v0.3.
 
 ### 8.1 Stack
 
@@ -735,14 +767,19 @@ durability.**
 
 **Daily session builder:**
 
-- Exactly the first `newWords` (5) unlearned words from the lowest-order unlocked pack
-  in the selected topic; the daily plan contains no review entries.
-- Dedupe by `wordId`.
-- A committed session stamps `firstSeenAt` today on its new words. If any word was
-  learned today, the builder returns today's words as **repeat** entries instead of
-  new ones, so the same five can be practised again until the next local day. They
-  carry no introduction card. If today's words are not in the selected topic, the
-  day is **all caught up**.
+- Up to `newWords` (5) **unintroduced** words, in `position` order, from the first unlocked pack
+  in the selected topic that still has any; the daily plan contains no review entries. A pack
+  larger than five spans several days.
+- A pack is introduced in order: the first pack is always unlocked; the next unlocks when every
+  word of the previous pack has an introduction row for this user. Unlock is computed on the
+  client from the introductions returned by `/v1/me`.
+- Dedupe by `wordId` within a pack; the same headword may still be introduced again in another
+  pack, because introduction is per pack.
+- A committed session writes an introduction for each new `(packId, wordId)` pair. If the user
+  introduced words in this pack today, the builder returns those words as **repeat** entries
+  instead of new ones, so the same five can be practised again until the next local day. They
+  carry no introduction card. If today's words are in another pack or topic, the day is **all
+  caught up**.
 - Mode assignment: the spelling builder for each new or repeat entry, then one random
   non-spelling mode per word in a shuffled comprehensive block; deterministic per
   session. The result aggregates both attempts under the word's single row.
@@ -829,7 +866,6 @@ export const config = {
     cap: 20,
     highStrengthConfirmations: 3,
   },
-  unlock: { pack2: 15, pack3: 30 },
   speech: { rate: 0.85, pitch: 1.0 },
 };
 ```
@@ -840,7 +876,7 @@ export const config = {
 
 | Phase | Scope |
 |-------|-------|
-| **MVP** | Character creation gate; strong install prompt; 5 topics × 3 packs × 20 words; bilingual content and UI; all 5 practice modes; word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); Dexie storage; `persist()`; startup and post-session durability checks; Web Speech + IPA fallback; bundled illustrations and 3 × 5 character art; JSON export; local metrics and diagnostics; Cloudflare Pages hosting; hash routing; Vitest domain and content validation. |
+| **MVP** | Character creation gate; strong install prompt; topics and day-sized packs with no fixed counts; bilingual content and UI; all 5 practice modes; per-pack word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); D1 content and user storage; Web Speech + IPA fallback; word images (R2 URL) with emoji fallback and 8 buddy portraits; JSON export; per-user metrics and diagnostics; Cloudflare Pages and Worker hosting; hash routing; Vitest domain, model, database, and host tiers. |
 | **Phase 2** | Badges; multi-profile switcher UI; Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
 | **Phase 3** | Facilitator panel (focus list, custom words, import); story mode; timed challenges; speaking practice; phrases and sentences; native packaging. |
 | **Future** | Co-op/team mode; parent dashboard (requires a backend); cloud sync. |
@@ -855,7 +891,7 @@ export const config = {
 | 2 | Care Token cadence | +1 per 5 completed sessions, cap 3; freeze and quick wake. |
 | 3 | Session length | 5 new words (intro + spelling) + one comprehensive exercise per word = 5 unique words / 15 screens, about 10 min. The daily review block is withdrawn. Supersedes feature 18's 10-new / 65-screen shape in feature 20. |
 | 4 | Word audio | Web Speech API + IPA fallback; no bundled audio. |
-| 5 | Topic count | 5 at launch; 3 packs × 20 words per topic. |
+| 5 | Topic count | Superseded by decision 18: topics are the offline categories, and packs have no fixed size or count. |
 | 6 | ESL support | Bilingual EN + 中文, full UI and content; toggle; zh default on zh-CN. |
 | 7 | iPad onboarding | Strong, repeated install prompt; never a hard gate. |
 | 8 | Never-practiced dormancy | In-app only; no notifications. |
@@ -867,7 +903,8 @@ export const config = {
 | 14 | Multi-profile | Single-profile UI; `profileId` retained in schema. |
 | 15 | Streak reset | 7-day grace; token covers one missed day; best streak kept. |
 | 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
-| 17 | Daily word limit | One five-word set introduced per local day; after it commits, the same five can be practised again until midnight, but no new words. Feature 20. |
+| 17 | Daily word limit | One five-word set introduced per local day **per pack**; after it commits, the same five can be practised again until midnight, but no new words from that pack. A pack larger than five continues on later days. Feature 20; per-pack scope in decision 18. |
+| 18 | Vocabulary model (Mission 2, 2026-10-29) | Four D1 tables (`topics`, `packs`, `words`, `pack_words`); one row per headword; a word may belong to packs of several topics and is introduced anew per pack; sequential pack unlock when the previous pack is fully introduced; soft delete via `archivedAt`; no fixed counts; `image` is a URL (R2 later) with `emoji` fallback. Replaces the bundled JSON and 20-slot shape. |
 
 **Additional v0.2 decisions:**
 
@@ -916,7 +953,7 @@ or class/teacher reporting.
 |---|--------|---------|--------------|-------|
 | 1 | **Character Creation** | Name + avatar | No profile at boot | MVP |
 | 2 | **Install Prompt** | Add to Home Screen | After creation; each boot until installed | MVP |
-| 3 | **Topic Picker** | Choose one of five topics | After install; Home "change topic" | MVP |
+| 3 | **Topic Picker** | Choose a topic | After install; Home "change topic" | MVP |
 | 4 | **Home** | Hub: character, streak, today's session, cards | After setup / boot | MVP |
 | 5 | **Session Intro** | Preview of today's session | Home "Practice" | MVP |
 | 6 | **Word Introduction** | Card: word, IPA, audio, image, bilingual meaning/example | Within session | MVP |
