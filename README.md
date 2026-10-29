@@ -5,7 +5,9 @@ vocabulary through short, game-like sessions with a virtual word buddy.
 
 **Status:** Mission 1 requirements are locked in [docs/PRD.md](docs/PRD.md) (v0.2); Mission 2 makes
 the app online with Entra ID sign-in and Cloudflare D1 (see
-[docs/features/00-mission-2-sprint.md](docs/features/00-mission-2-sprint.md)). The production app is
+[docs/features/00-mission-2-sprint.md](docs/features/00-mission-2-sprint.md)); Mission 3, the
+teacher/admin content portal, is scoped but not detailed in
+[docs/features/00-mission-3-sprint.md](docs/features/00-mission-3-sprint.md). The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
 and its toolchain is independent of the production app.
@@ -37,7 +39,7 @@ and its toolchain is independent of the production app.
 | Path | Purpose |
 |---|---|
 | [docs/PRD.md](docs/PRD.md) | v0.2 product requirements — the document of record |
-| [docs/features/](docs/features/) | Mission 1 sprint index, the ordered feature specs, the backlog, and completed features under `archive/` |
+| [docs/features/](docs/features/) | Mission 1–3 sprint indexes, the ordered feature specs, the backlog, and completed features under `archive/` |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
 | [src/](src/) | **Everything the app needs**: the package, `pnpm-lock.yaml`, TypeScript/Vite configs, `src/page/` (React SPA and assets), `src/shared/` (pure domain), `src/worker/` (API, added in feature 21), and the generated `src/dist/` build |
 | Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |

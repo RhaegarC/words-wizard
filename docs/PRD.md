@@ -340,7 +340,8 @@ Pack {
   first example containing the headword, forbidden IP terms. There are no fixed topic, pack, or
   word counts.
 - **Future:** a teacher/admin portal manages topics, packs, and words and owns artwork approval;
-  it is not part of Mission 2.
+  it is not part of Mission 2. It is scoped, without detail, in the
+  [Mission 3 sprint](features/00-mission-3-sprint.md).
 
 ---
 

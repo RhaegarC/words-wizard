@@ -167,4 +167,5 @@ Guest mode, offline practice or cached content fallback, multiple profiles per i
 switcher UI, parent/teacher dashboards, content CMS or admin UI, import, account self-deletion,
 push notifications, badges/achievements, recorded audio, speech recognition, branch preview
 environments, and any analytics beyond the existing per-user counters. Deletion is an operator
-procedure, not a product feature.
+procedure, not a product feature. The admin portal is deferred to
+[Mission 3](00-mission-3-sprint.md).

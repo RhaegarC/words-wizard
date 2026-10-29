@@ -145,6 +145,7 @@ reviewed migration, not by editing a bundled file.
 
 - No phrases or sentences (Phase 3), no recorded audio.
 - No content CMS, editor, or admin API in this sprint. A future admin portal for teachers/admins
-  replaces hand-written SQL; artwork approval belongs to that layer.
+  replaces hand-written SQL; artwork approval belongs to that layer. It is scoped in the
+  [Mission 3 sprint](00-mission-3-sprint.md).
 - No hard-coded topic, pack, or word counts; coverage is an editorial decision.
 - No image generation at runtime or in CI.
