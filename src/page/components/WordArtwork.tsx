@@ -1,4 +1,3 @@
-import { getArtwork } from "../content"
 import { resolveArtwork } from "@shared/content/artwork"
 import type { Word } from "@shared/types"
 
@@ -16,11 +15,11 @@ export type WordArtworkProps = {
 }
 
 /**
- * Approved art renders as an image; everything else gets a readable tile, so
- * the 300 words can be played before feature 17 draws them.
+ * An authored image renders as an image; everything else gets a readable
+ * tile, so an unauthored word still plays.
  */
 export function WordArtwork({ word, className, alt }: WordArtworkProps) {
-  const artwork = resolveArtwork(word, getArtwork(word.id))
+  const artwork = resolveArtwork(word)
   const classes = [
     "word-artwork",
     `tone-${topicTone(word.topicIds[0])}`,

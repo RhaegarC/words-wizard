@@ -18,18 +18,32 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe("GET /health", () => {
-  it("answers 200 without authentication", async () => {
+describe("database-backed routes", () => {
+  // The 200 shapes are asserted by the host tier, where a real D1 database is
+  // migrated and booted. Offline, the claim worth making is that a route which
+  // needs the database refuses to answer without the binding.
+  it("fails GET /health with config_missing when the DB binding is absent", async () => {
     const response = await app().request("/health", {}, TEST_ENV)
 
-    expect(response.status).toBe(200)
-    expect(await json(response)).toEqual({ ok: true })
+    expect(response.status).toBe(500)
+    expect(await json(response)).toMatchObject({
+      error: {
+        code: "config_missing",
+        message: expect.stringContaining("DB"),
+      },
+    })
   })
 
-  it("is never cached", async () => {
-    const response = await app().request("/health", {}, TEST_ENV)
+  it("fails GET /v1/content with config_missing when the DB binding is absent", async () => {
+    const response = await app().request("/v1/content", {}, TEST_ENV)
 
-    expect(response.headers.get("cache-control")).toBe("no-store")
+    expect(response.status).toBe(500)
+    expect(await json(response)).toMatchObject({
+      error: {
+        code: "config_missing",
+        message: expect.stringContaining("DB"),
+      },
+    })
   })
 
   it("returns JSON", async () => {

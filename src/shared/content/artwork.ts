@@ -1,21 +1,17 @@
 import type { Word } from "../types"
 
-import type { ArtworkEntry } from "./types"
-
 export type ResolvedArtwork =
   | { kind: "image"; src: string }
   | { kind: "placeholder"; emoji: string; label: string }
 
 /**
- * Approved art wins; anything else gets a tile built from the word itself, so
- * an unauthored illustration never leaves a blank hole in a screen.
+ * A word's image is a URL (R2 in a later sprint) or absent. An authored image
+ * wins; otherwise a tile is built from the word itself, so an unauthored word
+ * never leaves a blank hole in a screen.
  */
-export function resolveArtwork(
-  word: Word,
-  entry: ArtworkEntry | undefined,
-): ResolvedArtwork {
-  if (entry?.status === "approved") {
-    return { kind: "image", src: assetSrc(entry.file) }
+export function resolveArtwork(word: Word): ResolvedArtwork {
+  if (word.image !== null && word.image.trim() !== "") {
+    return { kind: "image", src: word.image }
   }
 
   return {
@@ -25,7 +21,7 @@ export function resolveArtwork(
   }
 }
 
-/** Public assets stay relative so the build also works from a sub-path. */
+/** Bundled avatar art stays relative so the build also works from a sub-path. */
 export function assetSrc(file: string): string {
   return file.startsWith("./") || file.startsWith("/") ? file : `./${file}`
 }

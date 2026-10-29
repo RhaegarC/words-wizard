@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { ExerciseView } from "../components/ExerciseView"
 import { Icon } from "../components/Icon"
-import { getAllWords, getArtwork, getWord } from "../content"
+import { getAllWords, getWord } from "../content"
 import { exerciseSeed, isLastExercise } from "@shared/session"
 import type { PracticeMode, Word } from "@shared/types"
 import { wordMeaning } from "../i18n/content"
@@ -28,8 +28,8 @@ const MODE_KEYS: Record<PracticeMode, MessageKey> = {
   listenChoose: "modes.listenChoose",
 }
 
-/** Approved art is the only art listen & choose offers as pictures. */
-const hasApprovedArt = (word: Word) => getArtwork(word.id)?.status === "approved"
+/** Only an authored image is offered as a picture in listen & choose. */
+const hasApprovedArt = (word: Word) => word.image !== null
 
 /**
  * The exercise host. It asks the mode registry for an `Exercise`, renders it

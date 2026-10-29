@@ -2,24 +2,14 @@ import type { Pack, StageId, Topic, Word } from "../types"
 
 export type DatasetKind = "dev" | "final"
 
-/** `content-meta.json`. */
+/** The single `content_meta` row. */
 export interface ContentMeta {
   schemaVersion: number
   dataset: DatasetKind
   contentVersion: string
 }
 
-export type ArtworkStatus = "approved" | "placeholder"
-
-/** One `art/manifest.json` entry. */
-export interface ArtworkEntry {
-  file: string
-  status: ArtworkStatus
-}
-
-export type ArtworkManifest = Record<string, ArtworkEntry>
-
-/** `avatars.json`: one identity per buddy, five stages mapped to its portrait. */
+/** `avatars` + `avatar_stages`: one identity per buddy, five stages mapped to its portrait. */
 export interface Avatar {
   id: string
   name: string
@@ -29,40 +19,36 @@ export interface Avatar {
   stages: Record<StageId, string>
 }
 
-/** Everything the loader bundles, in the shape the validator checks. */
+/** Everything `GET /v1/content` serves, in the shape the validator checks. */
 export interface ContentBundle {
   meta: ContentMeta
   topics: Topic[]
   packs: Pack[]
   words: Word[]
   avatars: Avatar[]
-  artwork: ArtworkManifest
 }
 
 export type ContentIssueCode =
-  | "topic-count"
-  | "pack-count"
-  | "pack-slots"
   | "duplicate-id"
   | "pack-topic-ref"
-  | "topic-pack-ref"
-  | "word-topic-ref"
   | "pack-word-ref"
+  | "word-topic-ref"
+  | "topic-no-packs"
+  | "pack-no-words"
+  | "pack-duplicate-word"
+  | "word-no-topic"
+  | "word-text-duplicate"
   | "bad-level"
   | "word-empty-field"
   | "word-no-examples"
   | "example-unpaired"
-  | "example-missing-word"
-  | "art-manifest-missing"
-  | "art-missing"
-  | "art-placeholder"
-  | "forbidden-term"
-  | "bad-unlock"
-  | "pack-order"
-  | "final-distinct-words"
-  | "abstract-word-missing"
+  | "image-url"
   | "avatar-count"
   | "avatar-stage-missing"
+  | "example-missing-word"
+  | "forbidden-term"
+  | "abstract-word-missing"
+  | "word-not-in-allowlist"
 
 export type IssueSeverity = "error" | "warning"
 

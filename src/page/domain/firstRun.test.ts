@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
 
+import type { Avatar, ContentBundle } from "@shared/content/types"
+import { STAGE_IDS, type Topic } from "@shared/types"
+
+import { loadContent } from "../content"
 import {
   buildNewProfile,
   resolveTopicChoice,
@@ -8,6 +12,43 @@ import {
 } from "./firstRun"
 
 const NOW = 1_760_000_000_000
+
+const AVATAR_IDS = ["alex", "cody", "creeper", "malenia", "may", "steve"]
+
+function makeAvatar(id: string): Avatar {
+  return {
+    id,
+    name: id,
+    nameZh: id,
+    color: "#000000",
+    pale: "#ffffff",
+    stages: Object.fromEntries(
+      STAGE_IDS.map((stage) => [stage, `${id}-${stage}.webp`]),
+    ) as Avatar["stages"],
+  }
+}
+
+const TOPIC: Topic = {
+  id: "craft-and-build",
+  title: "Craft & Build",
+  titleZh: "建造",
+  icon: "🔨",
+  description: "Things to make.",
+  descriptionZh: "做东西。",
+  sortOrder: 1,
+}
+
+const BUNDLE: ContentBundle = {
+  meta: { schemaVersion: 1, dataset: "dev", contentVersion: "1.0.0" },
+  topics: [TOPIC],
+  packs: [],
+  words: [],
+  avatars: AVATAR_IDS.map(makeAvatar),
+}
+
+beforeAll(() => {
+  loadContent(BUNDLE)
+})
 
 describe("validateCharacterName", () => {
   it("rejects an empty name", () => {

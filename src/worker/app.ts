@@ -1,18 +1,27 @@
 import { Hono } from "hono"
 import type { MiddlewareHandler } from "hono"
 
-import { readConfig } from "./config"
+import { readConfig, requireDb } from "./config"
+import {
+  contentEtag,
+  ifNoneMatchMatches,
+  readContent,
+  readContentVersion,
+} from "./content"
 import type { AppEnv } from "./context"
 import { corsMiddleware } from "./cors"
 import { installErrorHandlers } from "./errors"
 
 /**
  * Paths the Worker answers, with the methods each accepts. The error handler
- * uses this to distinguish 404 from 405; features 22 and 23 extend it.
+ * uses this to distinguish 404 from 405; feature 23 extends it.
  */
 export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/health": ["GET"],
+  "/v1/content": ["GET"],
 }
+
+const CONTENT_CACHE_CONTROL = "public, max-age=300"
 
 const configMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
   c.set("config", readConfig(c.env))
@@ -27,9 +36,28 @@ export function createApp(): Hono<AppEnv> {
   app.use("*", configMiddleware)
   app.use("*", corsMiddleware())
 
-  app.get("/health", (c) => {
+  app.get("/health", async (c) => {
+    const contentVersion = await readContentVersion(requireDb(c.env))
+
     c.header("Cache-Control", "no-store")
-    return c.json({ ok: true })
+    return c.json({ ok: true, contentVersion })
+  })
+
+  // Public: content is read-only and the same for every caller. The ETag is
+  // derived from `contentVersion`, so a corrected word reaches the client
+  // without a rebuild while an unchanged version costs one 304.
+  app.get("/v1/content", async (c) => {
+    const bundle = await readContent(requireDb(c.env))
+    const etag = contentEtag(bundle.meta.contentVersion)
+
+    c.header("ETag", etag)
+    c.header("Cache-Control", CONTENT_CACHE_CONTROL)
+
+    if (ifNoneMatchMatches(c.req.header("If-None-Match"), etag)) {
+      return c.body(null, 304)
+    }
+
+    return c.json(bundle)
   })
 
   installErrorHandlers(app, ROUTES)

@@ -1,14 +1,16 @@
+import type { D1Database } from "./db/d1"
 import { ConfigError } from "./errors"
 
 export { ConfigError }
 
-/** The non-secret values wrangler binds to the Worker. */
+/** The bindings wrangler provides: non-secret vars plus the D1 database. */
 export interface WorkerEnv {
   JWKS_URL?: string | undefined
   TOKEN_ISSUER?: string | undefined
   EXPECTED_AUDIENCE?: string | undefined
   EXPECTED_TENANT?: string | undefined
   ALLOWED_ORIGINS?: string | undefined
+  DB?: D1Database | undefined
 }
 
 /** Validated configuration; handlers never read `WorkerEnv` directly. */
@@ -68,6 +70,16 @@ function required(value: string | undefined, key: RequiredKey): string {
   const trimmed = value?.trim()
   if (!trimmed) throw new ConfigError(key)
   return trimmed
+}
+
+/**
+ * The D1 binding. A route that reaches the database asks for it here rather
+ * than reading `env.DB` directly, so a missing binding is the same
+ * `config_missing` failure as a missing var.
+ */
+export function requireDb(env: WorkerEnv): D1Database {
+  if (env.DB === undefined) throw new ConfigError("DB")
+  return env.DB
 }
 
 function parseOrigins(value: string): string[] {

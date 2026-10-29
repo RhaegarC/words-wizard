@@ -19,7 +19,7 @@ interface Allowlist {
 
 const allowlist = JSON.parse(
   readFileSync(
-    new URL("../content/cambridge-allowlist.json", import.meta.url),
+    new URL("../../shared/content/rules/cambridge-allowlist.json", import.meta.url),
     "utf8",
   ),
 ) as Allowlist
@@ -39,7 +39,7 @@ const TIMES = new Set(["a.m.", "p.m."])
  * vocabulary, duplicated records, and lost variant information. Reverting the
  * JSON or the size filters in the extractor turns them red.
  */
-describe("content/cambridge-allowlist.json", () => {
+describe("shared/content/rules/cambridge-allowlist.json", () => {
   it("records the source document and names all three bands", () => {
     expect(allowlist.source.file).toMatch(
       /739104-starters-movers-flyers-word-list-2025\.pdf$/,

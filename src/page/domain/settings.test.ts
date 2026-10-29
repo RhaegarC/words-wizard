@@ -1,6 +1,35 @@
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
 
+import type { Avatar, ContentBundle } from "@shared/content/types"
+import { STAGE_IDS } from "@shared/types"
+
+import { loadContent } from "../content"
 import { buildRecustomizePatch } from "./settings"
+
+function makeAvatar(id: string): Avatar {
+  return {
+    id,
+    name: id,
+    nameZh: id,
+    color: "#000000",
+    pale: "#ffffff",
+    stages: Object.fromEntries(
+      STAGE_IDS.map((stage) => [stage, `${id}-${stage}.webp`]),
+    ) as Avatar["stages"],
+  }
+}
+
+const BUNDLE: ContentBundle = {
+  meta: { schemaVersion: 1, dataset: "dev", contentVersion: "1.0.0" },
+  topics: [],
+  packs: [],
+  words: [],
+  avatars: ["alex", "cody"].map(makeAvatar),
+}
+
+beforeAll(() => {
+  loadContent(BUNDLE)
+})
 
 describe("buildRecustomizePatch", () => {
   it("trims the name and returns only the editable fields", () => {

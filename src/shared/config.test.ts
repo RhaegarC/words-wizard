@@ -78,10 +78,8 @@ describe("config", () => {
     })
   })
 
-  it("unlocks pack 2 at 15 mastered words and pack 3 at 30", () => {
-    expect(config.unlock).toEqual({ pack2: 15, pack3: 30 })
-    expect(config.unlock.pack2).toBeGreaterThan(0)
-    expect(config.unlock.pack3).toBeGreaterThan(config.unlock.pack2)
+  it("has no mastery-count unlock thresholds; packs open by completion", () => {
+    expect(config).not.toHaveProperty("unlock")
   })
 
   it("marks a word recently learned inside a seven-local-day window", () => {

@@ -547,7 +547,16 @@ function selectNewWordIds(
   return []
 }
 
-/** The selected topic's packs whose mastery threshold has been reached. */
+/**
+ * The selected topic's unlocked packs, in order. The first pack is always
+ * open; each later pack opens once every word of the pack before it has been
+ * introduced to this user.
+ *
+ * Feature 22 has no introduction rows yet, so "introduced" is derived from
+ * the word having a progress row at all — that row only exists after a
+ * committed session, which is what stamped `firstSeenAt`. Feature 24 replaces
+ * this derivation with the real per-pack introductions from `/v1/me`.
+ */
 function unlockedPacks(
   input: BuildSessionInput,
   progressByWord: ReadonlyMap<string, Progress>,
@@ -558,17 +567,29 @@ function unlockedPacks(
     return []
   }
 
-  const wordsById = new Map(input.words.map((word) => [word.id, word]))
-  const masteredInTopic = [...progressByWord.values()].filter(
-    (row) =>
-      row.status === "mastered" &&
-      wordsById.get(row.wordId)?.topicIds.includes(topicId) === true,
-  ).length
-
-  return input.packs
+  const ordered = input.packs
     .filter((pack) => pack.topicId === topicId)
-    .sort((left, right) => left.order - right.order)
-    .filter((pack) => masteredInTopic >= pack.unlockRule.value)
+    .sort(
+      (left, right) =>
+        left.order - right.order || left.id.localeCompare(right.id),
+    )
+
+  const unlocked: Pack[] = []
+
+  for (const pack of ordered) {
+    const previous = unlocked[unlocked.length - 1]
+
+    if (
+      previous !== undefined &&
+      !previous.wordIds.every((wordId) => progressByWord.has(wordId))
+    ) {
+      break
+    }
+
+    unlocked.push(pack)
+  }
+
+  return unlocked
 }
 
 function assignNewWordModes(

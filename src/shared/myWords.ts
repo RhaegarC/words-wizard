@@ -181,7 +181,8 @@ export interface WordDetailView {
   definitionEn: string
   definitionZh: string
   example: WordExample
-  image: string
+  /** R2 URL, or null while the word has only a placeholder tile. */
+  image: string | null
   topicIds: readonly string[]
   status: ProgressStatus
   strength: number
