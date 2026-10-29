@@ -37,25 +37,33 @@ jobs:
 
           api="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PROJECT}"
           ids_file="$(mktemp)"
-          page=1
+          deployments_json="$(mktemp)"
+          delete_json="$(mktemp)"
+          
+          # Ensure temp files are cleaned up even if the script fails
+          trap 'rm -f "$ids_file" "$deployments_json" "$delete_json"' EXIT
 
-          while :; do
-            status="$(curl -sS -o /tmp/deployments.json -w '%{http_code}' \
+          page=1
+          total_pages=1
+
+          while [ "$page" -le "$total_pages" ]; do
+            status="$(curl -sS -o "$deployments_json" -w '%{http_code}' \
               -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
               "${api}/deployments?page=${page}&per_page=25")"
 
-            if [ "${status:-0}" -ge 400 ] || [ "$(jq -r '.success' /tmp/deployments.json)" != "true" ]; then
-              echo "Cloudflare API failed (${status}): $(jq -r '.errors[]?.message' /tmp/deployments.json | paste -sd '; ' -)" >&2
+            if [ "${status:-0}" -ge 400 ] || [ "$(jq -r '.success' "$deployments_json")" != "true" ]; then
+              echo "Cloudflare API failed (${status}): $(jq -r '.errors[]?.message' "$deployments_json" | paste -sd '; ' -)" >&2
               exit 1
             fi
 
             jq -r --arg branch "${BRANCH}" \
               '.result[]? | select(.environment == "preview" and .deployment_trigger.metadata.branch == $branch) | .id' \
-              /tmp/deployments.json >> "${ids_file}"
+              "$deployments_json" >> "${ids_file}"
 
-            total_pages="$(jq -r '.result_info.total_pages // 1' /tmp/deployments.json)"
+            if [ "$page" -eq 1 ]; then
+              total_pages="$(jq -r '.result_info.total_pages // 1' "$deployments_json")"
+            fi
             page=$((page + 1))
-            [ "${page}" -le "${total_pages}" ] || break
           done
 
           if [ ! -s "${ids_file}" ]; then
@@ -67,12 +75,12 @@ jobs:
           while IFS= read -r id; do
             [ -n "${id}" ] || continue
 
-            status="$(curl -sS -o /tmp/delete.json -w '%{http_code}' -X DELETE \
+            status="$(curl -sS -o "$delete_json" -w '%{http_code}' -X DELETE \
               -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
               "${api}/deployments/${id}")"
 
-            if [ "${status:-0}" -ge 400 ] || [ "$(jq -r '.success' /tmp/delete.json)" != "true" ]; then
-              echo "Deleting ${id} failed (${status}): $(jq -r '.errors[]?.message' /tmp/delete.json | paste -sd '; ' -)" >&2
+            if [ "${status:-0}" -ge 400 ] || [ "$(jq -r '.success' "$delete_json")" != "true" ]; then
+              echo "Deleting ${id} failed (${status}): $(jq -r '.errors[]?.message' "$delete_json" | paste -sd '; ' -)" >&2
               exit 1
             fi
 
