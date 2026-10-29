@@ -43,7 +43,8 @@ Browser (PWA, words.nioh.uk)
 - `words.nioh.uk` — the Pages app; hash routes are unchanged.
 - `wordsapi.nioh.uk` — the Worker; CORS allows only `https://words.nioh.uk` and
   `http://localhost:8443`.
-- Artwork stays static under `src/page/public/art/`; D1 stores only its metadata.
+- Avatar art stays static under `src/page/public/art/`; a word image is a URL in `words.image`,
+  with R2 serving the file in a later sprint. D1 stores no artwork metadata.
 - The repository is split into `src/page/` (SPA), `src/worker/` (API), and `src/shared/` (pure
   domain). Page and Worker never import each other.
 
@@ -56,7 +57,11 @@ Browser (PWA, words.nioh.uk)
 - [ ] A fresh identity gets no profile until character creation; the same identity on another device
       gets the same profile, XP, streak, progress, and settings.
 - [ ] Content is fetched from `GET /v1/content`; bundled content JSON is gone; `ETag` / `304`
-      works; every topic, pack, word, avatar, and artwork row is served from D1.
+      works; every active topic, pack, word, and avatar row is served from D1, and archived rows
+      are not.
+- [ ] A word introduced in one pack is introduced anew in another; word mastery stays shared, and
+      the next pack in a topic unlocks only when every word of the previous pack has been
+      introduced for that user.
 - [ ] A finished session commits exactly once in one D1 batch; replaying the same session id leaves
       every counter unchanged; a failed commit leaves no partial rows.
 - [ ] A commit that cannot reach the API is parked in a `localStorage` outbox and applied once on
@@ -112,7 +117,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 23 | [User profile, progress & session commit](23-user-data-api.md) | Planned | 21, 22 |
 | 24 | [Client online integration](24-client-online-integration.md) | Planned | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | Planned | 21–24 |
-| 17 | [Content production](17-content-production.md) — continues as D1 content migrations | In progress | 22 |
+| 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
 
@@ -137,6 +142,10 @@ Phase 0  restructure (chore PR)
 - **22 deletes the bundled content JSON, but the client fetch lands in 24.** Between those merges
   the SPA builds and typechecks but cannot load real content. Do not deploy `develop` to
   production in that window; the production URL stays on the last Mission 1 build until 24 lands.
+- **22 owns the session-builder rewrite.** `Topic.packIds` and `Pack.unlockRule` disappear with the
+  content model, so `buildSession` moves to sequential per-pack completion in 22. Until 23 stores
+  introductions and 24 supplies them, 22 derives a per-pack introduced set from existing progress;
+  that fallback is deleted in 24.
 - **23 adds the API but leaves the page on Dexie.** It defines the server-side DTOs and adapts the
   shared session-payload validation to the server shape; the page's identity types stay numeric
   until feature 24 unifies them as Entra `oid` strings.
@@ -158,4 +167,5 @@ Guest mode, offline practice or cached content fallback, multiple profiles per i
 switcher UI, parent/teacher dashboards, content CMS or admin UI, import, account self-deletion,
 push notifications, badges/achievements, recorded audio, speech recognition, branch preview
 environments, and any analytics beyond the existing per-user counters. Deletion is an operator
-procedure, not a product feature.
+procedure, not a product feature. The admin portal is deferred to
+[Mission 3](00-mission-3-sprint.md).

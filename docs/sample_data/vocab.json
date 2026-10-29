@@ -1,0 +1,2430 @@
+[
+    {
+        "text": "animal",
+        "category": "Animals"
+    },
+    {
+        "text": "bear",
+        "category": "Animals"
+    },
+    {
+        "text": "bee",
+        "category": "Animals"
+    },
+    {
+        "text": "bird",
+        "category": "Animals"
+    },
+    {
+        "text": "cat",
+        "category": "Animals"
+    },
+    {
+        "text": "chicken",
+        "category": "Animals"
+    },
+    {
+        "text": "cow",
+        "category": "Animals"
+    },
+    {
+        "text": "crocodile",
+        "category": "Animals"
+    },
+    {
+        "text": "dog",
+        "category": "Animals"
+    },
+    {
+        "text": "donkey",
+        "category": "Animals"
+    },
+    {
+        "text": "duck",
+        "category": "Animals"
+    },
+    {
+        "text": "elephant",
+        "category": "Animals"
+    },
+    {
+        "text": "fish",
+        "category": "Animals"
+    },
+    {
+        "text": "frog",
+        "category": "Animals"
+    },
+    {
+        "text": "giraffe",
+        "category": "Animals"
+    },
+    {
+        "text": "goat",
+        "category": "Animals"
+    },
+    {
+        "text": "hippo",
+        "category": "Animals"
+    },
+    {
+        "text": "horse",
+        "category": "Animals"
+    },
+    {
+        "text": "jellyfish",
+        "category": "Animals"
+    },
+    {
+        "text": "lizard",
+        "category": "Animals"
+    },
+    {
+        "text": "monkey",
+        "category": "Animals"
+    },
+    {
+        "text": "mouse/mice",
+        "category": "Animals"
+    },
+    {
+        "text": "pet",
+        "category": "Animals"
+    },
+    {
+        "text": "polar bear",
+        "category": "Animals"
+    },
+    {
+        "text": "sheep",
+        "category": "Animals"
+    },
+    {
+        "text": "snake",
+        "category": "Animals"
+    },
+    {
+        "text": "spider",
+        "category": "Animals"
+    },
+    {
+        "text": "tail",
+        "category": "Animals"
+    },
+    {
+        "text": "tiger",
+        "category": "Animals"
+    },
+    {
+        "text": "zebra",
+        "category": "Animals"
+    },
+    {
+        "text": "zoo",
+        "category": "Animals"
+    },
+    {
+        "text": "bat",
+        "category": "Animals"
+    },
+    {
+        "text": "cage",
+        "category": "Animals"
+    },
+    {
+        "text": "dolphin",
+        "category": "Animals"
+    },
+    {
+        "text": "fly",
+        "category": "Animals"
+    },
+    {
+        "text": "kangaroo",
+        "category": "Animals"
+    },
+    {
+        "text": "kitten",
+        "category": "Animals"
+    },
+    {
+        "text": "lion",
+        "category": "Animals"
+    },
+    {
+        "text": "panda",
+        "category": "Animals"
+    },
+    {
+        "text": "parrot",
+        "category": "Animals"
+    },
+    {
+        "text": "penguin",
+        "category": "Animals"
+    },
+    {
+        "text": "puppy",
+        "category": "Animals"
+    },
+    {
+        "text": "rabbit",
+        "category": "Animals"
+    },
+    {
+        "text": "shark",
+        "category": "Animals"
+    },
+    {
+        "text": "snail",
+        "category": "Animals"
+    },
+    {
+        "text": "whale",
+        "category": "Animals"
+    },
+    {
+        "text": "beetle",
+        "category": "Animals"
+    },
+    {
+        "text": "butterfly",
+        "category": "Animals"
+    },
+    {
+        "text": "camel",
+        "category": "Animals"
+    },
+    {
+        "text": "creature",
+        "category": "Animals"
+    },
+    {
+        "text": "dinosaur",
+        "category": "Animals"
+    },
+    {
+        "text": "eagle",
+        "category": "Animals"
+    },
+    {
+        "text": "extinct",
+        "category": "Animals"
+    },
+    {
+        "text": "fur",
+        "category": "Animals"
+    },
+    {
+        "text": "insect",
+        "category": "Animals"
+    },
+    {
+        "text": "nest",
+        "category": "Animals"
+    },
+    {
+        "text": "octopus",
+        "category": "Animals"
+    },
+    {
+        "text": "swan",
+        "category": "Animals"
+    },
+    {
+        "text": "tortoise",
+        "category": "Animals"
+    },
+    {
+        "text": "wild",
+        "category": "Animals"
+    },
+    {
+        "text": "wing",
+        "category": "Animals"
+    },
+    {
+        "text": "arm",
+        "category": "The body and the face"
+    },
+    {
+        "text": "body",
+        "category": "The body and the face"
+    },
+    {
+        "text": "ear",
+        "category": "The body and the face"
+    },
+    {
+        "text": "eye",
+        "category": "The body and the face"
+    },
+    {
+        "text": "face",
+        "category": "The body and the face"
+    },
+    {
+        "text": "foot/feet",
+        "category": "The body and the face"
+    },
+    {
+        "text": "hair",
+        "category": "The body and the face"
+    },
+    {
+        "text": "hand",
+        "category": "The body and the face"
+    },
+    {
+        "text": "head",
+        "category": "The body and the face"
+    },
+    {
+        "text": "leg",
+        "category": "The body and the face"
+    },
+    {
+        "text": "mouth",
+        "category": "The body and the face"
+    },
+    {
+        "text": "nose",
+        "category": "The body and the face"
+    },
+    {
+        "text": "smile",
+        "category": "The body and the face"
+    },
+    {
+        "text": "back",
+        "category": "The body and the face"
+    },
+    {
+        "text": "beard",
+        "category": "The body and the face"
+    },
+    {
+        "text": "blond(e)",
+        "category": "The body and the face"
+    },
+    {
+        "text": "curly",
+        "category": "The body and the face"
+    },
+    {
+        "text": "fair",
+        "category": "The body and the face"
+    },
+    {
+        "text": "fat",
+        "category": "The body and the face"
+    },
+    {
+        "text": "moustache",
+        "category": "The body and the face"
+    },
+    {
+        "text": "neck",
+        "category": "The body and the face"
+    },
+    {
+        "text": "shoulder",
+        "category": "The body and the face"
+    },
+    {
+        "text": "stomach",
+        "category": "The body and the face"
+    },
+    {
+        "text": "thin",
+        "category": "The body and the face"
+    },
+    {
+        "text": "tooth/teeth",
+        "category": "The body and the face"
+    },
+    {
+        "text": "elbow",
+        "category": "The body and the face"
+    },
+    {
+        "text": "finger",
+        "category": "The body and the face"
+    },
+    {
+        "text": "knee",
+        "category": "The body and the face"
+    },
+    {
+        "text": "toe",
+        "category": "The body and the face"
+    },
+    {
+        "text": "bag",
+        "category": "Clothes"
+    },
+    {
+        "text": "baseball cap",
+        "category": "Clothes"
+    },
+    {
+        "text": "boots",
+        "category": "Clothes"
+    },
+    {
+        "text": "clothes",
+        "category": "Clothes"
+    },
+    {
+        "text": "dress",
+        "category": "Clothes"
+    },
+    {
+        "text": "glasses",
+        "category": "Clothes"
+    },
+    {
+        "text": "handbag",
+        "category": "Clothes"
+    },
+    {
+        "text": "hat",
+        "category": "Clothes"
+    },
+    {
+        "text": "jacket",
+        "category": "Clothes"
+    },
+    {
+        "text": "jeans",
+        "category": "Clothes"
+    },
+    {
+        "text": "shirt",
+        "category": "Clothes"
+    },
+    {
+        "text": "shoe",
+        "category": "Clothes"
+    },
+    {
+        "text": "shorts",
+        "category": "Clothes"
+    },
+    {
+        "text": "skirt",
+        "category": "Clothes"
+    },
+    {
+        "text": "sock",
+        "category": "Clothes"
+    },
+    {
+        "text": "trousers",
+        "category": "Clothes"
+    },
+    {
+        "text": "T-shirt",
+        "category": "Clothes"
+    },
+    {
+        "text": "wear",
+        "category": "Clothes"
+    },
+    {
+        "text": "coat",
+        "category": "Clothes"
+    },
+    {
+        "text": "helmet",
+        "category": "Clothes"
+    },
+    {
+        "text": "scarf",
+        "category": "Clothes"
+    },
+    {
+        "text": "sweater",
+        "category": "Clothes"
+    },
+    {
+        "text": "swimsuit",
+        "category": "Clothes"
+    },
+    {
+        "text": "belt",
+        "category": "Clothes"
+    },
+    {
+        "text": "bracelet",
+        "category": "Clothes"
+    },
+    {
+        "text": "costume",
+        "category": "Clothes"
+    },
+    {
+        "text": "crown",
+        "category": "Clothes"
+    },
+    {
+        "text": "glove",
+        "category": "Clothes"
+    },
+    {
+        "text": "necklace",
+        "category": "Clothes"
+    },
+    {
+        "text": "pajamas",
+        "category": "Clothes"
+    },
+    {
+        "text": "pocket",
+        "category": "Clothes"
+    },
+    {
+        "text": "pyjamas",
+        "category": "Clothes"
+    },
+    {
+        "text": "ring",
+        "category": "Clothes"
+    },
+    {
+        "text": "spot",
+        "category": "Clothes"
+    },
+    {
+        "text": "spotted",
+        "category": "Clothes"
+    },
+    {
+        "text": "stripe",
+        "category": "Clothes"
+    },
+    {
+        "text": "striped",
+        "category": "Clothes"
+    },
+    {
+        "text": "sunglasses",
+        "category": "Clothes"
+    },
+    {
+        "text": "trainers",
+        "category": "Clothes"
+    },
+    {
+        "text": "umbrella",
+        "category": "Clothes"
+    },
+    {
+        "text": "uniform",
+        "category": "Clothes"
+    },
+    {
+        "text": "black",
+        "category": "Colours"
+    },
+    {
+        "text": "blue",
+        "category": "Colours"
+    },
+    {
+        "text": "brown",
+        "category": "Colours"
+    },
+    {
+        "text": "colour (US color)",
+        "category": "Colours"
+    },
+    {
+        "text": "gray (UK grey)",
+        "category": "Colours"
+    },
+    {
+        "text": "green",
+        "category": "Colours"
+    },
+    {
+        "text": "grey (US gray)",
+        "category": "Colours"
+    },
+    {
+        "text": "orange",
+        "category": "Colours"
+    },
+    {
+        "text": "pink",
+        "category": "Colours"
+    },
+    {
+        "text": "purple",
+        "category": "Colours"
+    },
+    {
+        "text": "red",
+        "category": "Colours"
+    },
+    {
+        "text": "white",
+        "category": "Colours"
+    },
+    {
+        "text": "yellow",
+        "category": "Colours"
+    },
+    {
+        "text": "gold",
+        "category": "Colours"
+    },
+    {
+        "text": "silver",
+        "category": "Colours"
+    },
+    {
+        "text": "spot",
+        "category": "Colours"
+    },
+    {
+        "text": "spotted",
+        "category": "Colours"
+    },
+    {
+        "text": "stripe",
+        "category": "Colours"
+    },
+    {
+        "text": "striped",
+        "category": "Colours"
+    },
+    {
+        "text": "baby",
+        "category": "Family & friends"
+    },
+    {
+        "text": "boy",
+        "category": "Family & friends"
+    },
+    {
+        "text": "brother",
+        "category": "Family & friends"
+    },
+    {
+        "text": "child/children",
+        "category": "Family & friends"
+    },
+    {
+        "text": "classmate",
+        "category": "Family & friends"
+    },
+    {
+        "text": "cousin",
+        "category": "Family & friends"
+    },
+    {
+        "text": "dad",
+        "category": "Family & friends"
+    },
+    {
+        "text": "family",
+        "category": "Family & friends"
+    },
+    {
+        "text": "father",
+        "category": "Family & friends"
+    },
+    {
+        "text": "friend",
+        "category": "Family & friends"
+    },
+    {
+        "text": "girl",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grandfather",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grandma",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grandmother",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grandpa",
+        "category": "Family & friends"
+    },
+    {
+        "text": "kid",
+        "category": "Family & friends"
+    },
+    {
+        "text": "live",
+        "category": "Family & friends"
+    },
+    {
+        "text": "man/men",
+        "category": "Family & friends"
+    },
+    {
+        "text": "mother",
+        "category": "Family & friends"
+    },
+    {
+        "text": "mum",
+        "category": "Family & friends"
+    },
+    {
+        "text": "old",
+        "category": "Family & friends"
+    },
+    {
+        "text": "person/people",
+        "category": "Family & friends"
+    },
+    {
+        "text": "sister",
+        "category": "Family & friends"
+    },
+    {
+        "text": "woman/women",
+        "category": "Family & friends"
+    },
+    {
+        "text": "young",
+        "category": "Family & friends"
+    },
+    {
+        "text": "aunt",
+        "category": "Family & friends"
+    },
+    {
+        "text": "daughter",
+        "category": "Family & friends"
+    },
+    {
+        "text": "granddaughter",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grandparent",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grandson",
+        "category": "Family & friends"
+    },
+    {
+        "text": "grown-up",
+        "category": "Family & friends"
+    },
+    {
+        "text": "parent",
+        "category": "Family & friends"
+    },
+    {
+        "text": "son",
+        "category": "Family & friends"
+    },
+    {
+        "text": "uncle",
+        "category": "Family & friends"
+    },
+    {
+        "text": "husband",
+        "category": "Family & friends"
+    },
+    {
+        "text": "married",
+        "category": "Family & friends"
+    },
+    {
+        "text": "surname",
+        "category": "Family & friends"
+    },
+    {
+        "text": "wife",
+        "category": "Family & friends"
+    },
+    {
+        "text": "apple",
+        "category": "Food & drink"
+    },
+    {
+        "text": "banana",
+        "category": "Food & drink"
+    },
+    {
+        "text": "bean",
+        "category": "Food & drink"
+    },
+    {
+        "text": "bread",
+        "category": "Food & drink"
+    },
+    {
+        "text": "breakfast",
+        "category": "Food & drink"
+    },
+    {
+        "text": "burger",
+        "category": "Food & drink"
+    },
+    {
+        "text": "cake",
+        "category": "Food & drink"
+    },
+    {
+        "text": "candy (UK sweet(s))",
+        "category": "Food & drink"
+    },
+    {
+        "text": "carrot",
+        "category": "Food & drink"
+    },
+    {
+        "text": "chicken",
+        "category": "Food & drink"
+    },
+    {
+        "text": "chips (US fries)",
+        "category": "Food & drink"
+    },
+    {
+        "text": "chocolate",
+        "category": "Food & drink"
+    },
+    {
+        "text": "coconut",
+        "category": "Food & drink"
+    },
+    {
+        "text": "dinner",
+        "category": "Food & drink"
+    },
+    {
+        "text": "drink",
+        "category": "Food & drink"
+    },
+    {
+        "text": "eat",
+        "category": "Food & drink"
+    },
+    {
+        "text": "egg",
+        "category": "Food & drink"
+    },
+    {
+        "text": "fish",
+        "category": "Food & drink"
+    },
+    {
+        "text": "food",
+        "category": "Food & drink"
+    },
+    {
+        "text": "fries (UK chips)",
+        "category": "Food & drink"
+    },
+    {
+        "text": "fruit",
+        "category": "Food & drink"
+    },
+    {
+        "text": "grape",
+        "category": "Food & drink"
+    },
+    {
+        "text": "ice cream",
+        "category": "Food & drink"
+    },
+    {
+        "text": "juice",
+        "category": "Food & drink"
+    },
+    {
+        "text": "kiwi",
+        "category": "Food & drink"
+    },
+    {
+        "text": "lemon",
+        "category": "Food & drink"
+    },
+    {
+        "text": "lemonade",
+        "category": "Food & drink"
+    },
+    {
+        "text": "lime",
+        "category": "Food & drink"
+    },
+    {
+        "text": "lunch",
+        "category": "Food & drink"
+    },
+    {
+        "text": "mango",
+        "category": "Food & drink"
+    },
+    {
+        "text": "meat",
+        "category": "Food & drink"
+    },
+    {
+        "text": "meatballs",
+        "category": "Food & drink"
+    },
+    {
+        "text": "milk",
+        "category": "Food & drink"
+    },
+    {
+        "text": "onion",
+        "category": "Food & drink"
+    },
+    {
+        "text": "orange",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pea",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pear",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pie",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pineapple",
+        "category": "Food & drink"
+    },
+    {
+        "text": "potato",
+        "category": "Food & drink"
+    },
+    {
+        "text": "rice",
+        "category": "Food & drink"
+    },
+    {
+        "text": "sausage",
+        "category": "Food & drink"
+    },
+    {
+        "text": "sweet(s) (US candy)",
+        "category": "Food & drink"
+    },
+    {
+        "text": "tomato",
+        "category": "Food & drink"
+    },
+    {
+        "text": "water",
+        "category": "Food & drink"
+    },
+    {
+        "text": "watermelon",
+        "category": "Food & drink"
+    },
+    {
+        "text": "bottle",
+        "category": "Food & drink"
+    },
+    {
+        "text": "bowl",
+        "category": "Food & drink"
+    },
+    {
+        "text": "cheese",
+        "category": "Food & drink"
+    },
+    {
+        "text": "coffee",
+        "category": "Food & drink"
+    },
+    {
+        "text": "cup",
+        "category": "Food & drink"
+    },
+    {
+        "text": "glass",
+        "category": "Food & drink"
+    },
+    {
+        "text": "hungry",
+        "category": "Food & drink"
+    },
+    {
+        "text": "milkshake",
+        "category": "Food & drink"
+    },
+    {
+        "text": "noodles",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pancake",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pasta",
+        "category": "Food & drink"
+    },
+    {
+        "text": "picnic",
+        "category": "Food & drink"
+    },
+    {
+        "text": "plate",
+        "category": "Food & drink"
+    },
+    {
+        "text": "salad",
+        "category": "Food & drink"
+    },
+    {
+        "text": "sandwich",
+        "category": "Food & drink"
+    },
+    {
+        "text": "sauce",
+        "category": "Food & drink"
+    },
+    {
+        "text": "soup",
+        "category": "Food & drink"
+    },
+    {
+        "text": "tea",
+        "category": "Food & drink"
+    },
+    {
+        "text": "thirsty",
+        "category": "Food & drink"
+    },
+    {
+        "text": "vegetable",
+        "category": "Food & drink"
+    },
+    {
+        "text": "biscuit (US cookie)",
+        "category": "Food & drink"
+    },
+    {
+        "text": "butter",
+        "category": "Food & drink"
+    },
+    {
+        "text": "cereal",
+        "category": "Food & drink"
+    },
+    {
+        "text": "chopsticks",
+        "category": "Food & drink"
+    },
+    {
+        "text": "cookie (UK biscuit)",
+        "category": "Food & drink"
+    },
+    {
+        "text": "flour",
+        "category": "Food & drink"
+    },
+    {
+        "text": "fork",
+        "category": "Food & drink"
+    },
+    {
+        "text": "honey",
+        "category": "Food & drink"
+    },
+    {
+        "text": "jam",
+        "category": "Food & drink"
+    },
+    {
+        "text": "knife",
+        "category": "Food & drink"
+    },
+    {
+        "text": "meal",
+        "category": "Food & drink"
+    },
+    {
+        "text": "olives",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pepper",
+        "category": "Food & drink"
+    },
+    {
+        "text": "piece",
+        "category": "Food & drink"
+    },
+    {
+        "text": "pizza",
+        "category": "Food & drink"
+    },
+    {
+        "text": "salt",
+        "category": "Food & drink"
+    },
+    {
+        "text": "smell",
+        "category": "Food & drink"
+    },
+    {
+        "text": "snack",
+        "category": "Food & drink"
+    },
+    {
+        "text": "spoon",
+        "category": "Food & drink"
+    },
+    {
+        "text": "strawberry",
+        "category": "Food & drink"
+    },
+    {
+        "text": "sugar",
+        "category": "Food & drink"
+    },
+    {
+        "text": "taste",
+        "category": "Food & drink"
+    },
+    {
+        "text": "yoghurt",
+        "category": "Food & drink"
+    },
+    {
+        "text": "cold",
+        "category": "Health"
+    },
+    {
+        "text": "cough",
+        "category": "Health"
+    },
+    {
+        "text": "cry",
+        "category": "Health"
+    },
+    {
+        "text": "dentist",
+        "category": "Health"
+    },
+    {
+        "text": "doctor",
+        "category": "Health"
+    },
+    {
+        "text": "earache",
+        "category": "Health"
+    },
+    {
+        "text": "fall",
+        "category": "Health"
+    },
+    {
+        "text": "fine",
+        "category": "Health"
+    },
+    {
+        "text": "headache",
+        "category": "Health"
+    },
+    {
+        "text": "hospital",
+        "category": "Health"
+    },
+    {
+        "text": "ill",
+        "category": "Health"
+    },
+    {
+        "text": "matter",
+        "category": "Health"
+    },
+    {
+        "text": "nurse",
+        "category": "Health"
+    },
+    {
+        "text": "sick",
+        "category": "Health"
+    },
+    {
+        "text": "stomach-ache",
+        "category": "Health"
+    },
+    {
+        "text": "temperature",
+        "category": "Health"
+    },
+    {
+        "text": "tired",
+        "category": "Health"
+    },
+    {
+        "text": "toothache",
+        "category": "Health"
+    },
+    {
+        "text": "bandage",
+        "category": "Health"
+    },
+    {
+        "text": "chemist's",
+        "category": "Health"
+    },
+    {
+        "text": "cut",
+        "category": "Health"
+    },
+    {
+        "text": "fall over",
+        "category": "Health"
+    },
+    {
+        "text": "medicine",
+        "category": "Health"
+    },
+    {
+        "text": "x-ray",
+        "category": "Health"
+    },
+    {
+        "text": "1-20",
+        "category": "Numbers"
+    },
+    {
+        "text": "21-100",
+        "category": "Numbers"
+    },
+    {
+        "text": "hundred",
+        "category": "Numbers"
+    },
+    {
+        "text": "101-1000",
+        "category": "Numbers"
+    },
+    {
+        "text": "several",
+        "category": "Numbers"
+    },
+    {
+        "text": "1st-20th",
+        "category": "Numbers"
+    },
+    {
+        "text": "pair",
+        "category": "Numbers"
+    },
+    {
+        "text": "21st-31st",
+        "category": "Numbers"
+    },
+    {
+        "text": "thousand",
+        "category": "Numbers"
+    },
+    {
+        "text": "million",
+        "category": "Numbers"
+    },
+    {
+        "text": "apartment (UK flat)",
+        "category": "The home"
+    },
+    {
+        "text": "armchair",
+        "category": "The home"
+    },
+    {
+        "text": "bath",
+        "category": "The home"
+    },
+    {
+        "text": "bathroom",
+        "category": "The home"
+    },
+    {
+        "text": "bed",
+        "category": "The home"
+    },
+    {
+        "text": "bedroom",
+        "category": "The home"
+    },
+    {
+        "text": "bookcase",
+        "category": "The home"
+    },
+    {
+        "text": "box",
+        "category": "The home"
+    },
+    {
+        "text": "camera",
+        "category": "The home"
+    },
+    {
+        "text": "chair",
+        "category": "The home"
+    },
+    {
+        "text": "clock",
+        "category": "The home"
+    },
+    {
+        "text": "computer",
+        "category": "The home"
+    },
+    {
+        "text": "cupboard",
+        "category": "The home"
+    },
+    {
+        "text": "desk",
+        "category": "The home"
+    },
+    {
+        "text": "dining room",
+        "category": "The home"
+    },
+    {
+        "text": "doll",
+        "category": "The home"
+    },
+    {
+        "text": "door",
+        "category": "The home"
+    },
+    {
+        "text": "flat (US apartment)",
+        "category": "The home"
+    },
+    {
+        "text": "flower",
+        "category": "The home"
+    },
+    {
+        "text": "garden",
+        "category": "The home"
+    },
+    {
+        "text": "hall",
+        "category": "The home"
+    },
+    {
+        "text": "home",
+        "category": "The home"
+    },
+    {
+        "text": "house",
+        "category": "The home"
+    },
+    {
+        "text": "kitchen",
+        "category": "The home"
+    },
+    {
+        "text": "lamp",
+        "category": "The home"
+    },
+    {
+        "text": "living room",
+        "category": "The home"
+    },
+    {
+        "text": "mat",
+        "category": "The home"
+    },
+    {
+        "text": "mirror",
+        "category": "The home"
+    },
+    {
+        "text": "phone",
+        "category": "The home"
+    },
+    {
+        "text": "picture",
+        "category": "The home"
+    },
+    {
+        "text": "radio",
+        "category": "The home"
+    },
+    {
+        "text": "room",
+        "category": "The home"
+    },
+    {
+        "text": "rug",
+        "category": "The home"
+    },
+    {
+        "text": "sleep",
+        "category": "The home"
+    },
+    {
+        "text": "sofa",
+        "category": "The home"
+    },
+    {
+        "text": "table",
+        "category": "The home"
+    },
+    {
+        "text": "television/TV",
+        "category": "The home"
+    },
+    {
+        "text": "toy",
+        "category": "The home"
+    },
+    {
+        "text": "tree",
+        "category": "The home"
+    },
+    {
+        "text": "TV/television",
+        "category": "The home"
+    },
+    {
+        "text": "wall",
+        "category": "The home"
+    },
+    {
+        "text": "watch",
+        "category": "The home"
+    },
+    {
+        "text": "window",
+        "category": "The home"
+    },
+    {
+        "text": "address",
+        "category": "The home"
+    },
+    {
+        "text": "balcony",
+        "category": "The home"
+    },
+    {
+        "text": "basement",
+        "category": "The home"
+    },
+    {
+        "text": "blanket",
+        "category": "The home"
+    },
+    {
+        "text": "downstairs",
+        "category": "The home"
+    },
+    {
+        "text": "dream",
+        "category": "The home"
+    },
+    {
+        "text": "elevator (UK lift)",
+        "category": "The home"
+    },
+    {
+        "text": "floor (e.g. ground, 1st, etc.)",
+        "category": "The home"
+    },
+    {
+        "text": "internet",
+        "category": "The home"
+    },
+    {
+        "text": "lift (US elevator)",
+        "category": "The home"
+    },
+    {
+        "text": "message",
+        "category": "The home"
+    },
+    {
+        "text": "roof",
+        "category": "The home"
+    },
+    {
+        "text": "seat",
+        "category": "The home"
+    },
+    {
+        "text": "shower",
+        "category": "The home"
+    },
+    {
+        "text": "stair(s)",
+        "category": "The home"
+    },
+    {
+        "text": "toothbrush",
+        "category": "The home"
+    },
+    {
+        "text": "toothpaste",
+        "category": "The home"
+    },
+    {
+        "text": "towel",
+        "category": "The home"
+    },
+    {
+        "text": "upstairs",
+        "category": "The home"
+    },
+    {
+        "text": "wash",
+        "category": "The home"
+    },
+    {
+        "text": "brush",
+        "category": "The home"
+    },
+    {
+        "text": "comb",
+        "category": "The home"
+    },
+    {
+        "text": "cooker",
+        "category": "The home"
+    },
+    {
+        "text": "cushion",
+        "category": "The home"
+    },
+    {
+        "text": "diary",
+        "category": "The home"
+    },
+    {
+        "text": "entrance",
+        "category": "The home"
+    },
+    {
+        "text": "envelope",
+        "category": "The home"
+    },
+    {
+        "text": "fridge",
+        "category": "The home"
+    },
+    {
+        "text": "gate",
+        "category": "The home"
+    },
+    {
+        "text": "key",
+        "category": "The home"
+    },
+    {
+        "text": "letter (as in mail)",
+        "category": "The home"
+    },
+    {
+        "text": "oven",
+        "category": "The home"
+    },
+    {
+        "text": "screen",
+        "category": "The home"
+    },
+    {
+        "text": "shampoo",
+        "category": "The home"
+    },
+    {
+        "text": "shelf",
+        "category": "The home"
+    },
+    {
+        "text": "soap",
+        "category": "The home"
+    },
+    {
+        "text": "stamp",
+        "category": "The home"
+    },
+    {
+        "text": "step",
+        "category": "The home"
+    },
+    {
+        "text": "swing",
+        "category": "The home"
+    },
+    {
+        "text": "telephone",
+        "category": "The home"
+    },
+    {
+        "text": "paper",
+        "category": "Materials"
+    },
+    {
+        "text": "card",
+        "category": "Materials"
+    },
+    {
+        "text": "glass",
+        "category": "Materials"
+    },
+    {
+        "text": "gold",
+        "category": "Materials"
+    },
+    {
+        "text": "metal",
+        "category": "Materials"
+    },
+    {
+        "text": "plastic",
+        "category": "Materials"
+    },
+    {
+        "text": "silver",
+        "category": "Materials"
+    },
+    {
+        "text": "wood",
+        "category": "Materials"
+    },
+    {
+        "text": "wool",
+        "category": "Materials"
+    },
+    {
+        "text": "Alex",
+        "category": "Names"
+    },
+    {
+        "text": "Alice",
+        "category": "Names"
+    },
+    {
+        "text": "Ann/Anna",
+        "category": "Names"
+    },
+    {
+        "text": "Ben",
+        "category": "Names"
+    },
+    {
+        "text": "Bill",
+        "category": "Names"
+    },
+    {
+        "text": "Dan",
+        "category": "Names"
+    },
+    {
+        "text": "Eva",
+        "category": "Names"
+    },
+    {
+        "text": "Grace",
+        "category": "Names"
+    },
+    {
+        "text": "Hugo",
+        "category": "Names"
+    },
+    {
+        "text": "Jill",
+        "category": "Names"
+    },
+    {
+        "text": "Kim",
+        "category": "Names"
+    },
+    {
+        "text": "Lucy",
+        "category": "Names"
+    },
+    {
+        "text": "Mark",
+        "category": "Names"
+    },
+    {
+        "text": "Matt",
+        "category": "Names"
+    },
+    {
+        "text": "May",
+        "category": "Names"
+    },
+    {
+        "text": "Nick",
+        "category": "Names"
+    },
+    {
+        "text": "Pat",
+        "category": "Names"
+    },
+    {
+        "text": "Sam",
+        "category": "Names"
+    },
+    {
+        "text": "Sue",
+        "category": "Names"
+    },
+    {
+        "text": "Tom",
+        "category": "Names"
+    },
+    {
+        "text": "Charlie",
+        "category": "Names"
+    },
+    {
+        "text": "Clare",
+        "category": "Names"
+    },
+    {
+        "text": "Daisy",
+        "category": "Names"
+    },
+    {
+        "text": "Fred",
+        "category": "Names"
+    },
+    {
+        "text": "Jack",
+        "category": "Names"
+    },
+    {
+        "text": "Jane",
+        "category": "Names"
+    },
+    {
+        "text": "Jim",
+        "category": "Names"
+    },
+    {
+        "text": "Julia",
+        "category": "Names"
+    },
+    {
+        "text": "Lily",
+        "category": "Names"
+    },
+    {
+        "text": "Mary",
+        "category": "Names"
+    },
+    {
+        "text": "Paul",
+        "category": "Names"
+    },
+    {
+        "text": "Peter",
+        "category": "Names"
+    },
+    {
+        "text": "Sally",
+        "category": "Names"
+    },
+    {
+        "text": "Vicky",
+        "category": "Names"
+    },
+    {
+        "text": "Zoe",
+        "category": "Names"
+    },
+    {
+        "text": "Betty",
+        "category": "Names"
+    },
+    {
+        "text": "David",
+        "category": "Names"
+    },
+    {
+        "text": "Emma",
+        "category": "Names"
+    },
+    {
+        "text": "Frank",
+        "category": "Names"
+    },
+    {
+        "text": "George",
+        "category": "Names"
+    },
+    {
+        "text": "Harry",
+        "category": "Names"
+    },
+    {
+        "text": "Helen",
+        "category": "Names"
+    },
+    {
+        "text": "Holly",
+        "category": "Names"
+    },
+    {
+        "text": "Katy",
+        "category": "Names"
+    },
+    {
+        "text": "Michael",
+        "category": "Names"
+    },
+    {
+        "text": "Oliver",
+        "category": "Names"
+    },
+    {
+        "text": "behind",
+        "category": "Places & directions"
+    },
+    {
+        "text": "between",
+        "category": "Places & directions"
+    },
+    {
+        "text": "bookshop",
+        "category": "Places & directions"
+    },
+    {
+        "text": "end",
+        "category": "Places & directions"
+    },
+    {
+        "text": "here",
+        "category": "Places & directions"
+    },
+    {
+        "text": "in",
+        "category": "Places & directions"
+    },
+    {
+        "text": "in front of",
+        "category": "Places & directions"
+    },
+    {
+        "text": "on",
+        "category": "Places & directions"
+    },
+    {
+        "text": "park",
+        "category": "Places & directions"
+    },
+    {
+        "text": "playground",
+        "category": "Places & directions"
+    },
+    {
+        "text": "shop (US store)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "store (UK shop)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "street",
+        "category": "Places & directions"
+    },
+    {
+        "text": "there",
+        "category": "Places & directions"
+    },
+    {
+        "text": "under",
+        "category": "Places & directions"
+    },
+    {
+        "text": "zoo",
+        "category": "Places & directions"
+    },
+    {
+        "text": "above",
+        "category": "Places & directions"
+    },
+    {
+        "text": "below",
+        "category": "Places & directions"
+    },
+    {
+        "text": "building",
+        "category": "Places & directions"
+    },
+    {
+        "text": "bus station",
+        "category": "Places & directions"
+    },
+    {
+        "text": "bus stop",
+        "category": "Places & directions"
+    },
+    {
+        "text": "café",
+        "category": "Places & directions"
+    },
+    {
+        "text": "car park",
+        "category": "Places & directions"
+    },
+    {
+        "text": "centre (US center)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "cinema",
+        "category": "Places & directions"
+    },
+    {
+        "text": "circle",
+        "category": "Places & directions"
+    },
+    {
+        "text": "circus",
+        "category": "Places & directions"
+    },
+    {
+        "text": "city/town centre (US center)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "farm",
+        "category": "Places & directions"
+    },
+    {
+        "text": "funfair",
+        "category": "Places & directions"
+    },
+    {
+        "text": "hospital",
+        "category": "Places & directions"
+    },
+    {
+        "text": "library",
+        "category": "Places & directions"
+    },
+    {
+        "text": "map",
+        "category": "Places & directions"
+    },
+    {
+        "text": "market",
+        "category": "Places & directions"
+    },
+    {
+        "text": "near",
+        "category": "Places & directions"
+    },
+    {
+        "text": "opposite",
+        "category": "Places & directions"
+    },
+    {
+        "text": "place",
+        "category": "Places & directions"
+    },
+    {
+        "text": "shopping centre (US center)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "sports centre (US center)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "square",
+        "category": "Places & directions"
+    },
+    {
+        "text": "station",
+        "category": "Places & directions"
+    },
+    {
+        "text": "straight",
+        "category": "Places & directions"
+    },
+    {
+        "text": "supermarket",
+        "category": "Places & directions"
+    },
+    {
+        "text": "swimming pool",
+        "category": "Places & directions"
+    },
+    {
+        "text": "town/city centre (US center)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "airport",
+        "category": "Places & directions"
+    },
+    {
+        "text": "bank",
+        "category": "Places & directions"
+    },
+    {
+        "text": "bridge",
+        "category": "Places & directions"
+    },
+    {
+        "text": "castle",
+        "category": "Places & directions"
+    },
+    {
+        "text": "chemist(s)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "club",
+        "category": "Places & directions"
+    },
+    {
+        "text": "college",
+        "category": "Places & directions"
+    },
+    {
+        "text": "corner",
+        "category": "Places & directions"
+    },
+    {
+        "text": "east",
+        "category": "Places & directions"
+    },
+    {
+        "text": "factory",
+        "category": "Places & directions"
+    },
+    {
+        "text": "fire station",
+        "category": "Places & directions"
+    },
+    {
+        "text": "front",
+        "category": "Places & directions"
+    },
+    {
+        "text": "get to",
+        "category": "Places & directions"
+    },
+    {
+        "text": "hotel",
+        "category": "Places & directions"
+    },
+    {
+        "text": "kilometre (US kilometer)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "left (as in direction)",
+        "category": "Places & directions"
+    },
+    {
+        "text": "London",
+        "category": "Places & directions"
+    },
+    {
+        "text": "middle",
+        "category": "Places & directions"
+    },
+    {
+        "text": "art",
+        "category": "School"
+    },
+    {
+        "text": "backpack (UK rucksack)",
+        "category": "School"
+    },
+    {
+        "text": "bin",
+        "category": "School"
+    },
+    {
+        "text": "club",
+        "category": "School"
+    },
+    {
+        "text": "college",
+        "category": "School"
+    },
+    {
+        "text": "competition",
+        "category": "School"
+    },
+    {
+        "text": "dictionary",
+        "category": "School"
+    },
+    {
+        "text": "flag",
+        "category": "School"
+    },
+    {
+        "text": "geography",
+        "category": "School"
+    },
+    {
+        "text": "glue",
+        "category": "School"
+    },
+    {
+        "text": "group",
+        "category": "School"
+    },
+    {
+        "text": "gym",
+        "category": "School"
+    },
+    {
+        "text": "history",
+        "category": "School"
+    },
+    {
+        "text": "language",
+        "category": "School"
+    },
+    {
+        "text": "maths (US math)",
+        "category": "School"
+    },
+    {
+        "text": "online",
+        "category": "School"
+    },
+    {
+        "text": "project",
+        "category": "School"
+    },
+    {
+        "text": "rucksack (US backpack)",
+        "category": "School"
+    },
+    {
+        "text": "science",
+        "category": "School"
+    },
+    {
+        "text": "scissors",
+        "category": "School"
+    },
+    {
+        "text": "screen",
+        "category": "School"
+    },
+    {
+        "text": "shelf",
+        "category": "School"
+    },
+    {
+        "text": "student",
+        "category": "School"
+    },
+    {
+        "text": "study",
+        "category": "School"
+    },
+    {
+        "text": "subject",
+        "category": "School"
+    },
+    {
+        "text": "timetable",
+        "category": "School"
+    },
+    {
+        "text": "university",
+        "category": "School"
+    },
+    {
+        "text": "alphabet",
+        "category": "School"
+    },
+    {
+        "text": "answer",
+        "category": "School"
+    },
+    {
+        "text": "ask",
+        "category": "School"
+    },
+    {
+        "text": "board",
+        "category": "School"
+    },
+    {
+        "text": "book",
+        "category": "School"
+    },
+    {
+        "text": "bookcase",
+        "category": "School"
+    },
+    {
+        "text": "class",
+        "category": "School"
+    },
+    {
+        "text": "classroom",
+        "category": "School"
+    },
+    {
+        "text": "close",
+        "category": "School"
+    },
+    {
+        "text": "colour (US color)",
+        "category": "School"
+    },
+    {
+        "text": "computer",
+        "category": "School"
+    },
+    {
+        "text": "correct",
+        "category": "School"
+    },
+    {
+        "text": "crayon",
+        "category": "School"
+    },
+    {
+        "text": "cross",
+        "category": "School"
+    },
+    {
+        "text": "cupboard",
+        "category": "School"
+    },
+    {
+        "text": "desk",
+        "category": "School"
+    },
+    {
+        "text": "door",
+        "category": "School"
+    },
+    {
+        "text": "draw",
+        "category": "School"
+    },
+    {
+        "text": "English",
+        "category": "School"
+    },
+    {
+        "text": "eraser (UK rubber)",
+        "category": "School"
+    },
+    {
+        "text": "example",
+        "category": "School"
+    },
+    {
+        "text": "find",
+        "category": "School"
+    },
+    {
+        "text": "floor",
+        "category": "School"
+    },
+    {
+        "text": "keyboard (computer)",
+        "category": "School"
+    },
+    {
+        "text": "learn",
+        "category": "School"
+    },
+    {
+        "text": "lesson",
+        "category": "School"
+    },
+    {
+        "text": "letter (as in alphabet)",
+        "category": "School"
+    },
+    {
+        "text": "line",
+        "category": "School"
+    },
+    {
+        "text": "listen",
+        "category": "School"
+    },
+    {
+        "text": "look",
+        "category": "School"
+    },
+    {
+        "text": "mouse (computer)",
+        "category": "School"
+    },
+    {
+        "text": "music",
+        "category": "School"
+    },
+    {
+        "text": "number",
+        "category": "School"
+    },
+    {
+        "text": "open",
+        "category": "School"
+    },
+    {
+        "text": "page",
+        "category": "School"
+    },
+    {
+        "text": "painting",
+        "category": "School"
+    },
+    {
+        "text": "paper",
+        "category": "School"
+    },
+    {
+        "text": "part",
+        "category": "School"
+    },
+    {
+        "text": "pen",
+        "category": "School"
+    },
+    {
+        "text": "pencil",
+        "category": "School"
+    },
+    {
+        "text": "picture",
+        "category": "School"
+    },
+    {
+        "text": "playground",
+        "category": "School"
+    },
+    {
+        "text": "poster",
+        "category": "School"
+    },
+    {
+        "text": "question",
+        "category": "School"
+    },
+    {
+        "text": "read",
+        "category": "School"
+    },
+    {
+        "text": "right (as in correct)",
+        "category": "School"
+    },
+    {
+        "text": "rubber (US eraser)",
+        "category": "School"
+    },
+    {
+        "text": "ruler",
+        "category": "School"
+    },
+    {
+        "text": "school",
+        "category": "School"
+    },
+    {
+        "text": "sentence",
+        "category": "School"
+    },
+    {
+        "text": "sit",
+        "category": "School"
+    },
+    {
+        "text": "spell",
+        "category": "School"
+    },
+    {
+        "text": "stand",
+        "category": "School"
+    },
+    {
+        "text": "story",
+        "category": "School"
+    },
+    {
+        "text": "teacher",
+        "category": "School"
+    },
+    {
+        "text": "tell",
+        "category": "School"
+    },
+    {
+        "text": "tick",
+        "category": "School"
+    },
+    {
+        "text": "understand",
+        "category": "School"
+    },
+    {
+        "text": "wall",
+        "category": "School"
+    },
+    {
+        "text": "window",
+        "category": "School"
+    },
+    {
+        "text": "word",
+        "category": "School"
+    },
+    {
+        "text": "write",
+        "category": "School"
+    },
+    {
+        "text": "break",
+        "category": "School"
+    },
+    {
+        "text": "homework",
+        "category": "School"
+    },
+    {
+        "text": "mistake",
+        "category": "School"
+    },
+    {
+        "text": "teach",
+        "category": "School"
+    },
+    {
+        "text": "text",
+        "category": "School"
+    },
+    {
+        "text": "website",
+        "category": "School"
+    }
+]

@@ -7,9 +7,11 @@
 ## Summary
 
 Give an Entra identity somewhere to live. This feature adds the user tables, the `/v1/me` read,
-profile creation and patching, the session commit, and the small metric and Care Token writes. The
-client still computes the post-session state; the Worker validates it and stores it in one atomic,
-idempotent D1 batch. The token's `oid` is the only user key the server will ever use.
+profile creation and patching, the session commit, and the small metric and Care Token writes. It
+also adds `pack_introductions`, the per-pack record that proves a word was introduced to a user in a
+particular pack. The client still computes the post-session state and the sequential pack unlock;
+the Worker validates both and stores them in one atomic, idempotent D1 batch. The token's `oid` is
+the only user key the server will ever use.
 
 There is no user-facing delete or reset. Deletion is an operator procedure documented in feature 25.
 
@@ -29,6 +31,7 @@ Generated in its own user migration, after the content migrations.
 | `users` | `oid TEXT PK`, `created_at`, `last_seen_at` |
 | `profiles` | `user_id TEXT PK FK users.oid`, `character_name`, `avatar`, `current_topic_id FK topics.id NULL`, `xp`, `created_at`, `last_practice_at`, `last_wake_at NULL`, `frozen_days`, `care_tokens`, `sessions_since_last_token`, `completed_sessions`, `streak_count`, `best_streak`, `last_streak_date NULL`, `last_monthly_review_at NULL`, `locale CHECK ('en','zh')` |
 | `progress` | `user_id FK users.oid`, `word_id FK words.id`, `status CHECK ('new','learning','mastered')`, `strength CHECK 0..1`, `next_review_at`, `correct_count`, `wrong_count`, `first_seen_at`, `last_seen_at`, `mastery_xp_awarded`, `PK(user_id, word_id)` |
+| `pack_introductions` | `user_id FK users.oid`, `pack_id FK packs.id`, `word_id FK words.id`, `introduced_at`, `PK(user_id, pack_id, word_id)` |
 | `metrics` | `user_id FK users.oid`, `name`, `value REAL`, `updated_at`, `PK(user_id, name)` |
 | `sessions` | `id`, `user_id FK users.oid`, `kind CHECK ('daily','monthly')`, `local_date`, `content_version`, `xp_earned`, `finished_at`, `created_at`, `PK(user_id, id)` |
 | `session_metrics` | `user_id`, `session_id`, `name`, `delta`, `PK(user_id, session_id, name)`, `FK(user_id, session_id) -> sessions(user_id, id)` |
@@ -44,10 +47,15 @@ Notes:
   profile data.
 - Profile creation seeds one `metrics` row per `METRIC_NAMES` value at `0`; the commit and metric
   writes still ensure a row defensively, so a name added by a later migration is not lost.
-- Every user-owned foreign key (`profiles`, `progress`, `metrics`, `sessions`, `session_metrics`,
-  `metric_events`) is declared `ON DELETE CASCADE`, and `session_metrics` cascades from `sessions`.
-  That makes the operator-only deletion in feature 25 a single `DELETE FROM users WHERE oid = ?`;
-  no endpoint exposes it.
+- Every user-owned foreign key (`profiles`, `progress`, `pack_introductions`, `metrics`, `sessions`,
+  `session_metrics`, `metric_events`) is declared `ON DELETE CASCADE`, and `session_metrics`
+  cascades from `sessions`. That makes the operator-only deletion in feature 25 a single
+  `DELETE FROM users WHERE oid = ?`; no endpoint exposes it.
+- `pack_introductions` references content rows but never cascades from them. Content is archived,
+  not deleted, so an introduction stays valid; the row is removed only with its user.
+- Word-level mastery lives in `progress` and is shared across packs. The introduction is per pack,
+  so the same word introduced in a second topic creates a second `pack_introductions` row while
+  `progress` keeps one row for the word.
 
 ## API contract added
 
@@ -56,15 +64,16 @@ a user id, profile id, or `oid` in its body or path.
 
 | Method | Path | Body | Result |
 |---|---|---|---|
-| GET | `/v1/me` | — | `{ profile: Profile \| null, progress: Progress[], metrics: Metric[] }` |
+| GET | `/v1/me` | — | `{ profile: Profile \| null, progress: Progress[], metrics: Metric[], introductions: PackIntroduction[] }` |
 | POST | `/v1/me/profile` | `{ characterName, avatar, currentTopicId?, locale, now }` | `201` with the new profile; `200` with the existing one if already created |
 | PATCH | `/v1/me/profile` | any of `{ characterName, avatar, currentTopicId, locale }` | `200` with the updated profile |
-| POST | `/v1/me/sessions` | session commit payload (below) | `200` with `{ profile, progress, metrics }` |
+| POST | `/v1/me/sessions` | session commit payload (below) | `200` with `{ profile, progress, metrics, introductions }` |
 | POST | `/v1/me/metrics` | `{ name, delta, eventId }` | `200` with the updated metric |
 | POST | `/v1/me/care` | `{ action: "freeze" \| "quickWake", eventId }` | `200` with `{ profile }` |
 
 `GET /v1/me` returns `profile: null` for an identity that has signed in but not created a
-character. It is not a `404`.
+character. It is not a `404`. `introductions` is `[]` until the first committed session and never
+null; the client uses it, with the bundle's pack order, to decide which pack is unlocked.
 
 ### Profile creation
 
@@ -101,6 +110,7 @@ character. It is not a `404`.
     wordId, status, strength, nextReviewAt, correctCount, wrongCount,
     firstSeenAt, lastSeenAt, masteryXpAwarded
   }>,
+  introductions: Array<{ packId, wordId, introducedAt }>,
   metrics?: Record<MetricName, number>
 }
 ```
@@ -120,6 +130,10 @@ Validation, before any write:
 - [ ] `progress` has at most 40 rows, no duplicate `wordId`, `status` in the enum, `strength` in
       `0..1`, counts non-negative integers, `masteryXpAwarded` a boolean, and every `wordId` exists
       in `words`. An unknown word id is `422 unknown_word`.
+- [ ] `introductions` has at most 40 rows, no duplicate `(packId, wordId)` pair, every
+      `introducedAt` is within the same ±24-hour window, and every pair exists in `pack_words`. An
+      unknown pair is `422 unknown_pack_word`; a pair from a pack in another topic is still valid,
+      because a word may belong to several packs.
 - [ ] `metrics` names are in `METRIC_NAMES`; deltas are finite. Only `monthlyReview.strengthDelta`
       may be negative (in `-1..1`); every other delta is non-negative. Unknown names are rejected.
 - [ ] A JSON body over 64 KB is refused before parsing.
@@ -135,16 +149,20 @@ One `db.batch()`, in this order:
 3. Absolute `UPDATE profiles SET ... WHERE user_id = ?`.
 4. Absolute upserts of every `progress` row:
    `INSERT ... ON CONFLICT(user_id, word_id) DO UPDATE SET ...`.
-5. For each metric: `INSERT OR IGNORE INTO metrics (user_id, name, value, updated_at) VALUES (?, ?,
+5. `INSERT OR IGNORE INTO pack_introductions (user_id, pack_id, word_id, introduced_at) VALUES
+   (?, ?, ?, ?)` for every introduction row. The `(user_id, pack_id, word_id)` key makes a replay a
+   no-op; a later session in the same pack adds only pairs that are genuinely new.
+6. For each metric: `INSERT OR IGNORE INTO metrics (user_id, name, value, updated_at) VALUES (?, ?,
    0, ?)`; then `INSERT OR IGNORE INTO session_metrics (user_id, session_id, name, delta)`; then
    `UPDATE metrics SET value = value + delta, updated_at = ? WHERE user_id = ? AND name = ? AND
    changes() = 1`.
 
 Steps 3–4 are absolute post-session values, so replaying the identical outbox payload is harmless.
-Step 5 is the counter guard: the marker insert returns `changes() = 1` only on the first commit, so a
-replay cannot add XP or session counts twice. The defensive `INSERT OR IGNORE INTO metrics` gives a
-metric name added after this profile was created a row to update, instead of silently dropping its
-first delta.
+Step 5 is the same shape at the pack level: the introduction set is monotonic, and a replay cannot
+create a second row or move an existing `introduced_at`. Step 6 is the counter guard: the marker
+insert returns `changes() = 1` only on the first commit, so a replay cannot add XP or session counts
+twice. The defensive `INSERT OR IGNORE INTO metrics` gives a metric name added after this profile
+was created a row to update, instead of silently dropping its first delta.
 
 The response is read back after the batch and returned as the authoritative post-commit state. A
 replay returns the same state and changes no counter.
@@ -180,16 +198,17 @@ is accepted for v1. It does not cross the authorization boundary: a token can on
 | 422 | `validation_failed` | Any field or range rule above |
 | 422 | `clock_out_of_range` | `now` / `finishedAt` outside ±24 h |
 | 422 | `unknown_word` | A progress row names a word that is not in D1 |
+| 422 | `unknown_pack_word` | An introduction names a `(packId, wordId)` pair that is not in `pack_words` |
 | 500 | `internal` | Unexpected failure; no partial write |
 
 ## Tasks (ordered)
 
-1. Write the user schema and generate the user migration; verify keys, checks, and composite foreign
-   keys on local D1.
+1. Write the user schema, including `pack_introductions`, and generate the user migration; verify
+   keys, checks, and composite foreign keys on local D1.
 2. Extend `src/shared/sessionPayload.ts` for the server shape: make the client-side `profileId`
-   optional (the server never supplies one), add clock, word-id, metric, and array-size checks, and
-   keep the existing word/strength/XP rules. The page's Dexie provider keeps passing `profileId`
-   until feature 24.
+   optional (the server never supplies one), add clock, word-id, metric, introduction-pair, and
+   array-size checks, and keep the existing word/strength/XP rules. The page's Dexie provider keeps
+   passing `profileId` until feature 24.
 3. Implement `src/worker/db/queries.ts`: ensure-user, read-me, create-profile (idempotent), patch,
    commit batch, metric event, care event.
 4. Wire the six routes with auth middleware and the error envelope.
@@ -203,9 +222,9 @@ is accepted for v1. It does not cross the authorization boundary: a token can on
 
 | Tier | What it proves |
 |---|---|
-| **Unit** (always) | Every validation boundary above, at the value and one step past it: name 16/17 code points, avatar/topic allowlists, locale, `strength` 0/1/−0.1/1.1, negative XP, clock exactly ±24 h, duplicate/unknown word, oversized arrays, oversized body, unknown metric, negative delta for the one signed metric, care affordability. |
-| **Model** (always) | The user migration declares the keys, checks, and composite foreign key the docs claim; `profiles.user_id` is unique; `progress` is keyed by `(user_id, word_id)`. |
-| **Database / host** (local, always) | Migrations apply; an unknown `word_id` is refused by the foreign key; a second profile insert for one `oid` collides; the commit batch lands all rows; replaying the same payload leaves every counter, XP, and session count unchanged; a forced constraint failure mid-batch leaves **no** session, profile, progress, or metric change; `freeze`/`quickWake` spend exactly one token and replay once; two identities' rows never mix; every route is `401` without a token and succeeds with a locally minted one. |
+| **Unit** (always) | Every validation boundary above, at the value and one step past it: name 16/17 code points, avatar/topic allowlists, locale, `strength` 0/1/−0.1/1.1, negative XP, clock exactly ±24 h, duplicate/unknown word, 40/41 progress rows, 40/41 introduction rows, duplicate `(packId, wordId)`, unknown `(packId, wordId)`, a pair valid in `pack_words` but belonging to another topic, oversized body, unknown metric, negative delta for the one signed metric, care affordability. |
+| **Model** (always) | The user migration declares the keys, checks, and foreign keys the docs claim; `profiles.user_id` is unique; `progress` is keyed by `(user_id, word_id)`; `pack_introductions` is keyed by `(user_id, pack_id, word_id)` and cascades only from `users`. |
+| **Database / host** (local, always) | Migrations apply; an unknown `word_id` is refused by the foreign key; a second profile insert for one `oid` collides; the commit batch lands all rows; replaying the same payload leaves every counter, XP, session count, and introduction set unchanged and moves no `introduced_at`; a word introduced in two packs has two rows and one `progress` row; a forced constraint failure mid-batch leaves **no** session, profile, progress, introduction, or metric change; `freeze`/`quickWake` spend exactly one token and replay once; two identities' rows never mix; every route is `401` without a token and succeeds with a locally minted one. |
 | **Remote** (gated) | The same constraints and the commit batch hold on Cloudflare's engine; skips visibly without test credentials. |
 | **Manual** | Sign in with two tenant accounts on one browser; each sees only its own profile; a completed session reloads with the same XP/streak. |
 
@@ -230,6 +249,8 @@ manual check recorded in `docs/operations.md`.
 - No account deletion, reset, admin API, or export endpoint; export stays client-side.
 - No roles or admin authorization.
 - No cross-user reads, sharing, or leaderboards.
-- No server-side recomputation of XP, streaks, or scheduling; the Worker validates and stores the
-  client's post-session values. The one server-applied domain rule is the Care Token spend, which
-  calls the same shared pure function as the client so the two cannot disagree.
+- No server-side recomputation of XP, streaks, scheduling, or pack unlock; the Worker validates and
+  stores the client's post-session values and introduction rows. The one server-applied domain rule
+  is the Care Token spend, which calls the same shared pure function as the client so the two cannot
+  disagree.
+- No admin read of another user's introductions.
