@@ -8,10 +8,9 @@ import {
   type Word,
   type WordLevel,
 } from "../types"
-import type { ArtworkManifest, Avatar, ContentBundle } from "./types"
+import type { Avatar, ContentBundle } from "./types"
 import { hasErrors, validateContent } from "./validate"
 
-const TOPIC_IDS = ["topic-1", "topic-2", "topic-3", "topic-4", "topic-5"]
 const WORD_IDS = ["w-alpha", "w-beta", "w-gamma", "w-delta", "w-epsilon"]
 
 function capitalise(text: string): string {
@@ -31,48 +30,82 @@ function makeWord(id: string, overrides: Partial<Word> = {}): Word {
     definitionEn: `${capitalise(text)} is a word.`,
     definitionZh: `${text} 是一个词。`,
     examples: [
-      { en: `${capitalise(text)} is here.`, zh: `${text} 在这里。` },
-      { en: `We say ${text} again.`, zh: `我们再说一次 ${text}。` },
+      { en: `I see a ${text} here.`, zh: `我在这里看到一个${text}。` },
+      { en: `We say ${text} again.`, zh: `我们再说一次${text}。` },
     ],
-    image: `art/${id}.webp`,
+    image: `https://images.example.test/${id}.webp`,
     emoji: "🅰️",
     level: 1,
     tags: ["abstract"],
-    topicIds: [...TOPIC_IDS],
+    topicIds: ["topic-a"],
     ...overrides,
   }
 }
 
-function makeTopics(): Topic[] {
-  return TOPIC_IDS.map((id, index) => ({
-    id,
-    title: `Topic ${index + 1}`,
-    titleZh: `主题 ${index + 1}`,
-    icon: "🔨",
-    description: "Things to make.",
-    descriptionZh: "做东西。",
-    packIds: [1, 2, 3].map((order) => `${id}-${order}`),
-  }))
-}
+/**
+ * Two topics, three packs, one word shared between topics — deliberately not
+ * the old five-topics/three-packs/twenty-slots shape: the validator no longer
+ * knows or cares about counts.
+ */
+function makeBundle(dataset: "dev" | "final" = "dev"): ContentBundle {
+  const words = WORD_IDS.map((id) => makeWord(id))
+  words[0].topicIds = ["topic-a", "topic-b"]
 
-function makePacks(): Pack[] {
-  return TOPIC_IDS.flatMap((topicId) =>
-    [1, 2, 3].map((order) => ({
-      id: `${topicId}-${order}`,
-      title: `Pack ${order}`,
-      titleZh: `包 ${order}`,
-      topicId,
-      order,
-      unlockRule: {
-        type: "masteryCount" as const,
-        value: (order === 1 ? 0 : order === 2 ? 15 : 30) as 0 | 15 | 30,
-      },
-      wordIds: Array.from(
-        { length: 20 },
-        (_, index) => WORD_IDS[index % WORD_IDS.length],
-      ),
-    })),
-  )
+  const topics: Topic[] = [
+    {
+      id: "topic-a",
+      title: "Topic A",
+      titleZh: "主题 A",
+      icon: "🔨",
+      description: "Things to make.",
+      descriptionZh: "做东西。",
+      sortOrder: 1,
+    },
+    {
+      id: "topic-b",
+      title: "Topic B",
+      titleZh: "主题 B",
+      icon: "🌿",
+      description: "Things outside.",
+      descriptionZh: "外面的东西。",
+      sortOrder: 2,
+    },
+  ]
+
+  const packs: Pack[] = [
+    {
+      id: "a-1",
+      title: "First A",
+      titleZh: "第一包 A",
+      topicId: "topic-a",
+      order: 1,
+      wordIds: ["w-alpha", "w-beta"],
+    },
+    {
+      id: "a-2",
+      title: "Second A",
+      titleZh: "第二包 A",
+      topicId: "topic-a",
+      order: 2,
+      wordIds: ["w-gamma"],
+    },
+    {
+      id: "b-1",
+      title: "First B",
+      titleZh: "第一包 B",
+      topicId: "topic-b",
+      order: 1,
+      wordIds: ["w-alpha", "w-delta", "w-epsilon"],
+    },
+  ]
+
+  return {
+    meta: { schemaVersion: 1, dataset, contentVersion: "1.0.0" },
+    topics,
+    packs,
+    words,
+    avatars: makeAvatars(),
+  }
 }
 
 function makeAvatars(): Avatar[] {
@@ -97,29 +130,10 @@ function makeAvatars(): Avatar[] {
   }))
 }
 
-function makeBundle(): ContentBundle {
-  const words = WORD_IDS.map((id) => makeWord(id))
-  const artwork: ArtworkManifest = {}
-
-  for (const word of words) {
-    artwork[word.id] = { file: word.image, status: "approved" }
-  }
-
-  return {
-    meta: { schemaVersion: 1, dataset: "dev", contentVersion: "1.0.0" },
-    topics: makeTopics(),
-    packs: makePacks(),
-    words,
-    avatars: makeAvatars(),
-    artwork,
-  }
-}
-
 function codes(bundle: ContentBundle): string[] {
-  return validateContent(bundle, {
-    forbiddenTerms: ["minecraft"],
-    artExists: () => true,
-  }).map((issue) => issue.code)
+  return validateContent(bundle, { forbiddenTerms: ["minecraft"] }).map(
+    (issue) => issue.code,
+  )
 }
 
 function pack(bundle: ContentBundle, id: string): Pack {
@@ -134,82 +148,92 @@ function pack(bundle: ContentBundle, id: string): Pack {
 
 describe("validateContent", () => {
   it("accepts a valid dev bundle", () => {
-    expect(validateContent(makeBundle(), {
-      forbiddenTerms: ["minecraft"],
-      artExists: () => true,
-    })).toEqual([])
+    expect(validateContent(makeBundle(), { forbiddenTerms: ["minecraft"] })).toEqual([])
   })
 
   it("accepts a valid final bundle", () => {
+    expect(codes(makeBundle("final"))).toEqual([])
+  })
+
+  it("accepts a single topic with a single pack and word — no fixed counts", () => {
     const bundle = makeBundle()
-    bundle.meta.dataset = "final"
+    bundle.topics = [bundle.topics[0]]
+    bundle.packs = [pack(bundle, "a-1")]
+    bundle.words = [bundle.words[0], bundle.words[1]]
+    bundle.words[0].topicIds = ["topic-a"]
+    bundle.words[1].topicIds = ["topic-a"]
 
     expect(codes(bundle)).toEqual([])
   })
 
-  it("requires exactly five topics", () => {
-    const bundle = makeBundle()
-    bundle.topics = bundle.topics.filter((topic) => topic.id !== "topic-5")
-    bundle.packs = bundle.packs.filter((candidate) => candidate.topicId !== "topic-5")
-
-    for (const word of bundle.words) {
-      word.topicIds = word.topicIds.filter((id) => id !== "topic-5")
-    }
-
-    expect(codes(bundle)).toEqual(["topic-count"])
-  })
-
-  it("requires three packs per topic", () => {
-    const bundle = makeBundle()
-    const topic = bundle.topics[0]
-    topic.packIds = topic.packIds.filter((id) => id !== "topic-1-1")
-    bundle.packs = bundle.packs.filter((candidate) => candidate.id !== "topic-1-1")
-
-    expect(codes(bundle)).toEqual(["pack-count"])
-  })
-
-  it("requires twenty slots per pack", () => {
-    const bundle = makeBundle()
-    pack(bundle, "topic-1-1").wordIds = pack(bundle, "topic-1-1").wordIds.slice(1)
-
-    expect(codes(bundle)).toEqual(["pack-slots"])
-  })
-
   it("rejects duplicate ids", () => {
     const bundle = makeBundle()
-    bundle.words.push({ ...bundle.words[0] })
+    bundle.topics.push({ ...bundle.topics[0] })
 
     expect(codes(bundle)).toEqual(["duplicate-id"])
   })
 
-  it("reports an unresolved pack slot as a warning in dev", () => {
+  it("rejects a headword repeated case-insensitively", () => {
     const bundle = makeBundle()
-    pack(bundle, "topic-1-1").wordIds[0] = "w-missing"
+    bundle.words[1].text = "ALPHA"
+    bundle.words[1].examples[0].en = "I see ALPHA here."
 
-    const issues = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: () => true,
-    })
-
-    expect(issues.map((issue) => issue.code)).toEqual(["pack-word-ref"])
-    expect(issues[0].severity).toBe("warning")
-    expect(issues[0].id).toBe("w-missing")
-    expect(issues[0].message).toContain("topic-1-1")
+    expect(codes(bundle)).toEqual(["word-text-duplicate"])
   })
 
-  it("reports an unresolved pack slot as an error in final", () => {
+  it("reports an unknown pack word as an error, even in dev", () => {
     const bundle = makeBundle()
-    bundle.meta.dataset = "final"
-    pack(bundle, "topic-1-1").wordIds[0] = "w-missing"
+    pack(bundle, "a-1").wordIds[0] = "w-missing"
 
-    const issues = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: () => true,
-    })
+    const issues = validateContent(bundle, { forbiddenTerms: [] })
 
     expect(issues.map((issue) => issue.code)).toEqual(["pack-word-ref"])
     expect(issues[0].severity).toBe("error")
-    expect(hasErrors(issues)).toBe(true)
+    expect(issues[0].id).toBe("w-missing")
+    expect(issues[0].message).toContain("a-1")
+  })
+
+  it("rejects a pack that names an unknown topic", () => {
+    const bundle = makeBundle()
+    bundle.packs[0].topicId = "topic-missing"
+
+    expect(codes(bundle)).toEqual(["pack-topic-ref"])
+  })
+
+  it("rejects a pack that lists the same word twice", () => {
+    const bundle = makeBundle()
+    pack(bundle, "a-1").wordIds = ["w-alpha", "w-alpha"]
+
+    expect(codes(bundle)).toEqual(["pack-duplicate-word"])
+  })
+
+  it("rejects a topic with no pack", () => {
+    const bundle = makeBundle()
+    bundle.packs = bundle.packs.filter((candidate) => candidate.id !== "b-1")
+    bundle.words[0].topicIds = ["topic-a"]
+
+    expect(codes(bundle)).toEqual(["topic-no-packs"])
+  })
+
+  it("rejects a pack with no word", () => {
+    const bundle = makeBundle()
+    pack(bundle, "a-2").wordIds = []
+
+    expect(codes(bundle)).toEqual(["pack-no-words"])
+  })
+
+  it("rejects a served word with no topic", () => {
+    const bundle = makeBundle()
+    bundle.words[4].topicIds = []
+
+    expect(codes(bundle)).toEqual(["word-no-topic"])
+  })
+
+  it("rejects a word that names an unknown topic", () => {
+    const bundle = makeBundle()
+    bundle.words[1].topicIds = ["topic-missing"]
+
+    expect(codes(bundle)).toEqual(["word-topic-ref"])
   })
 
   it("rejects a level outside 1, 2, or 3", () => {
@@ -233,13 +257,6 @@ describe("validateContent", () => {
     expect(codes(bundle)).toEqual(["example-unpaired"])
   })
 
-  it("rejects a first example that omits the target word", () => {
-    const bundle = makeBundle()
-    bundle.words[0].examples[0].en = "Something else entirely."
-
-    expect(codes(bundle)).toEqual(["example-missing-word"])
-  })
-
   it("rejects a word with no examples", () => {
     const bundle = makeBundle()
     bundle.words[0].examples = []
@@ -247,113 +264,68 @@ describe("validateContent", () => {
     expect(codes(bundle)).toEqual(["word-no-examples"])
   })
 
-  it("requires a manifest entry for every word", () => {
+  it("accepts a null image and rejects a relative one", () => {
     const bundle = makeBundle()
-    delete bundle.artwork["w-alpha"]
+    bundle.words[0].image = null
 
-    expect(codes(bundle)).toEqual(["art-manifest-missing"])
+    expect(codes(bundle)).toEqual([])
+
+    bundle.words[0].image = "art/w-alpha.webp"
+
+    expect(codes(bundle)).toEqual(["image-url"])
   })
 
-  it("reports a missing artwork file as a warning in dev", () => {
+  it("warns about a first example that omits the word in dev, and errors in final", () => {
     const bundle = makeBundle()
-    const issues = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: (file) => file !== "art/w-alpha.webp",
-    })
+    bundle.words[0].examples[0].en = "Something else entirely."
 
-    expect(issues.map((issue) => issue.code)).toEqual(["art-missing"])
-    expect(issues[0].severity).toBe("warning")
-  })
-
-  it("reports a missing artwork file as an error in final", () => {
-    const bundle = makeBundle()
-    bundle.meta.dataset = "final"
-    const issues = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: (file) => file !== "art/w-alpha.webp",
-    })
-
-    expect(issues.map((issue) => issue.code)).toEqual(["art-missing"])
-    expect(issues[0].severity).toBe("error")
-  })
-
-  it("reports placeholder art as a warning in dev and an error in final", () => {
-    const bundle = makeBundle()
-    bundle.artwork["w-alpha"].status = "placeholder"
-
-    const dev = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: () => true,
-    })
-
-    expect(dev.map((issue) => issue.code)).toEqual(["art-placeholder"])
+    const dev = validateContent(bundle, { forbiddenTerms: [] })
+    expect(dev.map((issue) => issue.code)).toEqual(["example-missing-word"])
     expect(dev[0].severity).toBe("warning")
 
     bundle.meta.dataset = "final"
 
-    const final = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: () => true,
-    })
+    const final = validateContent(bundle, { forbiddenTerms: [] })
+    expect(final.map((issue) => issue.code)).toEqual(["example-missing-word"])
+    expect(final[0].severity).toBe("error")
+    expect(hasErrors(final)).toBe(true)
+  })
 
-    expect(final.map((issue) => issue.code)).toEqual(["art-placeholder"])
+  it("warns about a forbidden term in dev and errors in final", () => {
+    const bundle = makeBundle()
+    pack(bundle, "a-1").title = "Minecraft Builders"
+
+    const dev = validateContent(bundle, { forbiddenTerms: ["minecraft"] })
+    expect(dev.map((issue) => issue.code)).toEqual(["forbidden-term"])
+    expect(dev[0].severity).toBe("warning")
+
+    bundle.meta.dataset = "final"
+
+    const final = validateContent(bundle, { forbiddenTerms: ["minecraft"] })
+    expect(final.map((issue) => issue.code)).toEqual(["forbidden-term"])
     expect(final[0].severity).toBe("error")
   })
 
-  it("rejects a forbidden term in any authored field", () => {
+  it("checks the Cambridge allowlist only when one is supplied", () => {
     const bundle = makeBundle()
-    pack(bundle, "topic-1-1").title = "Minecraft Builders"
+    const allowlist = WORD_IDS.map((id) => id.slice(2)).filter(
+      (text) => text !== "epsilon",
+    )
 
-    expect(codes(bundle)).toEqual(["forbidden-term"])
-  })
+    const without = validateContent(bundle, { forbiddenTerms: [] })
+    expect(without.map((issue) => issue.code)).not.toContain(
+      "word-not-in-allowlist",
+    )
 
-  it("rejects an unlock value outside 0, 15, and 30", () => {
-    const bundle = makeBundle()
-    pack(bundle, "topic-1-2").unlockRule = {
-      type: "masteryCount",
-      value: 10 as 0 | 15 | 30,
-    }
+    const dev = validateContent(bundle, { forbiddenTerms: [], allowlist })
+    expect(dev.map((issue) => issue.code)).toEqual(["word-not-in-allowlist"])
+    expect(dev[0].severity).toBe("warning")
+    expect(dev[0].id).toBe("w-epsilon")
 
-    expect(codes(bundle)).toEqual(["bad-unlock"])
-  })
-
-  it("requires pack order 1..3 to be unique within a topic", () => {
-    const bundle = makeBundle()
-    pack(bundle, "topic-1-2").order = 1
-
-    expect(codes(bundle)).toEqual(["pack-order"])
-  })
-
-  it("rejects more than 300 distinct words in final", () => {
-    const bundle = makeBundle()
     bundle.meta.dataset = "final"
 
-    const words = Array.from({ length: 301 }, (_, index) => {
-      const text = `word${index + 1}`
-
-      return makeWord("w-alpha", {
-        id: `w-${text}`,
-        text,
-        image: `art/w-${text}.webp`,
-        examples: [{ en: `${text} is here.`, zh: `${text} 在这里。` }],
-      })
-    })
-
-    bundle.words = words
-    bundle.artwork = {}
-
-    for (const word of words) {
-      bundle.artwork[word.id] = { file: word.image, status: "approved" }
-    }
-
-    for (const candidate of bundle.packs) {
-      candidate.wordIds = Array.from(
-        { length: 20 },
-        (_, index) => words[index % 300].id,
-      )
-    }
-
-    expect(codes(bundle)).toEqual(["final-distinct-words"])
+    const final = validateContent(bundle, { forbiddenTerms: [], allowlist })
+    expect(final[0].severity).toBe("error")
   })
 
   it("requires an abstract word in every topic and in each pack's final third", () => {
@@ -363,15 +335,17 @@ describe("validateContent", () => {
       word.tags = []
     }
 
-    const issues = validateContent(bundle, {
-      forbiddenTerms: [],
-      artExists: () => true,
-    })
+    const dev = validateContent(bundle, { forbiddenTerms: [] })
 
-    expect(issues).toHaveLength(20)
-    expect(issues.every((issue) => issue.code === "abstract-word-missing")).toBe(
-      true,
-    )
+    // Two topics plus three packs.
+    expect(dev).toHaveLength(5)
+    expect(dev.every((issue) => issue.code === "abstract-word-missing")).toBe(true)
+    expect(dev.every((issue) => issue.severity === "warning")).toBe(true)
+
+    bundle.meta.dataset = "final"
+
+    const final = validateContent(bundle, { forbiddenTerms: [] })
+    expect(final.every((issue) => issue.severity === "error")).toBe(true)
   })
 
   it("requires eight avatars", () => {
@@ -383,8 +357,10 @@ describe("validateContent", () => {
 
   it("requires every avatar stage", () => {
     const bundle = makeBundle()
-    const { egg: _egg, ...stages } = bundle.avatars[0].stages
-    bundle.avatars[0].stages = stages as Record<StageId, string>
+    const stages = bundle.avatars[0].stages as Partial<
+      Record<StageId, string>
+    >
+    delete stages.egg
 
     expect(codes(bundle)).toEqual(["avatar-stage-missing"])
   })

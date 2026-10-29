@@ -51,7 +51,6 @@ export const config = {
     cap: 20,
     highStrengthConfirmations: 3,
   },
-  unlock: { pack2: 15, pack3: 30 },
   myWords: {
     /** "Recently learned" means a local-calendar day inside this window. */
     recentlyLearnedDays: 7,

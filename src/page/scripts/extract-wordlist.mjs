@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * Extract the three Cambridge A–Z word lists from the 2025 wordlist PDF into
- * `content/cambridge-allowlist.json`.
+ * `shared/content/rules/cambridge-allowlist.json`.
  *
  * This is a one-off authoring tool for feature 17. It is not part of the
- * build, the test suite, or `validate:content`: the generated JSON is the
+ * build, the test suite, or any build step: the generated JSON is the
  * durable artefact, and the PDF is never parsed at runtime or in CI.
  *
  * `pdf-parse` is a dev dependency purely for this script; it is never
@@ -28,7 +28,7 @@ const defaultPdf = fileURLToPath(
   ),
 )
 const defaultOutput = fileURLToPath(
-  new URL("../content/cambridge-allowlist.json", import.meta.url),
+  new URL("../shared/content/rules/cambridge-allowlist.json", import.meta.url),
 )
 
 const pdfPath = process.argv[2] ?? defaultPdf

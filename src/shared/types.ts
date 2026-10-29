@@ -43,17 +43,13 @@ export interface Word {
   definitionEn: string
   definitionZh: string
   examples: WordExample[]
-  image: string
+  /** R2 URL, or null until artwork exists (Mission 2 model). */
+  image: string | null
   emoji?: string
   level: WordLevel
   tags: string[]
+  /** Derived from active pack membership; never stored. */
   topicIds: string[]
-}
-
-/** PRD §6.5. Only `masteryCount` is used in v1. */
-export interface PackUnlockRule {
-  type: "masteryCount"
-  value: 0 | 15 | 30
 }
 
 /** PRD §6.5. */
@@ -64,7 +60,7 @@ export interface Topic {
   icon: string
   description: string
   descriptionZh: string
-  packIds: string[]
+  sortOrder: number
 }
 
 /** PRD §6.5. */
@@ -73,9 +69,10 @@ export interface Pack {
   title: string
   titleZh: string
   topicId: string
+  /** Derived from `pack_words.position`. */
   wordIds: string[]
+  /** `packs.sort_order`. */
   order: number
-  unlockRule: PackUnlockRule
 }
 
 /** PRD §8.3. */

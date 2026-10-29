@@ -8,16 +8,12 @@ import type {
 } from "./types"
 
 export interface ValidateOptions {
-  /** Loaded from `content/forbidden-terms.json`; kept out of code. */
+  /** Loaded from `shared/content/rules/forbidden-terms.json`; kept out of code. */
   forbiddenTerms?: readonly string[]
-  /** Injected by the runner so the pure validator never touches the disk. */
-  artExists?: (file: string) => boolean
+  /** The Cambridge headword list; editorial, checked at `final` only. */
+  allowlist?: readonly string[]
 }
 
-const REQUIRED_TOPICS = 5
-const PACKS_PER_TOPIC = 3
-const SLOTS_PER_PACK = 20
-const FINAL_WORD_CAP = 300
 const REQUIRED_AVATARS = 8
 
 const WORD_TEXT_FIELDS = [
@@ -30,11 +26,18 @@ const WORD_TEXT_FIELDS = [
   "definitionZh",
 ] as const
 
+/** `http(s)://…` with a host and no whitespace. */
+const ABSOLUTE_URL = /^https?:\/\/[^\s/]+(\/\S*)?$/i
+
 /**
- * Check a bundle against the content contract (feature 04). Returns every
- * finding instead of throwing on the first, so an author gets the whole list.
- * Severity depends on the dataset: incomplete art and unresolved word slots
- * are tolerated while authoring (`dev`) and fatal once content is final.
+ * Check a bundle against the content contract (features 04, 17, and 22).
+ * Returns every finding instead of throwing on the first, so an author gets
+ * the whole list.
+ *
+ * Structural rules always fail: shape, references, duplicates, and the word
+ * record. Editorial rules — allowlist, abstract coverage, the first example
+ * containing the headword, forbidden IP terms — are warnings while authoring
+ * (`dev`) and errors once the dataset is `final`.
  */
 export function validateContent(
   bundle: ContentBundle,
@@ -42,8 +45,11 @@ export function validateContent(
 ): ContentIssue[] {
   const issues: ContentIssue[] = []
   const dataset = bundle.meta.dataset
-  const artSeverity: IssueSeverity = dataset === "final" ? "error" : "warning"
-  const artExists = options.artExists ?? (() => true)
+  const editorial: IssueSeverity = dataset === "final" ? "error" : "warning"
+  const allowlist =
+    options.allowlist === undefined
+      ? undefined
+      : new Set(options.allowlist.map((word) => word.toLowerCase()))
   const forbiddenTerms = options.forbiddenTerms ?? []
 
   const add = (
@@ -64,7 +70,6 @@ export function validateContent(
   ) => add(code, "error", file, id, message)
 
   const topicsById = new Map(bundle.topics.map((topic) => [topic.id, topic]))
-  const packsById = new Map(bundle.packs.map((pack) => [pack.id, pack]))
   const wordsById = new Map<string, Word>()
 
   for (const word of bundle.words) {
@@ -73,46 +78,47 @@ export function validateContent(
     }
   }
 
-  // Rule 1 — structure.
-  if (bundle.topics.length !== REQUIRED_TOPICS) {
-    error(
-      "topic-count",
-      "topics.json",
-      "",
-      `Expected ${REQUIRED_TOPICS} topics, found ${bundle.topics.length}.`,
-    )
-  }
-
-  for (const topic of bundle.topics) {
-    if (topic.packIds.length !== PACKS_PER_TOPIC) {
-      error(
-        "pack-count",
-        "topics.json",
-        topic.id,
-        `Topic "${topic.id}" must have ${PACKS_PER_TOPIC} packs, found ${topic.packIds.length}.`,
-      )
-    }
-  }
-
-  for (const pack of bundle.packs) {
-    if (pack.wordIds.length !== SLOTS_PER_PACK) {
-      error(
-        "pack-slots",
-        "packs.json",
-        pack.id,
-        `Pack "${pack.id}" must have ${SLOTS_PER_PACK} word slots, found ${pack.wordIds.length}.`,
-      )
-    }
-  }
-
-  // Rule 2 — unique ids and resolving references.
+  // Unique ids.
   for (const [file, items] of [
-    ["topics.json", bundle.topics],
-    ["packs.json", bundle.packs],
-    ["words.json", bundle.words],
+    ["topics", bundle.topics],
+    ["packs", bundle.packs],
+    ["words", bundle.words],
   ] as const) {
     for (const id of findDuplicates(items)) {
       error("duplicate-id", file, id, `Duplicate id "${id}" in ${file}.`)
+    }
+  }
+
+  // A headword appears once; extra senses stay in the same row.
+  const textSeen = new Map<string, string>()
+
+  for (const word of bundle.words) {
+    const key = word.text.trim().toLowerCase()
+    const firstId = textSeen.get(key)
+
+    if (firstId !== undefined) {
+      error(
+        "word-text-duplicate",
+        "words",
+        word.id,
+        `Word "${word.id}" repeats the headword "${word.text}" already used by "${firstId}".`,
+      )
+    } else {
+      textSeen.set(key, word.id)
+    }
+  }
+
+  // References resolve, and every served row has a parent.
+  const packedTopicIds = new Set(bundle.packs.map((pack) => pack.topicId))
+
+  for (const topic of bundle.topics) {
+    if (!packedTopicIds.has(topic.id)) {
+      error(
+        "topic-no-packs",
+        "topics",
+        topic.id,
+        `Topic "${topic.id}" has no pack.`,
+      )
     }
   }
 
@@ -120,18 +126,30 @@ export function validateContent(
     if (!topicsById.has(pack.topicId)) {
       error(
         "pack-topic-ref",
-        "packs.json",
+        "packs",
         pack.id,
         `Pack "${pack.id}" references unknown topic "${pack.topicId}".`,
       )
     }
 
+    if (pack.wordIds.length === 0) {
+      error("pack-no-words", "packs", pack.id, `Pack "${pack.id}" has no word.`)
+    }
+
+    for (const wordId of new Set(findDuplicates(pack.wordIds.map((id) => ({ id }))))) {
+      error(
+        "pack-duplicate-word",
+        "packs",
+        pack.id,
+        `Pack "${pack.id}" lists word "${wordId}" more than once.`,
+      )
+    }
+
     for (const wordId of pack.wordIds) {
       if (!wordsById.has(wordId)) {
-        add(
+        error(
           "pack-word-ref",
-          dataset === "final" ? "error" : "warning",
-          "packs.json",
+          "packs",
           wordId,
           `Pack "${pack.id}" references unknown word "${wordId}".`,
         )
@@ -139,25 +157,21 @@ export function validateContent(
     }
   }
 
-  for (const topic of bundle.topics) {
-    for (const packId of topic.packIds) {
-      if (!packsById.has(packId)) {
-        error(
-          "topic-pack-ref",
-          "topics.json",
-          topic.id,
-          `Topic "${topic.id}" references unknown pack "${packId}".`,
-        )
-      }
-    }
-  }
-
   for (const word of bundle.words) {
+    if (word.topicIds.length === 0) {
+      error(
+        "word-no-topic",
+        "words",
+        word.id,
+        `Word "${word.id}" is served without an active topic.`,
+      )
+    }
+
     for (const topicId of word.topicIds) {
       if (!topicsById.has(topicId)) {
         error(
           "word-topic-ref",
-          "words.json",
+          "words",
           word.id,
           `Word "${word.id}" references unknown topic "${topicId}".`,
         )
@@ -165,12 +179,12 @@ export function validateContent(
     }
   }
 
-  // Rules 3–6 and 11 — the word record itself.
+  // The word record itself.
   for (const word of bundle.words) {
     if (word.level !== 1 && word.level !== 2 && word.level !== 3) {
       error(
         "bad-level",
-        "words.json",
+        "words",
         word.id,
         `Word "${word.id}" has level ${word.level}; expected 1, 2, or 3.`,
       )
@@ -180,17 +194,26 @@ export function validateContent(
       if (typeof word[field] !== "string" || word[field].trim() === "") {
         error(
           "word-empty-field",
-          "words.json",
+          "words",
           word.id,
           `Word "${word.id}" has an empty "${field}".`,
         )
       }
     }
 
+    if (word.image !== null && !ABSOLUTE_URL.test(word.image)) {
+      error(
+        "image-url",
+        "words",
+        word.id,
+        `Word "${word.id}" image must be an absolute URL or null.`,
+      )
+    }
+
     if (word.examples.length === 0) {
       error(
         "word-no-examples",
-        "words.json",
+        "words",
         word.id,
         `Word "${word.id}" has no examples.`,
       )
@@ -204,7 +227,7 @@ export function validateContent(
         if (missing.length > 0) {
           error(
             "example-unpaired",
-            "words.json",
+            "words",
             word.id,
             `Word "${word.id}" example ${index + 1} is missing ${missing.join(" and ")}.`,
           )
@@ -217,45 +240,28 @@ export function validateContent(
         firstEnglish.trim() !== "" &&
         !containsTerm(firstEnglish, word.text)
       ) {
-        error(
+        add(
           "example-missing-word",
-          "words.json",
+          editorial,
+          "words",
           word.id,
           `Word "${word.id}" first English example does not contain "${word.text}".`,
         )
       }
     }
 
-    // Rule 7 — artwork file and manifest entry.
-    const artwork = bundle.artwork[word.id]
-
-    if (!artwork) {
-      error(
-        "art-manifest-missing",
-        "art/manifest.json",
-        word.id,
-        `Word "${word.id}" has no artwork manifest entry.`,
-      )
-    } else if (!artExists(artwork.file)) {
+    if (allowlist !== undefined && !allowlist.has(word.text.trim().toLowerCase())) {
       add(
-        "art-missing",
-        artSeverity,
-        "art/manifest.json",
+        "word-not-in-allowlist",
+        editorial,
+        "words",
         word.id,
-        `Artwork file "${artwork.file}" for "${word.id}" does not exist.`,
-      )
-    } else if (artwork.status === "placeholder") {
-      add(
-        "art-placeholder",
-        artSeverity,
-        "art/manifest.json",
-        word.id,
-        `Artwork for "${word.id}" is still a placeholder.`,
+        `Word "${word.id}" ("${word.text}") is not in the Cambridge allowlist.`,
       )
     }
   }
 
-  // Rule 8 — forbidden IP terms, from data.
+  // Forbidden IP terms, from data, never from code.
   for (const term of forbiddenTerms) {
     for (const topic of bundle.topics) {
       scanFields(
@@ -266,7 +272,7 @@ export function validateContent(
           ["descriptionZh", topic.descriptionZh],
         ],
         term,
-        "topics.json",
+        "topics",
         topic.id,
       )
     }
@@ -278,7 +284,7 @@ export function validateContent(
           ["titleZh", pack.titleZh],
         ],
         term,
-        "packs.json",
+        "packs",
         pack.id,
       )
     }
@@ -298,69 +304,23 @@ export function validateContent(
           ]),
         ],
         term,
-        "words.json",
+        "words",
         word.id,
       )
     }
   }
 
-  // Rule 9 — order and unlock values.
-  for (const topic of bundle.topics) {
-    const seenOrders = new Set<number>()
-
-    for (const pack of bundle.packs.filter(
-      (candidate) => candidate.topicId === topic.id,
-    )) {
-      if (
-        ![1, 2, 3].includes(pack.order) ||
-        seenOrders.has(pack.order)
-      ) {
-        error(
-          "pack-order",
-          "packs.json",
-          pack.id,
-          `Pack "${pack.id}" order ${pack.order} is not unique 1..3 within "${topic.id}".`,
-        )
-      }
-
-      seenOrders.add(pack.order)
-    }
-  }
-
-  for (const pack of bundle.packs) {
-    if (
-      pack.unlockRule.type !== "masteryCount" ||
-      ![0, 15, 30].includes(pack.unlockRule.value)
-    ) {
-      error(
-        "bad-unlock",
-        "packs.json",
-        pack.id,
-        `Pack "${pack.id}" has unlock value ${pack.unlockRule.value}; expected 0, 15, or 30.`,
-      )
-    }
-  }
-
-  // Rule 10 — the final dataset must be complete.
-  if (dataset === "final" && bundle.words.length > FINAL_WORD_CAP) {
-    error(
-      "final-distinct-words",
-      "words.json",
-      "",
-      `Final dataset has ${bundle.words.length} distinct words; the cap is ${FINAL_WORD_CAP}.`,
-    )
-  }
-
-  // Rule 12 — abstract/emotional words, by topic and in each pack's final third.
+  // Abstract/emotional words, by topic and in each pack's final third.
   for (const topic of bundle.topics) {
     const topicWords = bundle.words.filter((word) =>
       word.topicIds.includes(topic.id),
     )
 
     if (topicWords.length > 0 && !hasAbstract(topicWords)) {
-      error(
+      add(
         "abstract-word-missing",
-        "topics.json",
+        editorial,
+        "topics",
         topic.id,
         `Topic "${topic.id}" has no abstract/emotional word.`,
       )
@@ -374,12 +334,11 @@ export function validateContent(
       .map((wordId) => wordsById.get(wordId))
       .filter((word): word is Word => word !== undefined)
 
-    // Unresolved slots are already reported, and an unauthored pack in `dev`
-    // has nothing to judge here.
     if (finalThird.length > 0 && !hasAbstract(finalThird)) {
-      error(
+      add(
         "abstract-word-missing",
-        "packs.json",
+        editorial,
+        "packs",
         pack.id,
         `Pack "${pack.id}" final third has no abstract/emotional word.`,
       )
@@ -390,7 +349,7 @@ export function validateContent(
   if (bundle.avatars.length !== REQUIRED_AVATARS) {
     error(
       "avatar-count",
-      "avatars.json",
+      "avatars",
       "",
       `Expected ${REQUIRED_AVATARS} avatars, found ${bundle.avatars.length}.`,
     )
@@ -401,7 +360,7 @@ export function validateContent(
       if (!avatar.stages[stage]) {
         error(
           "avatar-stage-missing",
-          "avatars.json",
+          "avatars",
           avatar.id,
           `Avatar "${avatar.id}" is missing stage "${stage}".`,
         )
@@ -419,8 +378,9 @@ export function validateContent(
   ) {
     for (const [field, value] of fields) {
       if (value && containsTerm(value, term)) {
-        error(
+        add(
           "forbidden-term",
+          editorial,
           file,
           id,
           `${id} uses forbidden term "${term}" in ${field}.`,

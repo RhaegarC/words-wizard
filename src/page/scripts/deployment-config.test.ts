@@ -39,7 +39,6 @@ describe("deployment configuration", () => {
       "pnpm install --frozen-lockfile",
       "pnpm typecheck",
       "pnpm test",
-      "pnpm validate:content",
       "pnpm build",
       "pnpm check:dist",
     ]) {

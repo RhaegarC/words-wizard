@@ -13,7 +13,7 @@ const word: Word = {
   definitionEn: "You put things inside a bag.",
   definitionZh: "你可以把东西放进包里。",
   examples: [{ en: "My bag is blue.", zh: "我的包是蓝色的。" }],
-  image: "art/w-bag.webp",
+  image: "https://images.example.test/w-bag.webp",
   emoji: "🎒",
   level: 1,
   tags: [],
@@ -21,33 +21,39 @@ const word: Word = {
 }
 
 describe("resolveArtwork", () => {
-  it("uses the approved file when the manifest says approved", () => {
-    expect(
-      resolveArtwork(word, { file: "art/w-bag.webp", status: "approved" }),
-    ).toEqual({ kind: "image", src: "./art/w-bag.webp" })
+  it("uses the word's image URL when it has one", () => {
+    expect(resolveArtwork(word)).toEqual({
+      kind: "image",
+      src: "https://images.example.test/w-bag.webp",
+    })
   })
 
-  it("returns a placeholder for a placeholder manifest entry", () => {
-    expect(
-      resolveArtwork(word, { file: "art/w-bag.webp", status: "placeholder" }),
-    ).toEqual({ kind: "placeholder", emoji: "🎒", label: "bag" })
+  it("leaves an absolute asset path untouched", () => {
+    expect(resolveArtwork({ ...word, image: "/art/w-bag.webp" })).toEqual({
+      kind: "image",
+      src: "/art/w-bag.webp",
+    })
   })
 
-  it("returns a placeholder when the word has no manifest entry", () => {
-    expect(resolveArtwork(word, undefined).kind).toBe("placeholder")
-  })
-
-  it("falls back to the word's initial when there is no emoji", () => {
-    expect(resolveArtwork({ ...word, emoji: undefined }, undefined)).toEqual({
+  it("returns a placeholder when the word has no image", () => {
+    expect(resolveArtwork({ ...word, image: null })).toEqual({
       kind: "placeholder",
-      emoji: "B",
+      emoji: "🎒",
       label: "bag",
     })
   })
 
-  it("leaves absolute asset paths untouched", () => {
+  it("treats an empty image as absent", () => {
+    expect(resolveArtwork({ ...word, image: " " }).kind).toBe("placeholder")
+  })
+
+  it("falls back to the word's initial when there is no emoji", () => {
     expect(
-      resolveArtwork(word, { file: "/art/w-bag.webp", status: "approved" }),
-    ).toEqual({ kind: "image", src: "/art/w-bag.webp" })
+      resolveArtwork({ ...word, image: null, emoji: undefined }),
+    ).toEqual({
+      kind: "placeholder",
+      emoji: "B",
+      label: "bag",
+    })
   })
 })

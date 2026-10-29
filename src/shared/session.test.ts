@@ -55,7 +55,7 @@ function makeWord(
     definitionEn: `definition of ${id}`,
     definitionZh: `${id} 的解释`,
     examples: [{ en: `I see a ${id}.`, zh: `我看见一个${id}。` }],
-    image: `art/${id}.webp`,
+    image: null,
     emoji: "🔤",
     level,
     tags: [],
@@ -67,7 +67,6 @@ function makePack(
   id: string,
   wordIds: string[],
   order: number,
-  mastery: 0 | 15 | 30,
   topicId = "t1",
 ): Pack {
   return {
@@ -77,7 +76,6 @@ function makePack(
     topicId,
     wordIds,
     order,
-    unlockRule: { type: "masteryCount", value: mastery },
   }
 }
 
@@ -227,7 +225,7 @@ describe("buildSession", () => {
     )
 
     const plan = planWith(
-      [makePack("p1", words.map((word) => word.id), 1, 0)],
+      [makePack("p1", words.map((word) => word.id), 1)],
       words,
     )
 
@@ -251,7 +249,7 @@ describe("buildSession", () => {
     ]
 
     const plan = planWith(
-      [makePack("p1", ["n1", "n2"], 1, 0)],
+      [makePack("p1", ["n1", "n2"], 1)],
       words,
       progress,
     )
@@ -287,7 +285,7 @@ describe("buildSession", () => {
   it("adds no new words when no topic has been chosen", () => {
     const word = makeWord("n1")
     const plan = planWith(
-      [makePack("p1", ["n1"], 1, 0)],
+      [makePack("p1", ["n1"], 1)],
       [word],
       [],
       null,
@@ -297,39 +295,32 @@ describe("buildSession", () => {
     expect(plan.caughtUp).toBe(true)
   })
 
-  it("keeps pack 2 locked below fifteen mastered words in the topic", () => {
+  it("keeps pack 2 locked until every word in pack 1 is introduced", () => {
     const first = ["a1", "a2", "a3"].map((id) => makeWord(id))
     const second = ["b1", "b2"].map((id) => makeWord(id))
-    const progress = first.map((word) =>
-      mastered(word.id),
-    )
+    const progress = [makeProgress("a1"), makeProgress("a2")]
 
     const plan = planWith(
       [
-        makePack("p1", first.map((word) => word.id), 1, 0),
-        makePack("p2", second.map((word) => word.id), 2, 15),
+        makePack("p1", first.map((word) => word.id), 1),
+        makePack("p2", second.map((word) => word.id), 2),
       ],
       [...first, ...second],
       progress,
     )
 
-    expect(plan.words).toEqual([])
-    expect(plan.caughtUp).toBe(true)
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a3"])
   })
 
-  it("opens pack 2 at fifteen mastered words and takes its unlearned words", () => {
-    const first = Array.from({ length: 15 }, (_, index) =>
-      makeWord(`a${index + 1}`),
-    )
+  it("opens pack 2 once pack 1 is complete, without waiting for mastery", () => {
+    const first = ["a1", "a2", "a3"].map((id) => makeWord(id))
     const second = ["b1", "b2", "b3"].map((id) => makeWord(id))
-    const progress = first.map((word) =>
-      mastered(word.id),
-    )
+    const progress = first.map((word) => makeProgress(word.id))
 
     const plan = planWith(
       [
-        makePack("p1", first.map((word) => word.id), 1, 0),
-        makePack("p2", second.map((word) => word.id), 2, 15),
+        makePack("p1", first.map((word) => word.id), 1),
+        makePack("p2", second.map((word) => word.id), 2),
       ],
       [...first, ...second],
       progress,
@@ -342,68 +333,61 @@ describe("buildSession", () => {
     ])
   })
 
-  it("keeps pack 3 locked at twenty-nine and opens it at thirty", () => {
-    const first = Array.from({ length: 20 }, (_, index) =>
-      makeWord(`a${index + 1}`),
-    )
-    const second = Array.from({ length: 9 }, (_, index) =>
-      makeWord(`b${index + 1}`),
-    )
+  it("opens pack 3 only when pack 2 is complete as well", () => {
+    const first = ["a1", "a2"].map((id) => makeWord(id))
+    const second = ["b1", "b2", "b3"].map((id) => makeWord(id))
     const third = ["c1", "c2"].map((id) => makeWord(id))
-    const extra = makeWord("extra")
     const packs = [
-      makePack("p1", first.map((word) => word.id), 1, 0),
-      makePack("p2", second.map((word) => word.id), 2, 15),
-      makePack("p3", third.map((word) => word.id), 3, 30),
+      makePack("p1", first.map((word) => word.id), 1),
+      makePack("p2", second.map((word) => word.id), 2),
+      makePack("p3", third.map((word) => word.id), 3),
     ]
-    const learned = [...first, ...second].map((word) =>
-      mastered(word.id),
-    )
+    const allWords = [...first, ...second, ...third]
 
-    // Every word in packs 1 and 2 is learned; the count is 29, so pack 3 stays
-    // locked and there is nowhere else new to come from.
-    const locked = planWith(
+    // Pack 1 is complete, pack 2 is not: pack 3 stays shut.
+    const partly = planWith(
       packs,
-      [...first, ...second, extra, ...third],
-      learned,
+      allWords,
+      [...first.map((word) => word.id), "b1"].map((id) => makeProgress(id)),
     )
 
-    expect(locked.words).toEqual([])
+    expect(newWordsOf(partly).map((word) => word.wordId)).toEqual(["b2", "b3"])
 
-    // A mastered word outside the packs is still mastery in this topic.
-    const opened = planWith(
+    const complete = planWith(
       packs,
-      [...first, ...second, extra, ...third],
-      [
-        ...learned,
-        mastered("extra"),
-      ],
+      allWords,
+      [...first, ...second].map((word) => makeProgress(word.id)),
     )
 
-    expect(newWordsOf(opened).map((word) => word.wordId)).toEqual(["c1", "c2"])
+    expect(newWordsOf(complete).map((word) => word.wordId)).toEqual(["c1", "c2"])
   })
 
-  it("never selects from a locked pack when the open pack has no new words", () => {
-    const first = ["a1", "a2", "a3"].map((id) => makeWord(id))
-    const second = ["b1", "b2"].map((id) => makeWord(id))
-    const progress = first.map((word) =>
-      makeProgress(word.id, {
-        status: "learning",
-        strength: 0.4,
-        nextReviewAt: NOW + DAY,
-      }),
-    )
+  it("does not let a word learned outside the packs complete a pack", () => {
+    const first = ["a1", "a2"].map((id) => makeWord(id))
+    const second = ["b1"].map((id) => makeWord(id))
+    const extra = makeWord("extra")
 
     const plan = planWith(
       [
-        makePack("p1", first.map((word) => word.id), 1, 0),
-        makePack("p2", second.map((word) => word.id), 2, 15),
+        makePack("p1", ["a1", "a2"], 1),
+        makePack("p2", ["b1"], 2),
       ],
-      [...first, ...second],
-      progress,
+      [...first, ...second, extra],
+      [mastered("a1"), mastered("extra")],
     )
 
-    expect(plan.words).toEqual([])
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a2"])
+  })
+
+  it("orders packs by `order`, then id, regardless of input order", () => {
+    const words = ["a1", "b1"].map((id) => makeWord(id))
+
+    const plan = planWith(
+      [makePack("p2", ["b1"], 2), makePack("p1", ["a1"], 1)],
+      words,
+    )
+
+    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a1"])
   })
 
   it("treats a word with any progress row as learned, including status new", () => {
@@ -413,7 +397,7 @@ describe("buildSession", () => {
     ]
 
     const plan = planWith(
-      [makePack("p1", words.map((word) => word.id), 1, 0)],
+      [makePack("p1", words.map((word) => word.id), 1)],
       words,
       progress,
     )
@@ -425,7 +409,7 @@ describe("buildSession", () => {
     const words = ["d1", "d2", "d3", "d4", "d5"].map((id) => makeWord(id))
 
     const plan = planWith(
-      [makePack("p1", ["d1", "d1", "d2", "d3", "d4", "d5"], 1, 0)],
+      [makePack("p1", ["d1", "d1", "d2", "d3", "d4", "d5"], 1)],
       words,
     )
 
@@ -438,57 +422,12 @@ describe("buildSession", () => {
     ])
   })
 
-  it("prefers the lowest unlocked pack with an unlearned word", () => {
-    const first = ["a1", "a2"].map((id) => makeWord(id))
-    const second = ["b1"].map((id) => makeWord(id))
-    const masteredWords = Array.from({ length: 15 }, (_, index) =>
-      makeWord(`m${index + 1}`),
-    )
-    const progress = masteredWords.map((word) => mastered(word.id))
-
-    const plan = planWith(
-      [
-        makePack("p1", first.map((word) => word.id), 1, 0),
-        makePack("p2", second.map((word) => word.id), 2, 15),
-      ],
-      [...first, ...second, ...masteredWords],
-      progress,
-    )
-
-    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a1", "a2"])
-  })
-
-  it("counts mastery across the topic, not just one pack", () => {
-    const first = Array.from({ length: 20 }, (_, index) =>
-      makeWord(`a${index + 1}`),
-    )
-    const second = Array.from({ length: 10 }, (_, index) =>
-      makeWord(`b${index + 1}`),
-    )
-    const next = ["c1"].map((id) => makeWord(id))
-    const progress = [...first, ...second].map((word) =>
-      mastered(word.id),
-    )
-
-    const plan = planWith(
-      [
-        makePack("p1", first.map((word) => word.id), 1, 0),
-        makePack("p2", second.map((word) => word.id), 2, 15),
-        makePack("p3", next.map((word) => word.id), 3, 30),
-      ],
-      [...first, ...second, ...next],
-      progress,
-    )
-
-    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["c1"])
-  })
-
   it("stays on the same five words while the day's session is unfinished", () => {
     const words = Array.from({ length: 10 }, (_, index) =>
       makeWord(`n${index + 1}`),
     )
     const input = makeInput({
-      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      packs: [makePack("p1", words.map((word) => word.id), 1)],
       words,
     })
 
@@ -517,7 +456,7 @@ describe("buildSession", () => {
       }),
     )
     const today = makeInput({
-      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      packs: [makePack("p1", words.map((word) => word.id), 1)],
       words,
       progress: learnedToday,
     })
@@ -550,8 +489,8 @@ describe("buildSession", () => {
     ]
     const today = makeInput({
       packs: [
-        makePack("p1", ["a1"], 1, 0, "t1"),
-        makePack("p2", ["b1"], 1, 0, "t2"),
+        makePack("p1", ["a1"], 1, "t1"),
+        makePack("p2", ["b1"], 1, "t2"),
       ],
       words,
       progress: learnedToday,
@@ -576,7 +515,7 @@ describe("buildSession", () => {
       }),
     )
     const tomorrow = makeInput({
-      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      packs: [makePack("p1", words.map((word) => word.id), 1)],
       words,
       progress: learnedToday,
       now: NOW + DAY,
@@ -601,7 +540,7 @@ describe("previewSession", () => {
     const words = ["r1", "n1", "n2"].map((id) => makeWord(id))
     const input = makeInput({
       words,
-      packs: [makePack("p1", ["n1", "n2"], 1, 0)],
+      packs: [makePack("p1", ["n1", "n2"], 1)],
       progress: [makeProgress("r1", { nextReviewAt: NOW - DAY })],
     })
 
@@ -624,7 +563,7 @@ describe("previewSession", () => {
       makeProgress(word.id, { firstSeenAt: NOW, lastSeenAt: NOW }),
     )
     const input = makeInput({
-      packs: [makePack("p1", words.map((word) => word.id), 1, 0)],
+      packs: [makePack("p1", words.map((word) => word.id), 1)],
       words,
       progress: learnedToday,
     })
@@ -643,7 +582,7 @@ describe("mode assignment", () => {
     const words = ["r1", "n1"].map((id) => makeWord(id))
     const input = makeInput({
       words,
-      packs: [makePack("p1", ["n1"], 1, 0)],
+      packs: [makePack("p1", ["n1"], 1)],
       progress: [makeProgress("r1")],
     })
 
@@ -653,7 +592,7 @@ describe("mode assignment", () => {
   it("practises each new word by spelling, then one non-spelling mode", () => {
     const words = ["n1", "n2"].map((id) => makeWord(id))
     const plan = planWith(
-      [makePack("p1", ["n1", "n2"], 1, 0)],
+      [makePack("p1", ["n1", "n2"], 1)],
       words,
     )
 
@@ -672,7 +611,7 @@ describe("mode assignment", () => {
       makeWord(`n${index + 1}`),
     )
     const plan = planWith(
-      [makePack("p1", words.map((word) => word.id), 1, 0)],
+      [makePack("p1", words.map((word) => word.id), 1)],
       words,
     )
     const comprehensive = comprehensiveOf(plan)
@@ -692,7 +631,7 @@ describe("mode assignment", () => {
     const words = ["n1", "n2"].map((id) => makeWord(id))
     const input = makeInput({
       words,
-      packs: [makePack("p1", ["n1", "n2"], 1, 0)],
+      packs: [makePack("p1", ["n1", "n2"], 1)],
       speechAvailable: false,
     })
     const plan = buildSession(input)
@@ -876,7 +815,7 @@ function oneWordPlan(kind: "review" | "new"): SessionState {
   }
 
   const plan = planWith(
-    [makePack("p1", ["n1"], 1, 0)],
+    [makePack("p1", ["n1"], 1)],
     [makeWord("n1")],
   )
 
@@ -904,7 +843,7 @@ describe("session reducer", () => {
       makeWord(`n${index + 1}`),
     )
     const plan = planWith(
-      [makePack("p1", newWords.map((word) => word.id), 1, 0)],
+      [makePack("p1", newWords.map((word) => word.id), 1)],
       newWords,
     )
 
@@ -939,7 +878,7 @@ describe("session reducer", () => {
       makeProgress(word.id, { firstSeenAt: NOW, lastSeenAt: NOW }),
     )
     const plan = planWith(
-      [makePack("p1", words.map((word) => word.id), 1, 0)],
+      [makePack("p1", words.map((word) => word.id), 1)],
       words,
       learnedToday,
     )

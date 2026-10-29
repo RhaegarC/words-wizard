@@ -52,7 +52,7 @@ function makeWord(index: number): Word {
     definitionEn: `definition ${index}`,
     definitionZh: `解释 ${index}`,
     examples: [{ en: `A word ${index}.`, zh: `一个单词 ${index}。` }],
-    image: `word-${index}`,
+    image: null,
     level: 1,
     tags: [],
     topicIds: [TOPIC],
@@ -69,7 +69,6 @@ const PACKS: Pack[] = [
     topicId: TOPIC,
     wordIds: WORDS.map((word) => word.id),
     order: 1,
-    unlockRule: { type: "masteryCount", value: 0 },
   },
 ]
 
