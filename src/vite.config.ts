@@ -1,13 +1,16 @@
+import { join } from "node:path"
+
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
-import { defineConfig } from "vitest/config"
 
 const srcRoot = import.meta.dirname
+const pageRoot = join(srcRoot, "page")
 
 export default defineConfig({
-  // The package, all app source, and the build output live in src/.
-  root: srcRoot,
+  // The SPA lives in page/; the package, shared code, and build output stay in src/.
+  root: pageRoot,
   // Relative asset URLs so the build also works from a sub-path.
   base: "./",
   plugins: [
@@ -37,12 +40,14 @@ export default defineConfig({
   ],
   publicDir: "public",
   build: {
-    outDir: "dist",
+    // Pages keeps its configured output directory at src/dist.
+    outDir: "../dist",
     emptyOutDir: true,
   },
   resolve: {
     alias: {
-      "@": srcRoot,
+      "@shared": join(srcRoot, "shared"),
+      "@": pageRoot,
     },
   },
   server: {
@@ -54,13 +59,5 @@ export default defineConfig({
     host: true,
     port: 8443,
     strictPort: true,
-  },
-  test: {
-    root: srcRoot,
-    environment: "node",
-    include: ["**/*.test.ts"],
-    // Local-calendar day math must be proven off UTC and across both DST
-    // transitions; a UTC run would not exercise either.
-    env: { TZ: "America/New_York" },
   },
 })

@@ -81,32 +81,32 @@ Browser (PWA, words.nioh.uk)
 
 A pure move with no behaviour change, merged to `develop` before feature 21 starts.
 
-- [ ] `src/page/` holds the SPA: `index.html`, `main.tsx`, `App.tsx`, `public/`, `components/`,
+- [x] `src/page/` holds the SPA: `index.html`, `main.tsx`, `App.tsx`, `public/`, `components/`,
       `screens/`, `shell/`, `i18n/`, `router/`, `session/`, `modes/`, `pwa/`, `dev/`, `db/`,
       `content/`, `scripts/`, and the page-only domain modules (`firstRun`, `settings`, `install`).
-- [ ] `src/shared/` holds pure domain code: `types`, `config`, `progression`, `session`,
+- [x] `src/shared/` holds pure domain code: `types`, `config`, `progression`, `session`,
       `character`, `sessionPayload`, `metrics`, `provider`, `device`, and the pure `content/`
       modules (`types`, `validate`, `artwork`). It imports nothing from `page/` or `worker/`. The
       authoring data and rules stay under `page/content/` until feature 22 moves the rules to
       `shared/content/rules/`.
-- [ ] `src/worker/` exists as the new Worker tree; feature 21 fills it.
-- [ ] Vite runs with `root: "page"`, `publicDir: "public"`, `build.outDir: "../dist"`; aliases are
+- [x] `src/worker/` exists as the new Worker tree; feature 21 fills it.
+- [x] Vite runs with `root: "page"`, `publicDir: "public"`, `build.outDir: "../dist"`; aliases are
       `@` → `page` and `@shared` → `shared`.
-- [ ] Vitest configuration is split out of `vite.config.ts`; TS configuration is split into
+- [x] Vitest configuration is split out of `vite.config.ts`; TS configuration is split into
       base/page/worker/test; `pnpm typecheck` covers page and tests (worker joins in feature 21).
-- [ ] Script paths (`validate:content`, `extract:wordlist`, `check:dist`, `check:deploy`) and the
+- [x] Script paths (`validate:content`, `extract:wordlist`, `check:dist`, `check:deploy`) and the
       doc-assertion path arithmetic point at the new locations.
-- [ ] `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check:dist` match the pre-move result;
+- [x] `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check:dist` match the pre-move result;
       the only expected red is the existing `deployment-config.test.ts` policy failure caused by
       `delete-preview.yml`, which feature 25 rewrites.
-- [ ] A manual dev-server smoke shows the same screens and behaviour as before the move.
-- [ ] No file under `Figma/` is touched.
+- [x] A manual dev-server smoke shows the same screens and behaviour as before the move.
+- [x] No file under `Figma/` is touched.
 
 ## Feature table
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 0 | Repository restructure into `page/`, `worker/`, `shared/` | Planned | — |
+| 0 | Repository restructure into `page/`, `worker/`, `shared/` | Done | — |
 | 21 | [Worker foundation & Entra token validation](21-worker-foundation.md) | Planned | Phase 0 |
 | 22 | [D1 content store & content API](22-d1-content-store.md) | Planned | 21 |
 | 23 | [User profile, progress & session commit](23-user-data-api.md) | Planned | 21, 22 |

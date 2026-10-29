@@ -8,16 +8,16 @@
   },
   "scripts": {
     "dev": "vite",
-    "validate:content": "tsx scripts/validate-content.ts",
-    "extract:wordlist": "node scripts/extract-wordlist.mjs",
+    "validate:content": "tsx page/scripts/validate-content.ts",
+    "extract:wordlist": "node page/scripts/extract-wordlist.mjs",
     "prebuild": "pnpm validate:content",
     "build": "vite build",
-    "check:dist": "node scripts/check-dist.mjs",
-    "check:deploy": "node scripts/check-deploy.mjs",
+    "check:dist": "node page/scripts/check-dist.mjs",
+    "check:deploy": "node page/scripts/check-deploy.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.page.json && tsc --noEmit -p tsconfig.test.json",
     "format": "oxfmt ."
   },
   "dependencies": {
