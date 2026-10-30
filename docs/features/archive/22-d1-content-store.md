@@ -1,9 +1,9 @@
 # Feature 22 — D1 Content Store & Content API
 
-> Priority: Must (release blocker) · Mission 2 · **Status: Planned — documentation only**
+> Priority: Must (release blocker) · Mission 2 · **Status: Done — merged in PR #55**
 > Depends on: 21 (Worker edge, config, CORS, error envelope). Blocks: 23, 24; feature 17 continues
 > here.
-> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
+> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md).
 
 ## Summary
 
