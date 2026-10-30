@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { ConfigError, readConfig, type WorkerEnv } from "./config"
-import { TEST_ENV } from "./test/tokens"
+import { ConfigError, readConfig, type WorkerEnv } from "../config"
+import { TEST_ENV } from "./tokens"
 
 const REQUIRED_KEYS = [
   "JWKS_URL",

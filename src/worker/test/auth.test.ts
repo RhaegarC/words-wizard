@@ -1,10 +1,10 @@
 import { Hono } from "hono"
 import { beforeAll, describe, expect, it } from "vitest"
 
-import { createTokenVerifier, requireAuth } from "./auth"
-import type { AppEnv } from "./context"
-import { readConfig } from "./config"
-import { installErrorHandlers } from "./errors"
+import { createTokenVerifier, requireAuth } from "../auth"
+import type { AppEnv } from "../context"
+import { readConfig } from "../config"
+import { installErrorHandlers } from "../errors"
 import {
   AUDIENCE,
   ISSUER,
@@ -17,7 +17,7 @@ import {
   mintToken,
   mintTokenForOtherTenant,
   type TestKey,
-} from "./test/tokens"
+} from "./tokens"
 
 const config = readConfig(TEST_ENV)
 const NOW = Math.floor(Date.now() / 1000)

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { createApp } from "./app"
-import { TEST_ENV } from "./test/tokens"
+import { createApp } from "../app"
+import { TEST_ENV } from "./tokens"
 
 const ALLOWED = "https://words.nioh.uk"
 const LOCAL = "http://localhost:8443"

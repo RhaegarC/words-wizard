@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { METRIC_NAMES } from "../shared/metrics"
+import { METRIC_NAMES } from "../../shared/metrics"
 import {
   MAX_BODY_BYTES,
   parseCareEvent,
@@ -8,7 +8,7 @@ import {
   parseJsonBody,
   parseMetricEvent,
   parseProfilePatch,
-} from "./profileInput"
+} from "../profileInput"
 
 /**
  * Unit tier: the request body rules the profile, metric, and care routes

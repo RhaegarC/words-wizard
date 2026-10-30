@@ -21,7 +21,7 @@ import {
   topics,
   users,
   words,
-} from "./schema"
+} from "../db/schema"
 
 /**
  * Model tier: the ORM's model and the SQL committed for it, compared without

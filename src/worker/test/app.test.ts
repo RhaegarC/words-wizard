@@ -1,10 +1,10 @@
 import { Hono } from "hono"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { createApp } from "./app"
-import { installErrorHandlers } from "./errors"
-import type { AppEnv } from "./context"
-import { TEST_ENV } from "./test/tokens"
+import { createApp } from "../app"
+import { installErrorHandlers } from "../errors"
+import type { AppEnv } from "../context"
+import { TEST_ENV } from "./tokens"
 
 function app() {
   return createApp()

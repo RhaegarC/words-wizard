@@ -13,7 +13,7 @@ import {
   type PackWordRow,
   type TopicRow,
   type WordRow,
-} from "./content"
+} from "../content"
 
 const META: MetaRow = {
   schema_version: 1,
