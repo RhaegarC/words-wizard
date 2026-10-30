@@ -53,6 +53,41 @@ describe("database-backed routes", () => {
   })
 })
 
+describe("user routes", () => {
+  const routes: Array<[string, string]> = [
+    ["GET", "/v1/me"],
+    ["POST", "/v1/me/profile"],
+    ["PATCH", "/v1/me/profile"],
+    ["POST", "/v1/me/sessions"],
+    ["POST", "/v1/me/metrics"],
+    ["POST", "/v1/me/care"],
+  ]
+
+  it("answers 401 before touching the database when no token is sent", async () => {
+    for (const [method, path] of routes) {
+      const response = await app().request(path, { method }, TEST_ENV)
+      const body = (await response.json()) as { error: { code: string } }
+
+      expect(response.status, path).toBe(401)
+      expect(body.error.code).toBe("unauthorized")
+    }
+  })
+
+  it("answers 405 to a known user path with an unaccepted method", async () => {
+    const authenticated = createApp({
+      verifierFor: () => async () => ({ oid: "user-a" }),
+    })
+    const response = await authenticated.request(
+      "/v1/me/profile",
+      { method: "DELETE", headers: { Authorization: "Bearer token" } },
+      TEST_ENV,
+    )
+
+    expect(response.status).toBe(405)
+    expect(response.headers.get("allow")).toBe("POST, PATCH")
+  })
+})
+
 describe("errors", () => {
   it("returns a 404 envelope for an unknown route", async () => {
     const response = await app().request("/v1/nope", {}, TEST_ENV)

@@ -1,6 +1,6 @@
 # Feature 23 — User Profile, Progress & Session Commit
 
-> Priority: Must · Mission 2 · **Status: Planned — documentation only**
+> Priority: Must · Mission 2 · **Status: In review — PR pending**
 > Depends on: 21 (auth edge), 22 (content tables and word ids). Blocks: 24.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
@@ -75,6 +75,15 @@ a user id, profile id, or `oid` in its body or path.
 character. It is not a `404`. `introductions` is `[]` until the first committed session and never
 null; the client uses it, with the bundle's pack order, to decide which pack is unlocked.
 
+The wire shapes live in [`src/shared/me.ts`](../../src/shared/me.ts) and carry no numeric row ids
+and no `profileId`: the profile is keyed by the token's `oid`, `ServerProfile` returns `name` (which
+Mission 1 keeps identical to `characterName`) plus the fields above, `ServerProgress` is keyed by
+`wordId`, and `ServerMetric` is `{ name, value, updatedAt }`. Feature 24 removes the client's
+numeric compatibility seam against exactly these shapes.
+
+Every response carries `Cache-Control: no-store`. All routes answer `401` before touching D1 when
+no token is sent.
+
 ### Profile creation
 
 - `characterName` follows feature 06's rule: trim, 1–16 Unicode code points, no C0/C1 controls or
@@ -119,25 +128,25 @@ Identity is not in the payload. The server takes `oid` from the verified token.
 
 Validation, before any write:
 
-- [ ] `session.id` is a non-empty string up to 64 characters; `kind` is `daily` or `monthly`;
+- [x] `session.id` is a non-empty string up to 64 characters; `kind` is `daily` or `monthly`;
       `localDate` is a real `YYYY-MM-DD`; `contentVersion` is a non-empty string; `xpEarned` is an
       integer in `0..10 000`.
-- [ ] `now` and `finishedAt` are finite and within **±24 hours** of server time. A timestamp outside
+- [x] `now` and `finishedAt` are finite and within **±24 hours** of server time. A timestamp outside
       that window is `422 clock_out_of_range`; the server never silently substitutes its own time.
-- [ ] `profile` is an allowlist of the fields above; every number is non-negative and finite, every
+- [x] `profile` is an allowlist of the fields above; every number is non-negative and finite, every
       timestamp is within the same ±24-hour window (or `null` where the type allows it), and
       `lastStreakDate` is a real date or `null`.
-- [ ] `progress` has at most 40 rows, no duplicate `wordId`, `status` in the enum, `strength` in
+- [x] `progress` has at most 40 rows, no duplicate `wordId`, `status` in the enum, `strength` in
       `0..1`, counts non-negative integers, `masteryXpAwarded` a boolean, and every `wordId` exists
       in `words`. An unknown word id is `422 unknown_word`.
-- [ ] `introductions` has at most 40 rows, no duplicate `(packId, wordId)` pair, every
+- [x] `introductions` has at most 40 rows, no duplicate `(packId, wordId)` pair, every
       `introducedAt` is within the same ±24-hour window, and every pair exists in `pack_words`. An
       unknown pair is `422 unknown_pack_word`; a pair from a pack in another topic is still valid,
       because a word may belong to several packs.
-- [ ] `metrics` names are in `METRIC_NAMES`; deltas are finite. Only `monthlyReview.strengthDelta`
+- [x] `metrics` names are in `METRIC_NAMES`; deltas are finite. Only `monthlyReview.strengthDelta`
       may be negative (in `-1..1`); every other delta is non-negative. Unknown names are rejected.
-- [ ] A JSON body over 64 KB is refused before parsing.
-- [ ] A rejected payload writes nothing: validation completes before the batch is built.
+- [x] A JSON body over 64 KB is refused before parsing, as `422 validation_failed`.
+- [x] A rejected payload writes nothing: validation completes before the batch is built.
 
 ### Atomic, idempotent commit
 
@@ -175,10 +184,11 @@ is accepted for v1. It does not cross the authorization boundary: a token can on
 
 ### Metric and care writes
 
-- `POST /v1/me/metrics` validates the name/delta like the commit, inserts `metric_events` as the
-  idempotency marker, and adds the delta only when the marker is new. A replay returns the current
-  value.
-- `POST /v1/me/care` applies the shared pure rules (`spendOnFreeze`, `spendOnQuickWake`) on the
+- `POST /v1/me/metrics` validates the name/delta like the commit, requires an `eventId` of 1–64
+  characters, inserts `metric_events` as the idempotency marker, and adds the delta only when the
+  marker is new. A replay returns the current value.
+- `POST /v1/me/care` takes `{ action, eventId }` with the same 1–64 character `eventId` bound,
+  applies the shared pure rules (`spendOnFreeze`, `spendOnQuickWake`) on the
   server: one token, the same profile change the client would have made, and its metric row in the
   same batch. An unaffordable action is `409 care_unavailable` **before** any write. The
   `metric_events` insert is the marker, and the profile update follows it gated on
@@ -225,7 +235,7 @@ is accepted for v1. It does not cross the authorization boundary: a token can on
 | **Unit** (always) | Every validation boundary above, at the value and one step past it: name 16/17 code points, avatar/topic allowlists, locale, `strength` 0/1/−0.1/1.1, negative XP, clock exactly ±24 h, duplicate/unknown word, 40/41 progress rows, 40/41 introduction rows, duplicate `(packId, wordId)`, unknown `(packId, wordId)`, a pair valid in `pack_words` but belonging to another topic, oversized body, unknown metric, negative delta for the one signed metric, care affordability. |
 | **Model** (always) | The user migration declares the keys, checks, and foreign keys the docs claim; `profiles.user_id` is unique; `progress` is keyed by `(user_id, word_id)`; `pack_introductions` is keyed by `(user_id, pack_id, word_id)` and cascades only from `users`. |
 | **Database / host** (local, always) | Migrations apply; an unknown `word_id` is refused by the foreign key; a second profile insert for one `oid` collides; the commit batch lands all rows; replaying the same payload leaves every counter, XP, session count, and introduction set unchanged and moves no `introduced_at`; a word introduced in two packs has two rows and one `progress` row; a forced constraint failure mid-batch leaves **no** session, profile, progress, introduction, or metric change; `freeze`/`quickWake` spend exactly one token and replay once; two identities' rows never mix; every route is `401` without a token and succeeds with a locally minted one. |
-| **Remote** (gated) | The same constraints and the commit batch hold on Cloudflare's engine; skips visibly without test credentials. |
+| **Remote** (gated) | The user migration applies and its checks and composite foreign keys fire on Cloudflare's engine; the commit batch's atomicity is proven by the local database tier, which can run the real Worker. Skips visibly without test credentials. |
 | **Manual** | Sign in with two tenant accounts on one browser; each sees only its own profile; a completed session reloads with the same XP/streak. |
 
 **RED-first hot spots**

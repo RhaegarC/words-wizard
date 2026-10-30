@@ -3,9 +3,21 @@ import type { Context, ErrorHandler, Hono, NotFoundHandler } from "hono"
 import type { AppEnv } from "./context"
 
 /** Stable error identifiers clients may branch on; never free-form text. */
-export type ErrorCode = "unauthorized" | "config_missing" | "not_found" | "method_not_allowed" | "internal"
+export type ErrorCode =
+  | "unauthorized"
+  | "config_missing"
+  | "not_found"
+  | "method_not_allowed"
+  | "internal"
+  | "invalid_json"
+  | "validation_failed"
+  | "clock_out_of_range"
+  | "unknown_word"
+  | "unknown_pack_word"
+  | "profile_not_found"
+  | "care_unavailable"
 
-type ErrorStatus = 400 | 401 | 404 | 405 | 500
+type ErrorStatus = 400 | 401 | 404 | 405 | 409 | 422 | 500
 
 export class AppError extends Error {
   constructor(
@@ -30,6 +42,55 @@ export class ConfigError extends AppError {
 export class UnauthorizedError extends AppError {
   constructor(message = "Authentication required.") {
     super("unauthorized", 401, message, { "WWW-Authenticate": "Bearer" })
+  }
+}
+
+/** The body is not JSON at all; nothing is validated or written. */
+export class InvalidJsonError extends AppError {
+  constructor() {
+    super("invalid_json", 400, "The request body is not valid JSON.")
+  }
+}
+
+/** Any field or range rule; the message names the rule, never the value. */
+export class ValidationFailedError extends AppError {
+  constructor(message = "The request body is not valid.") {
+    super("validation_failed", 422, message)
+  }
+}
+
+/** A client clock outside the server's ±24-hour window. */
+export class ClockOutOfRangeError extends AppError {
+  constructor() {
+    super("clock_out_of_range", 422, "The supplied time is outside the accepted window.")
+  }
+}
+
+/** A progress row names a word that is not in D1. */
+export class UnknownWordError extends AppError {
+  constructor() {
+    super("unknown_word", 422, "A progress row names a word that does not exist.")
+  }
+}
+
+/** An introduction names a `(packId, wordId)` pair absent from `pack_words`. */
+export class UnknownPackWordError extends AppError {
+  constructor() {
+    super("unknown_pack_word", 422, "An introduction names a word that is not in that pack.")
+  }
+}
+
+/** A route that needs a profile answered before the identity has created one. */
+export class ProfileNotFoundError extends AppError {
+  constructor() {
+    super("profile_not_found", 404, "No profile exists for this identity.")
+  }
+}
+
+/** No token to spend, or the action is not legal in the character's state. */
+export class CareUnavailableError extends AppError {
+  constructor(reason: string) {
+    super("care_unavailable", 409, `Care is unavailable: ${reason}.`)
   }
 }
 

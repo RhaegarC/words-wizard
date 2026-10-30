@@ -133,6 +133,79 @@ describe.skipIf(!configuredBool)(
     )
 
     it(
+      "migrates the user tables and enforces the profile locale check",
+      () => {
+        const tables = query<{ name: string }>(
+          "SELECT name FROM sqlite_master WHERE type = 'table'",
+        ).map((row) => row.name)
+
+        for (const table of [
+          "users",
+          "profiles",
+          "progress",
+          "pack_introductions",
+          "metrics",
+          "sessions",
+          "session_metrics",
+          "metric_events",
+        ]) {
+          expect(tables).toContain(table)
+        }
+
+        const oid = `remote-locale-${Date.now()}`
+        query(
+          `INSERT INTO users (oid, created_at, last_seen_at) VALUES ('${oid}', 0, 0);`,
+        )
+        const result = wrangler([
+          "d1",
+          "execute",
+          "DB",
+          "--command",
+          `INSERT INTO profiles (user_id, character_name, avatar, current_topic_id, xp, created_at, last_practice_at, last_wake_at, frozen_days, care_tokens, sessions_since_last_token, completed_sessions, streak_count, best_streak, last_streak_date, last_monthly_review_at, locale) VALUES ('${oid}', 'Hero', 'alex', NULL, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, 'fr');`,
+          "--json",
+        ])
+
+        expect(output(result)).toMatch(/constraint failed/i)
+        expect(
+          query<{ present: number }>(
+            `SELECT COUNT(*) AS present FROM profiles WHERE user_id = '${oid}'`,
+          )[0]?.present,
+        ).toBe(0)
+
+        query(`DELETE FROM users WHERE oid = '${oid}';`)
+      },
+      TIMEOUT,
+    )
+
+    it(
+      "enforces the session_metrics composite foreign key on the remote engine",
+      () => {
+        const oid = `remote-fk-${Date.now()}`
+        query(
+          `INSERT INTO users (oid, created_at, last_seen_at) VALUES ('${oid}', 0, 0);`,
+        )
+        const result = wrangler([
+          "d1",
+          "execute",
+          "DB",
+          "--command",
+          `INSERT INTO session_metrics (user_id, session_id, name, delta) VALUES ('${oid}', 'missing-session', 'sessionCompleted', 1);`,
+          "--json",
+        ])
+
+        expect(output(result)).toMatch(/constraint failed/i)
+        expect(
+          query<{ present: number }>(
+            `SELECT COUNT(*) AS present FROM session_metrics WHERE user_id = '${oid}'`,
+          )[0]?.present,
+        ).toBe(0)
+
+        query(`DELETE FROM users WHERE oid = '${oid}';`)
+      },
+      TIMEOUT,
+    )
+
+    it(
       "keeps the case-insensitive headword index",
       () => {
         const indexes = query<{ name: string }>(
