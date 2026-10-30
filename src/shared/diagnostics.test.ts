@@ -26,13 +26,13 @@ describe("counterRows", () => {
   it("lists every PRD §15 counter in a stable order, defaulting to zero", () => {
     const metrics: Metric[] = [
       {
-        profileId: 1,
+        profileId: "profile-1",
         name: METRIC_NAMES.sessionCompleted,
         value: 3,
         updatedAt: 1,
       },
       {
-        profileId: 1,
+        profileId: "profile-1",
         name: METRIC_NAMES.xpEarned,
         value: 42,
         updatedAt: 2,

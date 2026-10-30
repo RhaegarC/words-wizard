@@ -32,7 +32,7 @@ const NOW = new Date(2026, 9, 21, 12, 0, 0).getTime()
 const DAY = 86_400_000
 
 const SEED: SessionSeed = {
-  profileId: 1,
+  profileId: "oid-1",
   localDate: "2026-10-21",
   kind: "daily",
   contentVersion: "dev",
@@ -51,9 +51,9 @@ const YESTERDAY = dayKey(-1)
 
 function makeProfile(
   overrides: Partial<Profile> = {},
-): Profile & { id: number } {
+): Profile & { id: string } {
   return {
-    id: 1,
+    id: "oid-1",
     name: "Mia",
     characterName: "Luma",
     avatar: "luma",
@@ -77,8 +77,7 @@ function makeProfile(
 
 function makeProgress(overrides: Partial<Progress> = {}): Progress {
   return {
-    id: 10,
-    profileId: 1,
+    profileId: "oid-1",
     wordId: "w-bag",
     status: "learning",
     strength: 0,
@@ -519,7 +518,7 @@ describe("buildSessionCommit", () => {
     )
 
     expect(payload).toMatchObject({
-      profileId: 1,
+      profileId: "oid-1",
       now: NOW,
       xpEarned: 7,
     })

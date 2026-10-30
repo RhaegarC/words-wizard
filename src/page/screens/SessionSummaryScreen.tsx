@@ -23,7 +23,7 @@ export function SessionSummaryScreen() {
   // The retry button unmounts when it is activated, so focus is moved to the
   // control that reports the outcome instead of falling back to the document.
   useEffect(() => {
-    if (commitStatus === "done") {
+    if (commitStatus === "done" || commitStatus === "queued") {
       backRef.current?.focus()
     } else if (commitStatus === "error") {
       retryRef.current?.focus()
@@ -49,7 +49,7 @@ export function SessionSummaryScreen() {
   const stageAfter = t(stageMessageKey(summary.stageAfter))
   const stageChanged = summary.stageBefore !== summary.stageAfter
   const tokensFull = summary.careTokens >= config.careTokens.cap
-  const saving = commitStatus !== "done" && commitStatus !== "error"
+  const saving = commitStatus === "saving"
 
   return (
     <section className="summary">
@@ -131,6 +131,7 @@ export function SessionSummaryScreen() {
       <p className="session-save-status" role="status" aria-live="polite">
         {commitStatus === "saving" ? t("session.saving") : null}
         {commitStatus === "done" ? t("session.saved") : null}
+        {commitStatus === "queued" ? t("session.summaryQueued") : null}
       </p>
 
       {commitStatus === "error" ? (

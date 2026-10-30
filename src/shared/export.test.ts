@@ -14,7 +14,7 @@ const META: ExportMeta = {
 }
 
 const PROFILE: Profile = {
-  id: 7,
+  id: "profile-7",
   name: "Mia",
   characterName: "Mia",
   avatar: "luma",
@@ -36,8 +36,7 @@ const PROFILE: Profile = {
 
 const PROGRESS: Progress[] = [
   {
-    id: 11,
-    profileId: 7,
+    profileId: "profile-7",
     wordId: "w-cat",
     status: "learning",
     strength: 0.6,
@@ -49,7 +48,7 @@ const PROGRESS: Progress[] = [
     masteryXpAwarded: false,
   },
   {
-    profileId: 7,
+    profileId: "profile-7",
     wordId: "w-dog",
     status: "mastered",
     strength: 0.9,
@@ -64,14 +63,13 @@ const PROGRESS: Progress[] = [
 
 const METRICS: Metric[] = [
   {
-    id: 21,
-    profileId: 7,
+    profileId: "profile-7",
     name: "session.completed",
     value: 3,
     updatedAt: 7,
   },
   {
-    profileId: 7,
+    profileId: "profile-7",
     name: "word.learned",
     value: 9,
     updatedAt: 8,
@@ -120,10 +118,9 @@ describe("buildExport", () => {
     expect(JSON.parse(JSON.stringify(payload))).toEqual(payload)
   })
 
-  it("omits the profile id only when the profile has none", () => {
-    const { id: _id, ...withoutId } = PROFILE
+  it("carries the signed-in profile id", () => {
     const payload = buildExport({
-      profile: withoutId,
+      profile: PROFILE,
       progress: PROGRESS,
       metrics: METRICS,
       device: DEVICE,
@@ -131,7 +128,7 @@ describe("buildExport", () => {
       now: 1,
     })
 
-    expect("id" in payload.profile).toBe(false)
+    expect(payload.profile.id).toBe("profile-7")
   })
 
   it("keeps progress fields needed to inspect a word", () => {

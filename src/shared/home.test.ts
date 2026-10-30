@@ -8,6 +8,7 @@ import { isMonthlyReviewDue } from "./monthlyReview"
 import { stageProgress } from "./progression"
 import { previewSession, sessionSeed, type BuildSessionInput } from "./session"
 import type { Avatar } from "./content/types"
+import type { IntroductionWrite } from "./provider"
 import type { Pack, Profile, Progress, Word } from "./types"
 
 const NOW = new Date(2026, 9, 21, 12, 0, 0).getTime()
@@ -15,11 +16,9 @@ const DAY = 86_400_000
 const TOPIC = "craft-and-build"
 const CONTENT_VERSION = "dev"
 
-function makeProfile(
-  overrides: Partial<Profile> = {},
-): Profile & { id: number } {
+function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
-    id: 1,
+    id: "profile-1",
     name: "Mia",
     characterName: "Luma",
     avatar: "luma",
@@ -99,8 +98,7 @@ function makeProgress(
   overrides: Partial<Progress> = {},
 ): Progress {
   return {
-    id: undefined,
-    profileId: 1,
+    profileId: "profile-1",
     wordId,
     status: "learning",
     strength: 0.4,
@@ -124,17 +122,23 @@ function previewFor(
     packs: CONTENT.packs,
     words: CONTENT.words,
     now: NOW,
-    seed: sessionSeed(profile.id ?? -1, NOW, "daily", CONTENT.contentVersion),
+    seed: sessionSeed(profile.id, NOW, "daily", CONTENT.contentVersion),
     speechAvailable: false,
+    introductions: [],
   }
 
   return previewSession(input)
 }
 
-function build(profile: Profile, progress: readonly Progress[]) {
+function build(
+  profile: Profile,
+  progress: readonly Progress[],
+  introductions: readonly IntroductionWrite[] = [],
+) {
   return buildHomeView({
     profile,
     progress,
+    introductions,
     content: CONTENT,
     now: NOW,
     config,
@@ -200,8 +204,12 @@ describe("buildHomeView", () => {
 
   it("is caught up when there is neither a review nor a new word", () => {
     const allLearned = WORDS.map((word) => makeProgress(word.id))
+    const allIntroduced = WORDS.map((word) => ({
+      packId: "p-1",
+      wordId: word.id,
+    }))
     const profile = makeProfile()
-    const view = build(profile, allLearned)
+    const view = build(profile, allLearned, allIntroduced)
 
     expect(view.reviewsDue).toBe(0)
     expect(view.newWords).toBe(0)

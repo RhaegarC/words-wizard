@@ -4,7 +4,7 @@ import { Brand } from "../components/Brand"
 import { Icon } from "../components/Icon"
 import { topicTone } from "../components/tone"
 import { getPacksByTopic, getTopics } from "../content"
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import { resolveTopicChoice } from "@/domain/firstRun"
 import type { Profile } from "@shared/types"
 import { useLocale } from "../i18n/LocaleProvider"
@@ -31,7 +31,7 @@ export function TopicPickerScreen({
   const topics = getTopics()
 
   const choose = (topicId: string) => {
-    if (pendingId !== null || profile.id === undefined) {
+    if (pendingId !== null) {
       return
     }
 

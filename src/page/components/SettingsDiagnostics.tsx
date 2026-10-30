@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import { DEVICE_KEYS } from "@shared/device"
-import { readDiagnostics, type DbDiagnostics } from "../db/diagnostics"
+import { readDiagnostics, type ApiDiagnostics } from "../db/diagnostics"
 import { isInstalled } from "../db/lifecycle"
 import { METRIC_NAMES, type MetricName } from "@shared/metrics"
 import { counterRows, formatBytes } from "@shared/diagnostics"
@@ -19,7 +19,7 @@ interface DiagnosticsData {
   speechAvailable: boolean
   usage: number | null
   quota: number | null
-  counts: DbDiagnostics
+  counts: ApiDiagnostics
   metrics: readonly Metric[]
 }
 
@@ -31,7 +31,7 @@ interface DiagnosticsData {
 export function SettingsDiagnostics({
   profileId,
 }: {
-  profileId: number | undefined
+  profileId: string
 }) {
   const { t } = useLocale()
   const [data, setData] = useState<DiagnosticsData | null>(null)
@@ -120,8 +120,12 @@ export function SettingsDiagnostics({
               <b>{data.counts.progress}</b>
             </li>
             <li>
+              <span>{t("settings.introductionRows")}</span>
+              <b>{data.counts.introductions}</b>
+            </li>
+            <li>
               <span>{t("settings.metricRows")}</span>
-              <b>{data.counts.metrics}</b>
+              <b>{data.metrics.length}</b>
             </li>
             <li>
               <span>{t("settings.deviceRows")}</span>
@@ -159,14 +163,9 @@ function formatCounter(name: MetricName, value: number): string {
     : String(value)
 }
 
-async function readAll(
-  profileId: number | undefined,
-): Promise<DiagnosticsData> {
-  const [counts, metrics, persisted, estimate] = await Promise.all([
-    readDiagnostics(),
-    profileId === undefined
-      ? Promise.resolve<Metric[]>([])
-      : progressProvider.getMetrics(profileId),
+async function readAll(profileId: string): Promise<DiagnosticsData> {
+  const [counts, persisted, estimate] = await Promise.all([
+    readDiagnostics(profileId),
     progressProvider.getDevice(DEVICE_KEYS.storagePersisted),
     readStorageEstimate(),
   ])
@@ -178,7 +177,7 @@ async function readAll(
     usage: estimate.usage,
     quota: estimate.quota,
     counts,
-    metrics,
+    metrics: counts.metrics,
   }
 }
 

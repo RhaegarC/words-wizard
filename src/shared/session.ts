@@ -2,6 +2,7 @@ import { config } from "./config"
 
 import { createRng, hashString, shuffle } from "./random"
 import { localDateKey } from "./time"
+import type { IntroductionWrite } from "./provider"
 import {
   PRACTICE_MODES,
   type Pack,
@@ -32,6 +33,8 @@ export type SessionWordKind =
 export interface SessionWord {
   wordId: string
   kind: SessionWordKind
+  /** The pack a new word is introduced in; absent for other kinds. */
+  packId?: string
   /** The one mode this entry runs. */
   modes: PracticeMode[]
 }
@@ -39,6 +42,8 @@ export interface SessionWord {
 export interface SessionPlan {
   words: SessionWord[]
   caughtUp: boolean
+  /** The introduction rows a commit writes when this plan completes. */
+  introductions: readonly IntroductionWrite[]
 }
 
 export interface SessionPreview {
@@ -51,7 +56,8 @@ export interface SessionPreview {
 
 /** Deterministic inputs to mode assignment, per PRD §5.2. */
 export interface SessionSeed {
-  profileId: number
+  /** The Entra `oid`; a string, never parsed as a number. */
+  profileId: string
   /** Local calendar day, `YYYY-MM-DD`. */
   localDate: string
   kind: SessionKind
@@ -66,6 +72,8 @@ export interface BuildSessionInput {
   now: number
   seed: SessionSeed
   speechAvailable: boolean
+  /** Per-pack introduction rows from `/v1/me`. */
+  introductions: readonly IntroductionWrite[]
 }
 
 export type AttemptFeedback = "correct" | "hint" | "reveal"
@@ -115,7 +123,7 @@ export type SessionAction =
 export { localDateKey } from "./time"
 
 export function sessionSeed(
-  profileId: number,
+  profileId: string,
   now: number,
   kind: SessionKind,
   contentVersion: string,
@@ -159,6 +167,11 @@ export function buildSession(input: BuildSessionInput): SessionPlan {
   return {
     words: [...words, ...comprehensive],
     caughtUp: entries.length === 0,
+    introductions: entries.flatMap((entry) =>
+      entry.kind === "new" && entry.packId !== undefined
+        ? [{ packId: entry.packId, wordId: entry.wordId }]
+        : [],
+    ),
   }
 }
 
@@ -401,7 +414,10 @@ export function sessionReducer(
     }
 
     case "abandon":
-      return createSessionState({ words: [], caughtUp: true }, state.seed)
+      return createSessionState(
+        { words: [], caughtUp: true, introductions: [] },
+        state.seed,
+      )
   }
 }
 
@@ -461,14 +477,14 @@ export function buildSessionResult(state: SessionState): SessionResult | null {
 interface SessionEntry {
   wordId: string
   kind: SessionWordKind
+  /** Set only on a new entry, so the commit can write its introduction. */
+  packId?: string
 }
 
 function selectEntries(input: BuildSessionInput): SessionEntry[] {
-  const profileId = input.profile.id
-  const progress =
-    profileId === undefined
-      ? []
-      : input.progress.filter((row) => row.profileId === profileId)
+  const progress = input.progress.filter(
+    (row) => row.profileId === input.profile.id,
+  )
   const progressByWord = new Map(
     progress.map((row) => [row.wordId, row] as const),
   )
@@ -487,9 +503,8 @@ function selectEntries(input: BuildSessionInput): SessionEntry[] {
       .map((wordId): SessionEntry => ({ wordId, kind: "repeat" }))
   }
 
-  return selectNewWordIds(input, progressByWord)
+  return selectNewEntries(input)
     .slice(0, config.session.newWords)
-    .map((wordId): SessionEntry => ({ wordId, kind: "new" }))
 }
 
 /** Today's learned words, in the same pack order that selected them. */
@@ -500,7 +515,7 @@ function selectRepeatIds(
   const today = localDateKey(input.now)
   const wordsById = new Map(input.words.map((word) => [word.id, word]))
 
-  for (const pack of unlockedPacks(input, progressByWord)) {
+  for (const pack of unlockedPacks(input)) {
     const learnedToday = [
       ...new Set(
         pack.wordIds.filter((wordId) => {
@@ -523,24 +538,28 @@ function selectRepeatIds(
   return []
 }
 
-function selectNewWordIds(
-  input: BuildSessionInput,
-  progressByWord: ReadonlyMap<string, Progress>,
-): string[] {
+/**
+ * The next unintroduced words of the first unlocked pack. A word already
+ * introduced in another pack is still new here: the introduction, not the
+ * word-level progress row, is what this pack has recorded.
+ */
+function selectNewEntries(input: BuildSessionInput): SessionEntry[] {
   const wordsById = new Map(input.words.map((word) => [word.id, word]))
+  const introduced = introductionSet(input.introductions)
 
-  for (const pack of unlockedPacks(input, progressByWord)) {
-    const unlearned = [
+  for (const pack of unlockedPacks(input)) {
+    const entries = [
       ...new Set(
         pack.wordIds.filter(
           (wordId) =>
-            wordsById.has(wordId) && !progressByWord.has(wordId),
+            wordsById.has(wordId) &&
+            !introduced.has(pairKey(pack.id, wordId)),
         ),
       ),
-    ]
+    ].map((wordId): SessionEntry => ({ wordId, kind: "new", packId: pack.id }))
 
-    if (unlearned.length > 0) {
-      return unlearned
+    if (entries.length > 0) {
+      return entries
     }
   }
 
@@ -550,23 +569,16 @@ function selectNewWordIds(
 /**
  * The selected topic's unlocked packs, in order. The first pack is always
  * open; each later pack opens once every word of the pack before it has been
- * introduced to this user.
- *
- * Feature 22 has no introduction rows yet, so "introduced" is derived from
- * the word having a progress row at all — that row only exists after a
- * committed session, which is what stamped `firstSeenAt`. Feature 24 replaces
- * this derivation with the real per-pack introductions from `/v1/me`.
+ * introduced to this user in that pack.
  */
-function unlockedPacks(
-  input: BuildSessionInput,
-  progressByWord: ReadonlyMap<string, Progress>,
-): Pack[] {
+function unlockedPacks(input: BuildSessionInput): Pack[] {
   const topicId = input.profile.currentTopicId
 
   if (topicId === null) {
     return []
   }
 
+  const introduced = introductionSet(input.introductions)
   const ordered = input.packs
     .filter((pack) => pack.topicId === topicId)
     .sort(
@@ -581,7 +593,9 @@ function unlockedPacks(
 
     if (
       previous !== undefined &&
-      !previous.wordIds.every((wordId) => progressByWord.has(wordId))
+      !previous.wordIds.every((wordId) =>
+        introduced.has(pairKey(previous.id, wordId)),
+      )
     ) {
       break
     }
@@ -590,6 +604,16 @@ function unlockedPacks(
   }
 
   return unlocked
+}
+
+function introductionSet(
+  rows: readonly IntroductionWrite[],
+): ReadonlySet<string> {
+  return new Set(rows.map((row) => pairKey(row.packId, row.wordId)))
+}
+
+function pairKey(packId: string, wordId: string): string {
+  return `${packId}\u0000${wordId}`
 }
 
 function assignNewWordModes(

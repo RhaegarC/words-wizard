@@ -9,8 +9,15 @@ const NOW = 1_760_000_000_000
 
 function completePayload(): SessionCommitPayload {
   return {
-    profileId: 1,
+    profileId: "oid-1",
     now: NOW,
+    session: {
+      id: "session-1",
+      kind: "daily",
+      localDate: "2026-10-21",
+      contentVersion: "dev",
+      finishedAt: NOW,
+    },
     xpEarned: 12,
     profile: {
       xp: 112,
@@ -41,6 +48,7 @@ function completePayload(): SessionCommitPayload {
         masteryXpAwarded: true,
       },
     ],
+    introductions: [],
     metrics: {
       [METRIC_NAMES.sessionCompleted]: 1,
       [METRIC_NAMES.wordMastered]: 1,
@@ -59,11 +67,19 @@ describe("validateSessionPayload", () => {
   it("accepts a payload with no profile patch, progress, metrics, or device writes", () => {
     expect(
       validateSessionPayload({
-        profileId: 2,
+        profileId: "oid-2",
         now: NOW,
+        session: {
+          id: "session-2",
+          kind: "daily",
+          localDate: "2026-10-21",
+          contentVersion: "dev",
+          finishedAt: NOW,
+        },
         xpEarned: 0,
         profile: {},
         progress: [],
+        introductions: [],
         metrics: {},
       }),
     ).toEqual([])
@@ -71,7 +87,7 @@ describe("validateSessionPayload", () => {
 
   it("rejects a missing profileId", () => {
     const payload = completePayload()
-    payload.profileId = 0
+    payload.profileId = ""
 
     expect(validateSessionPayload(payload)).toContain("profile-id-missing")
   })
@@ -138,7 +154,7 @@ describe("validateSessionPayload", () => {
 
   it("reports every issue rather than stopping at the first", () => {
     const payload = completePayload()
-    payload.profileId = 0
+    payload.profileId = ""
     payload.progress[0].strength = 2
     payload.progress[0].nextReviewAt = NOW - 1
     payload.xpEarned = -2

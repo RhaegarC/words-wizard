@@ -5,7 +5,9 @@ import { Icon } from "../components/Icon"
 import { SettingsDiagnostics } from "../components/SettingsDiagnostics"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { getAvatarSet, getContentMeta, getTopic } from "../content"
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
+import { Outbox } from "../api/outbox"
+import { useAuth } from "../auth/AuthProvider"
 import { DEVICE_KEYS } from "@shared/device"
 import {
   APP_VERSION,
@@ -40,9 +42,9 @@ const LOCALE_CHOICES: readonly LocaleChoice[] = [
 ]
 
 /**
- * Feature 14. Settings is deliberately additive: it edits the profile, opens
- * the existing topic picker, downloads a backup, and reports local facts. There
- * is no delete, reset, import, account, or network call.
+ * Feature 14. Settings edits the profile, opens the existing topic picker,
+ * downloads a backup, reports facts, and signs out. There is no delete, reset,
+ * or account-removal control.
  */
 export function SettingsScreen({
   profile,
@@ -53,6 +55,7 @@ export function SettingsScreen({
 }) {
   const { locale, setLocale, t } = useLocale()
   const { navigate } = useRouter()
+  const auth = useAuth()
   const avatars = getAvatarSet()
   const [name, setName] = useState(profile.characterName)
   const [avatarId, setAvatarId] = useState(profile.avatar)
@@ -62,6 +65,8 @@ export function SettingsScreen({
   const [localeSaving, setLocaleSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportFailed, setExportFailed] = useState(false)
+  const [signOutOpen, setSignOutOpen] = useState(false)
+  const [pendingCommit, setPendingCommit] = useState(false)
 
   const topic =
     profile.currentTopicId === null
@@ -84,11 +89,6 @@ export function SettingsScreen({
     setLocaleFailed(false)
     setLocaleSaving(true)
     setLocale(next)
-
-    if (profile.id === undefined) {
-      setLocaleSaving(false)
-      return
-    }
 
     void progressProvider
       .updateProfile(profile.id, { locale: next })
@@ -115,11 +115,6 @@ export function SettingsScreen({
       return
     }
 
-    if (profile.id === undefined) {
-      setSaveError("save")
-      return
-    }
-
     setSaveError(null)
     setSaving(true)
 
@@ -137,7 +132,7 @@ export function SettingsScreen({
   }
 
   const exportBackup = () => {
-    if (profile.id === undefined || exporting) {
+    if (exporting) {
       return
     }
 
@@ -172,6 +167,19 @@ export function SettingsScreen({
         setExportFailed(true)
       })
       .finally(() => setExporting(false))
+  }
+
+  const requestSignOut = () => {
+    setPendingCommit(new Outbox(window.localStorage).all().length > 0)
+    setSignOutOpen(true)
+  }
+
+  const confirmSignOut = () => {
+    setSignOutOpen(false)
+
+    void auth.signOut().catch((reason: unknown) => {
+      console.error("[settings] Could not sign out", reason)
+    })
   }
 
   return (
@@ -349,6 +357,34 @@ export function SettingsScreen({
           ) : null}
         </article>
 
+        <article className="settings-card" aria-labelledby="settings-account">
+          <header>
+            <Icon name="user" />
+            <div>
+              <h3 id="settings-account">{t("auth.account")}</h3>
+              <p>{t("auth.signedInAs", { name: auth.displayName || "—" })}</p>
+            </div>
+          </header>
+
+          <p className="settings-copy">{t("auth.privacyNotice")}</p>
+          <a
+            className="settings-link"
+            href="./privacy.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("auth.privacyLink")}
+          </a>
+
+          <button
+            type="button"
+            className="button secondary"
+            onClick={requestSignOut}
+          >
+            {t("auth.signOut")}
+          </button>
+        </article>
+
         <SettingsDiagnostics profileId={profile.id} />
 
         <article className="settings-card" aria-labelledby="settings-about">
@@ -381,6 +417,50 @@ export function SettingsScreen({
           </a>
         </article>
       </div>
+
+      {signOutOpen ? (
+        <div
+          className="modal-backdrop"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setSignOutOpen(false)
+            }
+          }}
+        >
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-signout-title"
+          >
+            <h2 id="settings-signout-title" className="modal-title">
+              {t("auth.signOutTitle")}
+            </h2>
+            <p className="modal-body">
+              {pendingCommit
+                ? t("auth.signOutPending")
+                : t("auth.signOutBody")}
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setSignOutOpen(false)}
+                autoFocus
+              >
+                {t("auth.signOutCancel")}
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={confirmSignOut}
+              >
+                {t("auth.signOutConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }

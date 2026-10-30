@@ -1,10 +1,10 @@
 import { useState } from "react"
 
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 import { buildHash, ROUTE_SAMPLES, titleKeyFor } from "../router/routes"
-import { resetDevDatabase, seedDevProfile } from "./devStore"
+import { resetLocalData, seedDevProfile } from "./devStore"
 
 export type RouteTableProps = {
   hasProfile: boolean
@@ -48,9 +48,9 @@ export function RouteTable({ hasProfile }: RouteTableProps) {
           type="button"
           className="dev-action"
           disabled={busy}
-          onClick={() => run(resetDevDatabase)}
+          onClick={() => run(resetLocalData)}
         >
-          Clear site database and reload
+          Clear local app data and reload
         </button>
       ) : (
         <button

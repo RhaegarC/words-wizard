@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react"
 
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import { DEVICE_KEYS } from "@shared/device"
 import {
   detectInstallContext,

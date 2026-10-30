@@ -60,6 +60,8 @@ describe("locale files", () => {
       "review",
       "character",
       "settings",
+      "auth",
+      "notice",
       "errors",
     ]
 

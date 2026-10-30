@@ -1,11 +1,13 @@
-import { defaultDb } from "../db/db"
-import { METRIC_NAMES } from "@shared/metrics"
+import { getAvatarSet } from "../content"
+import { Outbox, OUTBOX_KEY } from "../api/outbox"
+import { DEVICE_STORAGE_KEY } from "../api/ApiProgressProvider"
+import { LOCAL_DATA_DISCARDED_KEY } from "../db/localData"
+import { buildNewProfile } from "../domain/firstRun"
 import type { ProgressProvider } from "@shared/provider"
 
 /**
- * Dev-only helpers for the route table, used until feature 06 creates a real
- * character. They exercise the same provider the app uses, so seeding is also
- * a quick manual check of the commit transaction.
+ * Dev-only helpers for the route table. They exercise the same provider the app
+ * uses, so seeding is also a quick manual check of the profile write.
  */
 export async function seedDevProfile(
   provider: ProgressProvider,
@@ -14,57 +16,29 @@ export async function seedDevProfile(
     return
   }
 
-  const now = Date.now()
-  const profile = await provider.createProfile({
-    name: "",
-    characterName: "Alex",
-    avatar: "alex",
-    currentTopicId: "craft-and-build",
-    xp: 0,
-    createdAt: now,
-    lastPracticeAt: now,
-    lastWakeAt: null,
-    frozenDays: 0,
-    careTokens: 0,
-    sessionsSinceLastToken: 0,
-    completedSessions: 0,
-    streakCount: 0,
-    bestStreak: 0,
-    lastStreakDate: null,
-    lastMonthlyReviewAt: null,
-    locale: "en",
-  })
+  const avatar = getAvatarSet()[0]
 
-  if (profile.id === undefined) {
-    throw new Error("The dev profile was created without an id")
+  if (avatar === undefined) {
+    throw new Error("No avatar is loaded; fetch content before seeding")
   }
 
-  await provider.commitSession({
-    profileId: profile.id,
-    now,
-    xpEarned: 2,
-    profile: { xp: 2, lastPracticeAt: now },
-    progress: [
-      {
-        wordId: "w-bag",
-        status: "learning",
-        strength: 0.2,
-        nextReviewAt: now + 86_400_000,
-        correctCount: 1,
-        wrongCount: 0,
-        firstSeenAt: now,
-        lastSeenAt: now,
-        masteryXpAwarded: false,
-      },
-    ],
-    metrics: {
-      [METRIC_NAMES.sessionStarted]: 1,
-      [METRIC_NAMES.sessionCompleted]: 1,
-    },
-  })
+  await provider.createProfile(
+    buildNewProfile(
+      { characterName: "Alex", avatar: avatar.id },
+      Date.now(),
+      "en",
+    ),
+  )
 }
 
-/** Drop everything and reload as a first run; the next boot shows `#/create`. */
-export async function resetDevDatabase(): Promise<void> {
-  await defaultDb.delete()
+/**
+ * The server profile cannot be reset from the browser; this clears the local
+ * half only (a pending commit and the device flags) and lets the next boot show
+ * whatever D1 holds.
+ */
+export async function resetLocalData(): Promise<void> {
+  new Outbox(window.localStorage).clear()
+  window.localStorage.removeItem(OUTBOX_KEY)
+  window.localStorage.removeItem(DEVICE_STORAGE_KEY)
+  window.localStorage.removeItem(LOCAL_DATA_DISCARDED_KEY)
 }

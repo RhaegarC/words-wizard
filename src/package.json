@@ -23,7 +23,7 @@
     "format": "oxfmt ."
   },
   "dependencies": {
-    "dexie": "^4.4.6",
+    "@azure/msal-browser": "^5.27.0",
     "hono": "^4.13.14",
     "jose": "^6.2.13",
     "react": "^19.0.0",

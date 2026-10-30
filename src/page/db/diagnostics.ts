@@ -1,27 +1,52 @@
-import { defaultDb, type WordsWizardDB } from "./db"
+import type { Metric } from "@shared/types"
 
-export interface DbDiagnostics {
-  profiles: number
+import { progressProvider } from "../api/provider"
+import { DEVICE_STORAGE_KEY } from "../api/ApiProgressProvider"
+
+export interface ApiDiagnostics {
   progress: number
-  metrics: number
+  introductions: number
   device: number
-  profileId: number | null
+  metrics: readonly Metric[]
 }
 
 /**
- * Row counts for Settings diagnostics (feature 14). Deliberately raw: it exists
- * to answer "is anything actually stored?" when a device loses its data.
+ * Counts behind Settings diagnostics. Everything comes from the `/v1/me`
+ * snapshot plus the local device flags; there is no local progress store to
+ * inspect any more, and the child's name is never printed here.
  */
 export async function readDiagnostics(
-  db: WordsWizardDB = defaultDb,
-): Promise<DbDiagnostics> {
-  const profile = await db.profiles.orderBy("id").first()
+  profileId: string,
+  storage: Pick<Storage, "getItem"> = window.localStorage,
+): Promise<ApiDiagnostics> {
+  const [progress, introductions, metrics] = await Promise.all([
+    progressProvider.getAllProgress(profileId),
+    progressProvider.getIntroductions(profileId),
+    progressProvider.getMetrics(profileId),
+  ])
 
   return {
-    profiles: await db.profiles.count(),
-    progress: await db.progress.count(),
-    metrics: await db.metrics.count(),
-    device: await db.device.count(),
-    profileId: profile?.id ?? null,
+    progress: progress.length,
+    introductions: introductions.length,
+    device: countDeviceFlags(storage),
+    metrics,
+  }
+}
+
+function countDeviceFlags(storage: Pick<Storage, "getItem">): number {
+  try {
+    const raw = storage.getItem(DEVICE_STORAGE_KEY)
+
+    if (raw === null) {
+      return 0
+    }
+
+    const parsed: unknown = JSON.parse(raw)
+
+    return typeof parsed === "object" && parsed !== null
+      ? Object.keys(parsed).length
+      : 0
+  } catch {
+    return 0
   }
 }

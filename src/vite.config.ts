@@ -28,12 +28,40 @@ export default defineConfig({
         skipWaiting: false,
         clientsClaim: false,
         cleanupOutdatedCaches: true,
+        // Shell-only precache. Artwork is fetched at runtime, so a new avatar
+        // or word image does not force a worker update.
         globPatterns: [
-          "**/*.{js,css,html,json,webmanifest,svg,png,jpg,jpeg,webp,woff2}",
+          "**/*.{js,css,html,json,webmanifest,svg,woff2}",
+          "icons/*.png",
         ],
         navigateFallback: "index.html",
-        // Every illustration plus the shell; the artwork target is 10–15 MB.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // Bundled avatar portraits.
+            urlPattern: /\/art\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "art",
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            // Word images served from R2.
+            urlPattern: /^https:\/\/[^/]+\.r2\.(?:dev|cloudflarestorage\.com)\//i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "word-images",
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
       },
       devOptions: { enabled: false },
     }),
