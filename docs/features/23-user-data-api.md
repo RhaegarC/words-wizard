@@ -1,6 +1,6 @@
 # Feature 23 — User Profile, Progress & Session Commit
 
-> Priority: Must · Mission 2 · **Status: In review — PR pending**
+> Priority: Must · Mission 2 · **Status: In review — PR [#60](https://github.com/RhaegarC/words-wizard/pull/60)**
 > Depends on: 21 (auth edge), 22 (content tables and word ids). Blocks: 24.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
