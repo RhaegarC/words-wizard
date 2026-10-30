@@ -1,6 +1,6 @@
 # Feature 24 — Client Online Integration
 
-> Priority: Must · Mission 2 · **Status: In review — PR pending**
+> Priority: Must · Mission 2 · **Status: In review — PR [#62](https://github.com/RhaegarC/words-wizard/pull/62)**
 > Depends on: 22 (content API), 23 (user API). Blocks: 25.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
