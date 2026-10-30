@@ -1,9 +1,11 @@
 import { sql } from "drizzle-orm"
 import {
   check,
+  foreignKey,
   index,
   integer,
   primaryKey,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -133,4 +135,164 @@ export const avatarStages = sqliteTable(
     file: text("file").notNull(),
   },
   (table) => [primaryKey({ columns: [table.avatarId, table.stage] })],
+)
+
+/* ------------------------------------------------------------------------- *
+ * User data (feature 23)
+ *
+ * Every user-owned row cascades from `users`; content rows never cascade,
+ * because content is archived rather than deleted. Identity is the Entra
+ * `oid`, and no route accepts a user id in its body or path.
+ * ------------------------------------------------------------------------- */
+
+export const users = sqliteTable("users", {
+  oid: text("oid").primaryKey(),
+  createdAt: integer("created_at").notNull(),
+  lastSeenAt: integer("last_seen_at").notNull(),
+})
+
+export const profiles = sqliteTable(
+  "profiles",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    characterName: text("character_name").notNull(),
+    avatar: text("avatar").notNull(),
+    currentTopicId: text("current_topic_id").references(() => topics.id),
+    xp: integer("xp").notNull(),
+    createdAt: integer("created_at").notNull(),
+    lastPracticeAt: integer("last_practice_at").notNull(),
+    lastWakeAt: integer("last_wake_at"),
+    frozenDays: integer("frozen_days").notNull(),
+    careTokens: integer("care_tokens").notNull(),
+    sessionsSinceLastToken: integer("sessions_since_last_token").notNull(),
+    completedSessions: integer("completed_sessions").notNull(),
+    streakCount: integer("streak_count").notNull(),
+    bestStreak: integer("best_streak").notNull(),
+    lastStreakDate: text("last_streak_date"),
+    lastMonthlyReviewAt: integer("last_monthly_review_at"),
+    locale: text("locale", { enum: ["en", "zh"] }).notNull(),
+  },
+  (table) => [
+    check("profiles_locale", sql`${table.locale} IN ('en', 'zh')`),
+  ],
+)
+
+export const progress = sqliteTable(
+  "progress",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    wordId: text("word_id")
+      .notNull()
+      .references(() => words.id),
+    status: text("status", {
+      enum: ["new", "learning", "mastered"],
+    }).notNull(),
+    strength: real("strength").notNull(),
+    nextReviewAt: integer("next_review_at").notNull(),
+    correctCount: integer("correct_count").notNull(),
+    wrongCount: integer("wrong_count").notNull(),
+    firstSeenAt: integer("first_seen_at").notNull(),
+    lastSeenAt: integer("last_seen_at").notNull(),
+    masteryXpAwarded: integer("mastery_xp_awarded", {
+      mode: "boolean",
+    }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.wordId] }),
+    check(
+      "progress_status",
+      sql`${table.status} IN ('new', 'learning', 'mastered')`,
+    ),
+    check(
+      "progress_strength",
+      sql`${table.strength} >= 0 AND ${table.strength} <= 1`,
+    ),
+  ],
+)
+
+export const packIntroductions = sqliteTable(
+  "pack_introductions",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    packId: text("pack_id")
+      .notNull()
+      .references(() => packs.id),
+    wordId: text("word_id")
+      .notNull()
+      .references(() => words.id),
+    introducedAt: integer("introduced_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.packId, table.wordId] }),
+  ],
+)
+
+export const metrics = sqliteTable(
+  "metrics",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    value: real("value").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.name] })],
+)
+
+export const sessions = sqliteTable(
+  "sessions",
+  {
+    id: text("id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["daily", "monthly"] }).notNull(),
+    localDate: text("local_date").notNull(),
+    contentVersion: text("content_version").notNull(),
+    xpEarned: integer("xp_earned").notNull(),
+    finishedAt: integer("finished_at").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.id] }),
+    check("sessions_kind", sql`${table.kind} IN ('daily', 'monthly')`),
+  ],
+)
+
+export const sessionMetrics = sqliteTable(
+  "session_metrics",
+  {
+    userId: text("user_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    name: text("name").notNull(),
+    delta: real("delta").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.sessionId, table.name] }),
+    foreignKey({
+      columns: [table.userId, table.sessionId],
+      foreignColumns: [sessions.userId, sessions.id],
+    }).onDelete("cascade"),
+  ],
+)
+
+export const metricEvents = sqliteTable(
+  "metric_events",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    eventId: text("event_id").notNull(),
+    name: text("name").notNull(),
+    delta: real("delta").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.eventId] })],
 )

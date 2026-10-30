@@ -1,14 +1,11 @@
-import { spawn, spawnSync, type ChildProcess } from "node:child_process"
-import { readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { fileURLToPath } from "node:url"
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
 import type { ContentBundle } from "../../shared/content/types"
 import { validateContent } from "../../shared/content/validate"
+import { srcRoot, startWorker, workerConfig, type RunningWorker } from "./harness"
 import { TEST_ENV } from "./tokens"
 
 /**
@@ -19,15 +16,6 @@ import { TEST_ENV } from "./tokens"
  * avatars and `content_meta`, so empty topics/packs/words are correct.
  */
 
-const srcRoot = fileURLToPath(new URL("../..", import.meta.url))
-const wranglerBin = join(
-  srcRoot,
-  "node_modules",
-  "wrangler",
-  "bin",
-  "wrangler.js",
-)
-const workerConfig = join(srcRoot, "worker", "wrangler.jsonc")
 const missingConfig = join(
   srcRoot,
   "worker",
@@ -35,68 +23,6 @@ const missingConfig = join(
   "fixtures",
   "wrangler-missing-config.jsonc",
 )
-
-interface RunningWorker {
-  readonly baseUrl: string
-  /** Row-scoped SQL against the same local database the Worker reads. */
-  query<T>(sql: string): T[]
-  stop(): Promise<void>
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function killTree(child: ChildProcess): void {
-  if (child.pid === undefined || child.exitCode !== null) return
-
-  if (process.platform === "win32") {
-    spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
-      stdio: "ignore",
-    })
-    return
-  }
-
-  try {
-    process.kill(-child.pid, "SIGTERM")
-  } catch {
-    child.kill("SIGTERM")
-  }
-}
-
-/**
- * Apply the migration set to the same local persistence directory the Worker
- * will read. `Migrate()`, never a schema built from the model: a broken
- * migration must fail here, and an already-applied set must be a no-op.
- */
-function applyMigrations(persistDir: string, configPath: string): void {
-  const result = spawnSync(
-    process.execPath,
-    [
-      wranglerBin,
-      "d1",
-      "migrations",
-      "apply",
-      "DB",
-      "--local",
-      "--persist-to",
-      persistDir,
-      "--config",
-      configPath,
-    ],
-    {
-      cwd: srcRoot,
-      env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
-      encoding: "utf8",
-    },
-  )
-
-  if (result.status !== 0) {
-    throw new Error(
-      `d1 migrations apply failed with ${result.status}\n${result.stdout}\n${result.stderr}`,
-    )
-  }
-}
 
 /**
  * Fixture rows for the bundle-shape claims. The seed migration only carries
@@ -135,170 +61,6 @@ INSERT INTO pack_words (pack_id, word_id, position) VALUES
   ('p1', 'w-archived', 3);
 `
 
-function d1Query<T>(persistDir: string, configPath: string, sql: string): T[] {
-  const result = spawnSync(
-    process.execPath,
-    [
-      wranglerBin,
-      "d1",
-      "execute",
-      "DB",
-      "--local",
-      "--persist-to",
-      persistDir,
-      "--config",
-      configPath,
-      "--command",
-      sql,
-      "--json",
-    ],
-    {
-      cwd: srcRoot,
-      env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
-      encoding: "utf8",
-    },
-  )
-
-  if (result.status !== 0) {
-    throw new Error(`d1 execute failed\n${result.stdout}\n${result.stderr}`)
-  }
-
-  const json = result.stdout.slice(result.stdout.indexOf("["))
-  const parsed = JSON.parse(json) as Array<{ results: T[] }>
-
-  return parsed[0]?.results ?? []
-}
-
-function seedContent(persistDir: string, configPath: string): void {
-  const file = join(
-    persistDir,
-    `seed-${Math.random().toString(36).slice(2)}.sql`,
-  )
-  writeFileSync(file, CONTENT_SEED)
-
-  const result = spawnSync(
-    process.execPath,
-    [
-      wranglerBin,
-      "d1",
-      "execute",
-      "DB",
-      "--local",
-      "--persist-to",
-      persistDir,
-      "--config",
-      configPath,
-      "--file",
-      file,
-    ],
-    {
-      cwd: srcRoot,
-      env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
-      encoding: "utf8",
-    },
-  )
-
-  if (result.status !== 0) {
-    throw new Error(
-      `d1 execute failed with ${result.status}\n${result.stdout}\n${result.stderr}`,
-    )
-  }
-}
-
-async function startWorker(
-  configPath: string,
-  vars: Record<string, string> = {},
-  options: { readonly migrate?: boolean; readonly seed?: boolean } = {},
-): Promise<RunningWorker> {
-  const persistDir = await mkdtemp(join(tmpdir(), "words-wizard-worker-"))
-
-  if (options.migrate === true) {
-    applyMigrations(persistDir, configPath)
-  }
-
-  if (options.seed === true) {
-    seedContent(persistDir, configPath)
-  }
-
-  const port = 21000 + Math.floor(Math.random() * 20000)
-  const baseUrl = `http://127.0.0.1:${port}`
-  const args = [
-    wranglerBin,
-    "dev",
-    "--config",
-    configPath,
-    "--ip",
-    "127.0.0.1",
-    "--port",
-    String(port),
-    "--persist-to",
-    persistDir,
-  ]
-
-  for (const [name, value] of Object.entries(vars)) {
-    args.push("--var", `${name}:${value}`)
-  }
-
-  const child = spawn(process.execPath, args, {
-    cwd: srcRoot,
-    detached: process.platform !== "win32",
-    env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
-    stdio: ["ignore", "pipe", "pipe"],
-  })
-
-  let output = ""
-  child.stdout?.on("data", (chunk: Buffer) => {
-    output += chunk.toString()
-  })
-  child.stderr?.on("data", (chunk: Buffer) => {
-    output += chunk.toString()
-  })
-
-  const stop = async () => {
-    killTree(child)
-    await new Promise<void>((resolve) => {
-      if (child.exitCode !== null) {
-        resolve()
-        return
-      }
-
-      const timer = setTimeout(() => {
-        child.kill("SIGKILL")
-        resolve()
-      }, 5_000)
-
-      child.once("exit", () => {
-        clearTimeout(timer)
-        resolve()
-      })
-    })
-    await rm(persistDir, { recursive: true, force: true })
-  }
-
-  const deadline = Date.now() + 60_000
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) {
-      await stop()
-      throw new Error(
-        `wrangler dev exited with ${child.exitCode}\n${output.slice(-4000)}`,
-      )
-    }
-
-    try {
-      await fetch(`${baseUrl}/health`)
-      return {
-        baseUrl,
-        query: <T>(sql: string) => d1Query<T>(persistDir, configPath, sql),
-        stop,
-      }
-    } catch {
-      await delay(250)
-    }
-  }
-
-  await stop()
-  throw new Error(`wrangler dev never became reachable\n${output.slice(-4000)}`)
-}
 
 describe("host tier: wrangler dev", () => {
   let worker: RunningWorker
@@ -307,7 +69,7 @@ describe("host tier: wrangler dev", () => {
     worker = await startWorker(
       workerConfig,
       { ...TEST_ENV },
-      { migrate: true, seed: true },
+      { migrate: true, seed: CONTENT_SEED },
     )
   }, 120_000)
 

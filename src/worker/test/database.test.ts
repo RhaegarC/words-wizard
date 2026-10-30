@@ -309,6 +309,228 @@ describe("words", () => {
   )
 })
 
+function userInsert(oid: string): string {
+  return `INSERT INTO users (oid, created_at, last_seen_at) VALUES ('${oid}', 0, 0);`
+}
+
+function profileInsert(
+  oid: string,
+  overrides: Partial<{ locale: string; xp: number; currentTopicId: string | null }> = {},
+): string {
+  const locale = overrides.locale ?? "en"
+  const xp = overrides.xp ?? 0
+  const topic = overrides.currentTopicId ?? null
+
+  return `INSERT INTO profiles (user_id, character_name, avatar, current_topic_id, xp, created_at, last_practice_at, last_wake_at, frozen_days, care_tokens, sessions_since_last_token, completed_sessions, streak_count, best_streak, last_streak_date, last_monthly_review_at, locale)
+VALUES ('${oid}', 'Hero', 'alex', ${topic === null ? "NULL" : `'${topic}'`}, ${xp}, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, '${locale}');`
+}
+
+function progressInsert(
+  oid: string,
+  wordId: string,
+  overrides: Partial<{ status: string; strength: number }> = {},
+): string {
+  const status = overrides.status ?? "learning"
+  const strength = overrides.strength ?? 0.5
+
+  return `INSERT INTO progress (user_id, word_id, status, strength, next_review_at, correct_count, wrong_count, first_seen_at, last_seen_at, mastery_xp_awarded)
+VALUES ('${oid}', '${wordId}', '${status}', ${strength}, 0, 0, 0, 0, 0, 0);`
+}
+
+function sessionInsert(oid: string, id: string, kind = "daily"): string {
+  return `INSERT INTO sessions (id, user_id, kind, local_date, content_version, xp_earned, finished_at, created_at)
+VALUES ('${id}', '${oid}', '${kind}', '2026-10-30', '0.3.0', 0, 0, 0);`
+}
+
+describe("user tables", () => {
+  it(
+    "creates the eight user tables",
+    () => {
+      const tables = query<{ name: string }>(
+        "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name",
+      ).map((row) => row.name)
+
+      for (const table of [
+        "metric_events",
+        "metrics",
+        "pack_introductions",
+        "profiles",
+        "progress",
+        "session_metrics",
+        "sessions",
+        "users",
+      ]) {
+        expect(tables).toContain(table)
+      }
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses a profile with no user row",
+    () => {
+      expectRefused(
+        profileInsert("db-orphan-profile"),
+        "SELECT COUNT(*) AS present FROM profiles WHERE user_id = 'db-orphan-profile'",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses a locale outside en and zh",
+    () => {
+      execute(userInsert("db-user-locale"))
+
+      expectRefused(
+        profileInsert("db-user-locale", { locale: "fr" }),
+        "SELECT COUNT(*) AS present FROM profiles WHERE user_id = 'db-user-locale'",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses a progress status or strength outside the declared range",
+    () => {
+      execute(userInsert("db-user-progress"))
+      execute(wordInsert("db-word-progress"))
+
+      expectRefused(
+        progressInsert("db-user-progress", "db-word-progress", {
+          status: "started",
+        }),
+        "SELECT COUNT(*) AS present FROM progress WHERE user_id = 'db-user-progress' AND status = 'started'",
+      )
+      expectRefused(
+        progressInsert("db-user-progress", "db-word-progress", {
+          strength: 1.1,
+        }),
+        "SELECT COUNT(*) AS present FROM progress WHERE user_id = 'db-user-progress' AND strength > 1",
+      )
+      expectRefused(
+        progressInsert("db-user-progress", "db-word-progress", {
+          strength: -0.1,
+        }),
+        "SELECT COUNT(*) AS present FROM progress WHERE user_id = 'db-user-progress' AND strength < 0",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses progress whose word does not exist",
+    () => {
+      execute(userInsert("db-user-word-fk"))
+
+      expectRefused(
+        progressInsert("db-user-word-fk", "db-word-missing"),
+        "SELECT COUNT(*) AS present FROM progress WHERE user_id = 'db-user-word-fk'",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses a session kind outside daily and monthly",
+    () => {
+      execute(userInsert("db-user-kind"))
+      execute(sessionInsert("db-user-kind", "db-session-ok"))
+
+      expectRefused(
+        sessionInsert("db-user-kind", "db-session-bad", "weekly"),
+        "SELECT COUNT(*) AS present FROM sessions WHERE id = 'db-session-bad'",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses session_metrics without the composite session key",
+    () => {
+      execute(userInsert("db-user-session-metric"))
+
+      expectRefused(
+        "INSERT INTO session_metrics (user_id, session_id, name, delta) VALUES ('db-user-session-metric', 'db-session-missing', 'session.completed', 1);",
+        "SELECT COUNT(*) AS present FROM session_metrics WHERE user_id = 'db-user-session-metric'",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "cascades every user-owned row when the user is deleted",
+    () => {
+      execute(userInsert("db-user-cascade"))
+      execute(wordInsert("db-word-cascade"))
+      execute(topicInsert("db-topic-cascade"))
+      execute(packInsert("db-pack-cascade", "db-topic-cascade"))
+      execute(profileInsert("db-user-cascade"))
+      execute(progressInsert("db-user-cascade", "db-word-cascade"))
+      execute(sessionInsert("db-user-cascade", "db-session-cascade"))
+      execute(
+        "INSERT INTO session_metrics (user_id, session_id, name, delta) VALUES ('db-user-cascade', 'db-session-cascade', 'session.completed', 1);",
+      )
+      execute(
+        "INSERT INTO pack_introductions (user_id, pack_id, word_id, introduced_at) VALUES ('db-user-cascade', 'db-pack-cascade', 'db-word-cascade', 0);",
+      )
+      execute(
+        "INSERT INTO metrics (user_id, name, value, updated_at) VALUES ('db-user-cascade', 'session.completed', 1, 0);",
+      )
+      execute(
+        "INSERT INTO metric_events (user_id, event_id, name, delta, created_at) VALUES ('db-user-cascade', 'event-1', 'care.freeze', 1, 0);",
+      )
+
+      execute("DELETE FROM users WHERE oid = 'db-user-cascade';")
+
+      for (const table of [
+        "profiles",
+        "progress",
+        "pack_introductions",
+        "metrics",
+        "sessions",
+        "session_metrics",
+        "metric_events",
+      ]) {
+        expect(
+          query<{ present: number }>(
+            `SELECT COUNT(*) AS present FROM ${table} WHERE user_id = 'db-user-cascade'`,
+          )[0]?.present,
+          table,
+        ).toBe(0)
+      }
+
+      // Content is untouched: an introduction's word and pack survive.
+      expect(
+        query<{ present: number }>(
+          "SELECT COUNT(*) AS present FROM words WHERE id = 'db-word-cascade'",
+        )[0]?.present,
+      ).toBe(1)
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "refuses deleting a word that a user's progress still references",
+    () => {
+      execute(userInsert("db-user-word-delete"))
+      execute(wordInsert("db-word-delete"))
+      execute(progressInsert("db-user-word-delete", "db-word-delete"))
+
+      // Content never cascades: the word survives and the delete is refused.
+      const result = execute("DELETE FROM words WHERE id = 'db-word-delete';")
+
+      expect(output(result)).toMatch(/constraint failed/i)
+      expect(
+        query<{ present: number }>(
+          "SELECT COUNT(*) AS present FROM words WHERE id = 'db-word-delete'",
+        )[0]?.present,
+      ).toBe(1)
+    },
+    TIMEOUT,
+  )
+})
+
 describe("packs and pack_words", () => {
   it(
     "refuses a pack whose topic does not exist",

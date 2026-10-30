@@ -9,11 +9,19 @@ import {
   avatarStages,
   avatars,
   contentMeta,
+  metricEvents,
+  metrics,
+  packIntroductions,
   packWords,
   packs,
+  profiles,
+  progress,
+  sessionMetrics,
+  sessions,
   topics,
+  users,
   words,
-} from "./schema"
+} from "../db/schema"
 
 /**
  * Model tier: the ORM's model and the SQL committed for it, compared without
@@ -141,6 +149,163 @@ describe("content model", () => {
     expect(targets(packs)).toEqual(["topics"])
     expect(targets(packWords).sort()).toEqual(["packs", "words"])
     expect(targets(avatarStages)).toEqual(["avatars"])
+  })
+})
+
+describe("user model", () => {
+  const userTables = [
+    users,
+    profiles,
+    progress,
+    packIntroductions,
+    metrics,
+    sessions,
+    sessionMetrics,
+    metricEvents,
+  ]
+
+  /**
+   * A single-column key may be declared on the column (`primaryKey()`) or as a
+   * table constraint; both reach SQLite the same way, so the claim is the set
+   * of identifying columns rather than which syntax declared it.
+   */
+  function primaryKey(table: Parameters<typeof getTableConfig>[0]) {
+    const config = getTableConfig(table)
+    const declared = config.primaryKeys[0]?.columns.map((column) => column.name)
+
+    return declared ?? config.columns.filter((column) => column.primary).map(
+      (column) => column.name,
+    )
+  }
+
+  function foreignKeys(table: Parameters<typeof getTableConfig>[0]) {
+    return getTableConfig(table).foreignKeys.map((key) => ({
+      target: getTableConfig(key.reference().foreignTable).name,
+      onDelete: key.onDelete,
+    }))
+  }
+
+  it("declares the eight user tables", () => {
+    expect(userTables.map((table) => getTableConfig(table).name)).toEqual([
+      "users",
+      "profiles",
+      "progress",
+      "pack_introductions",
+      "metrics",
+      "sessions",
+      "session_metrics",
+      "metric_events",
+    ])
+  })
+
+  it("keys every user row by the identity it belongs to", () => {
+    expect(primaryKey(users)).toEqual(["oid"])
+    expect(primaryKey(profiles)).toEqual(["user_id"])
+    expect(primaryKey(progress)).toEqual(["user_id", "word_id"])
+    expect(primaryKey(packIntroductions)).toEqual([
+      "user_id",
+      "pack_id",
+      "word_id",
+    ])
+    expect(primaryKey(metrics)).toEqual(["user_id", "name"])
+    expect(primaryKey(sessions)).toEqual(["user_id", "id"])
+    expect(primaryKey(sessionMetrics)).toEqual([
+      "user_id",
+      "session_id",
+      "name",
+    ])
+    expect(primaryKey(metricEvents)).toEqual(["user_id", "event_id"])
+  })
+
+  it("constrains the locale, progress status and strength, and session kind", () => {
+    expect(
+      getTableConfig(profiles).checks.map((check) => check.name),
+    ).toEqual(["profiles_locale"])
+
+    expect(
+      getTableConfig(progress).checks.map((check) => check.name).sort(),
+    ).toEqual(["progress_status", "progress_strength"])
+
+    expect(getTableConfig(sessions).checks.map((check) => check.name)).toEqual([
+      "sessions_kind",
+    ])
+  })
+
+  it("cascades user-owned rows from users and never from content", () => {
+    expect(
+      foreignKeys(profiles).sort((left, right) =>
+        left.target.localeCompare(right.target),
+      ),
+    ).toEqual([
+      { target: "topics", onDelete: undefined },
+      { target: "users", onDelete: "cascade" },
+    ])
+    expect(foreignKeys(metrics)).toEqual([
+      { target: "users", onDelete: "cascade" },
+    ])
+    expect(foreignKeys(sessions)).toEqual([
+      { target: "users", onDelete: "cascade" },
+    ])
+    expect(foreignKeys(metricEvents)).toEqual([
+      { target: "users", onDelete: "cascade" },
+    ])
+    expect(foreignKeys(sessionMetrics)).toEqual([
+      { target: "sessions", onDelete: "cascade" },
+    ])
+  })
+
+  it("cascades progress and introductions from the user, not from content", () => {
+    expect(
+      foreignKeys(progress).sort((left, right) =>
+        left.target.localeCompare(right.target),
+      ),
+    ).toEqual([
+      { target: "users", onDelete: "cascade" },
+      { target: "words", onDelete: undefined },
+    ])
+
+    expect(
+      foreignKeys(packIntroductions).sort((left, right) =>
+        left.target.localeCompare(right.target),
+      ),
+    ).toEqual([
+      { target: "packs", onDelete: undefined },
+      { target: "users", onDelete: "cascade" },
+      { target: "words", onDelete: undefined },
+    ])
+  })
+})
+
+describe("committed user migration", () => {
+  const schema = readFileSync(join(drizzleDir, "0002_user_schema.sql"), "utf8")
+
+  it("creates every user table", () => {
+    for (const table of [
+      "users",
+      "profiles",
+      "progress",
+      "pack_introductions",
+      "metrics",
+      "sessions",
+      "session_metrics",
+      "metric_events",
+    ]) {
+      expect(schema).toMatch(new RegExp(`CREATE TABLE \`${table}\``))
+    }
+  })
+
+  it("writes the checks and the user-owned cascades", () => {
+    expect(schema).toContain("profiles_locale")
+    expect(schema).toContain("progress_status")
+    expect(schema).toContain("progress_strength")
+    expect(schema).toContain("sessions_kind")
+    expect(schema).toMatch(/ON DELETE cascade/i)
+  })
+
+  it("points session_metrics at the composite session key", () => {
+    expect(schema).toMatch(
+      /FOREIGN KEY \(\`user_id\`,\`session_id\`\) REFERENCES \`sessions\`\(\`user_id\`,\`id\`\)/,
+    )
   })
 })
 
