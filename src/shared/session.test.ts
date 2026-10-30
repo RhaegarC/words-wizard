@@ -34,7 +34,7 @@ const NOW = 1_000_000
 const DAY = 86_400_000
 
 const SEED: SessionSeed = {
-  profileId: 1,
+  profileId: "oid-1",
   localDate: "2026-10-21",
   kind: "daily",
   contentVersion: "dev",
@@ -92,7 +92,7 @@ function makeProgress(
   overrides: Partial<Progress> = {},
 ): Progress {
   return {
-    profileId: 1,
+    profileId: "oid-1",
     wordId,
     status: "learning",
     strength: 0.2,
@@ -110,13 +110,14 @@ function makeInput(
   overrides: Partial<BuildSessionInput> = {},
 ): BuildSessionInput {
   return {
-    profile: { id: 1, currentTopicId: "t1" },
+    profile: { id: "oid-1", currentTopicId: "t1" },
     progress: [],
     packs: [],
     words: [],
     now: NOW,
     seed: SEED,
     speechAvailable: true,
+    introductions: [],
     ...overrides,
   }
 }
@@ -126,13 +127,15 @@ function planWith(
   words: Word[],
   progress: Progress[] = [],
   currentTopicId: string | null = "t1",
+  introductions: BuildSessionInput["introductions"] = [],
 ) {
   return buildSession(
     makeInput({
-      profile: { id: 1, currentTopicId },
+      profile: { id: "oid-1", currentTopicId },
       packs,
       words,
       progress,
+      introductions,
     }),
   )
 }
@@ -194,9 +197,10 @@ describe("localDateKey", () => {
 
 describe("sessionSeed", () => {
   it("pins the profile, local date, kind, and content version", () => {
-    expect(sessionSeed(4, new Date(2026, 9, 21, 9).getTime(), "daily", "dev"))
-      .toEqual({
-        profileId: 4,
+    expect(
+      sessionSeed("oid-4", new Date(2026, 9, 21, 9).getTime(), "daily", "dev"),
+    ).toEqual({
+        profileId: "oid-4",
         localDate: "2026-10-21",
         kind: "daily",
         contentVersion: "dev",
@@ -208,9 +212,9 @@ describe("exerciseSeed", () => {
   it("pins one exercise to the session, word, and mode", () => {
     const key = sessionSeedKey(SEED)
 
-    expect(key).toBe("1|2026-10-21|daily|dev")
+    expect(key).toBe("oid-1|2026-10-21|daily|dev")
     expect(exerciseSeed(SEED, "w-bag", "pictureMatch")).toBe(
-      "1|2026-10-21|daily|dev|w-bag|pictureMatch",
+      "oid-1|2026-10-21|daily|dev|w-bag|pictureMatch",
     )
     expect(exerciseSeed(SEED, "w-bag", "spellingBuilder")).not.toBe(
       exerciseSeed(SEED, "w-bag", "pictureMatch"),
@@ -299,6 +303,10 @@ describe("buildSession", () => {
     const first = ["a1", "a2", "a3"].map((id) => makeWord(id))
     const second = ["b1", "b2"].map((id) => makeWord(id))
     const progress = [makeProgress("a1"), makeProgress("a2")]
+    const introductions = [
+      { packId: "p1", wordId: "a1" },
+      { packId: "p1", wordId: "a2" },
+    ]
 
     const plan = planWith(
       [
@@ -307,15 +315,21 @@ describe("buildSession", () => {
       ],
       [...first, ...second],
       progress,
+      "t1",
+      introductions,
     )
 
     expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a3"])
   })
 
-  it("opens pack 2 once pack 1 is complete, without waiting for mastery", () => {
+  it("opens pack 2 once pack 1 is introduced, without waiting for mastery", () => {
     const first = ["a1", "a2", "a3"].map((id) => makeWord(id))
     const second = ["b1", "b2", "b3"].map((id) => makeWord(id))
     const progress = first.map((word) => makeProgress(word.id))
+    const introductions = first.map((word) => ({
+      packId: "p1",
+      wordId: word.id,
+    }))
 
     const plan = planWith(
       [
@@ -324,6 +338,8 @@ describe("buildSession", () => {
       ],
       [...first, ...second],
       progress,
+      "t1",
+      introductions,
     )
 
     expect(newWordsOf(plan).map((word) => word.wordId)).toEqual([
@@ -333,7 +349,7 @@ describe("buildSession", () => {
     ])
   })
 
-  it("opens pack 3 only when pack 2 is complete as well", () => {
+  it("opens pack 3 only when pack 2 is introduced as well", () => {
     const first = ["a1", "a2"].map((id) => makeWord(id))
     const second = ["b1", "b2", "b3"].map((id) => makeWord(id))
     const third = ["c1", "c2"].map((id) => makeWord(id))
@@ -343,12 +359,18 @@ describe("buildSession", () => {
       makePack("p3", third.map((word) => word.id), 3),
     ]
     const allWords = [...first, ...second, ...third]
+    const introduced = [...first.map((word) => word.id), "b1"].map((id) => ({
+      packId: id === "b1" ? "p2" : "p1",
+      wordId: id,
+    }))
 
     // Pack 1 is complete, pack 2 is not: pack 3 stays shut.
     const partly = planWith(
       packs,
       allWords,
       [...first.map((word) => word.id), "b1"].map((id) => makeProgress(id)),
+      "t1",
+      introduced,
     )
 
     expect(newWordsOf(partly).map((word) => word.wordId)).toEqual(["b2", "b3"])
@@ -357,12 +379,17 @@ describe("buildSession", () => {
       packs,
       allWords,
       [...first, ...second].map((word) => makeProgress(word.id)),
+      "t1",
+      [
+        ...first.map((word) => ({ packId: "p1", wordId: word.id })),
+        ...second.map((word) => ({ packId: "p2", wordId: word.id })),
+      ],
     )
 
     expect(newWordsOf(complete).map((word) => word.wordId)).toEqual(["c1", "c2"])
   })
 
-  it("does not let a word learned outside the packs complete a pack", () => {
+  it("does not let an introduction in another pack complete a pack", () => {
     const first = ["a1", "a2"].map((id) => makeWord(id))
     const second = ["b1"].map((id) => makeWord(id))
     const extra = makeWord("extra")
@@ -374,6 +401,12 @@ describe("buildSession", () => {
       ],
       [...first, ...second, extra],
       [mastered("a1"), mastered("extra")],
+      "t1",
+      [
+        { packId: "p1", wordId: "a1" },
+        // A different pack's introduction is not this pack's.
+        { packId: "p-elsewhere", wordId: "a2" },
+      ],
     )
 
     expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a2"])
@@ -390,19 +423,51 @@ describe("buildSession", () => {
     expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["a1"])
   })
 
-  it("treats a word with any progress row as learned, including status new", () => {
+  it("treats an introduction in this pack as learned, not a progress row", () => {
     const words = ["n1", "n2", "n3"].map((id) => makeWord(id))
     const progress = [
       makeProgress("n1", { status: "new", nextReviewAt: NOW + DAY }),
+      makeProgress("n2", { nextReviewAt: NOW + DAY }),
     ]
 
-    const plan = planWith(
+    // A progress row alone does not record the introduction.
+    const byProgress = planWith(
       [makePack("p1", words.map((word) => word.id), 1)],
       words,
       progress,
     )
 
-    expect(newWordsOf(plan).map((word) => word.wordId)).toEqual(["n2", "n3"])
+    expect(newWordsOf(byProgress).map((word) => word.wordId)).toEqual([
+      "n1",
+      "n2",
+      "n3",
+    ])
+
+    const byIntroduction = planWith(
+      [makePack("p1", words.map((word) => word.id), 1)],
+      words,
+      progress,
+      "t1",
+      [{ packId: "p1", wordId: "n1" }],
+    )
+
+    expect(newWordsOf(byIntroduction).map((word) => word.wordId)).toEqual([
+      "n2",
+      "n3",
+    ])
+  })
+
+  it("plans the introduction rows its new words will write", () => {
+    const words = ["n1", "n2"].map((id) => makeWord(id))
+    const plan = planWith(
+      [makePack("p1", ["n1", "n2"], 1)],
+      words,
+    )
+
+    expect(plan.introductions).toEqual([
+      { packId: "p1", wordId: "n1" },
+      { packId: "p1", wordId: "n2" },
+    ])
   })
 
   it("dedupes a word repeated in a pack", () => {
@@ -494,7 +559,7 @@ describe("buildSession", () => {
       ],
       words,
       progress: learnedToday,
-      profile: { id: 1, currentTopicId: "t2" },
+      profile: { id: "oid-1", currentTopicId: "t2" },
     })
 
     const plan = buildSession(today)
@@ -518,6 +583,9 @@ describe("buildSession", () => {
       packs: [makePack("p1", words.map((word) => word.id), 1)],
       words,
       progress: learnedToday,
+      introductions: words
+        .slice(0, 5)
+        .map((word) => ({ packId: "p1", wordId: word.id })),
       now: NOW + DAY,
       seed: { ...SEED, localDate: localDateKey(NOW + DAY) },
     })
@@ -665,6 +733,7 @@ describe("estimatedMinutes", () => {
         modes: ["fillBlank" as const],
       })),
       caughtUp: screens === 0,
+      introductions: [],
     }
   }
 
@@ -809,6 +878,7 @@ function oneWordPlan(kind: "review" | "new"): SessionState {
       {
         words: [{ wordId: "r1", kind: "review", modes: ["fillBlank"] }],
         caughtUp: false,
+        introductions: [],
       },
       SEED,
     )

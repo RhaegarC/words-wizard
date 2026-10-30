@@ -4,7 +4,7 @@ import { AvatarPortrait } from "../components/AvatarPortrait"
 import { Brand } from "../components/Brand"
 import { Icon } from "../components/Icon"
 import { getAvatarSet } from "../content"
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import {
   buildNewProfile,
   validateAvatarId,

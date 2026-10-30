@@ -17,11 +17,9 @@ import type { Profile, Progress, Word } from "./types"
 const NOW = new Date(2026, 9, 21, 12, 0, 0).getTime()
 const DAY = 86_400_000
 
-function makeProfile(
-  overrides: Partial<Profile> = {},
-): Profile & { id: number } {
+function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
-    id: 1,
+    id: "profile-1",
     name: "Mia",
     characterName: "Luma",
     avatar: "luma",
@@ -49,8 +47,7 @@ function learnedWord(
   overrides: Partial<Progress> = {},
 ): Progress {
   return {
-    id: undefined,
-    profileId: 1,
+    profileId: "profile-1",
     wordId,
     status: "learning",
     strength: 0.4,
@@ -343,7 +340,7 @@ describe("buildReview", () => {
   }))
   const progress = reviewRows(rows)
   const words = wordsFor(rows)
-  const seed = sessionSeed(1, NOW, "monthly", "dev")
+  const seed = sessionSeed("profile-1", NOW, "monthly", "dev")
 
   it("plans one exercise for each selected word and no intro cards", () => {
     const plan = buildReview({

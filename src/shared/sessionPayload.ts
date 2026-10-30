@@ -30,7 +30,7 @@ export function validateSessionPayload(
     }
   }
 
-  if (!Number.isInteger(payload.profileId) || payload.profileId <= 0) {
+  if (typeof payload.profileId !== "string" || payload.profileId.trim() === "") {
     add("profile-id-missing")
   }
 
@@ -84,6 +84,7 @@ function isNonNegative(value: number): boolean {
  * comes from the verified token.
  * ------------------------------------------------------------------------- */
 
+/** The client's commit validates this record before it is sent. */
 export interface SessionRecordPayload {
   id: string
   kind: SessionKind

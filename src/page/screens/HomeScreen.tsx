@@ -9,7 +9,7 @@ import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { config } from "@shared/config"
 import { getHomeContent, getTopic } from "../content"
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import { METRIC_NAMES } from "@shared/metrics"
 import { buildHomeView } from "@shared/home"
 import type { CharacterCondition, Profile } from "@shared/types"
@@ -40,14 +40,16 @@ export function HomeScreen({
 }) {
   const { locale, t } = useLocale()
   const { navigate, replace } = useRouter()
-  const { progress, failed: loadFailed } = useProfileProgress(profile.id)
+  const { progress, introductions, failed: loadFailed } =
+    useProfileProgress(profile.id)
 
   const view =
-    progress === null
+    progress === null || introductions === null
       ? null
       : buildHomeView({
           profile,
           progress,
+          introductions,
           content: CONTENT,
           now: Date.now(),
           config,
@@ -57,11 +59,7 @@ export function HomeScreen({
   const recordedReviewOffer = useRef(false)
 
   useEffect(() => {
-    if (
-      view?.monthlyReviewDue !== true ||
-      recordedReviewOffer.current ||
-      profile.id === undefined
-    ) {
+    if (view?.monthlyReviewDue !== true || recordedReviewOffer.current) {
       return
     }
 

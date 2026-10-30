@@ -23,11 +23,9 @@ function dayKey(offset: number): string {
 const TODAY = dayKey(0)
 const YESTERDAY = dayKey(-1)
 
-function makeProfile(
-  overrides: Partial<Profile> = {},
-): Profile & { id: number } {
+function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
-    id: 1,
+    id: "profile-1",
     name: "Mia",
     characterName: "Luma",
     avatar: "luma",

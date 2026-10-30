@@ -1,6 +1,6 @@
 # Feature 24 — Client Online Integration
 
-> Priority: Must · Mission 2 · **Status: Planned — documentation only**
+> Priority: Must · Mission 2 · **Status: In review — PR pending**
 > Depends on: 22 (content API), 23 (user API). Blocks: 25.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
@@ -155,26 +155,29 @@ screens and `SessionProvider` keep their shape:
 ## Acceptance criteria
 
 - [ ] Sign-in completes on `http://localhost:8443` and on the production origin with the registered
-      redirect URIs; no popup and no client secret.
-- [ ] A reload keeps the session; a silent renew refreshes the token before it expires.
-- [ ] Unauthenticated routes redirect to `#/signin`; signed-in users never see it.
-- [ ] Content and `/v1/me` load in parallel; either failing shows the retry screen.
-- [ ] A fresh identity is sent to `#/create`; creating a character writes it through the API.
+      redirect URIs; no popup and no client secret. *(manual — needs the registered Entra app)*
+- [ ] A reload keeps the session; a silent renew refreshes the token before it expires. *(manual)*
+- [x] Unauthenticated routes redirect to `#/signin`; signed-in users never see it.
+- [ ] Content and `/v1/me` load in parallel; either failing shows the retry screen. *(manual — no
+      DOM test tier)*
+- [x] A fresh identity is sent to `#/create`; creating a character writes it through the API.
 - [ ] A completed session commits through the API and the summary reflects the returned state.
-- [ ] A completed session commits its introductions; the next pack unlocks only when every word of
+      *(commit path tested at the provider/seam tier; summary rendering is manual)*
+- [x] A completed session commits its introductions; the next pack unlocks only when every word of
       the previous pack has been introduced; introducing the same word in a second topic creates a
       second introduction without a second `progress` row.
-- [ ] A commit that fails for network/5xx is in the outbox, visible on the summary, and applied
+- [x] A commit that fails for network/5xx is in the outbox, visible on the summary, and applied
       exactly once on reconnect; a replay changes no counter and adds no introduction.
-- [ ] A `401` re-authenticates once and retries; a second failure returns to sign-in.
+- [x] A `401` re-authenticates once and retries; a second failure returns to sign-in.
 - [ ] `localStorage` holds only device flags and the outbox; no profile or progress is persisted
-      there.
-- [ ] `WordsWizardDB` is deleted once and the notice is shown; the `dexie` dependency is gone.
+      there. *(manual — inspect storage in the running app)*
+- [x] `WordsWizardDB` is deleted once and the notice is shown; the `dexie` dependency is gone.
 - [ ] Settings shows the account, signs out with confirmation, and links the privacy note. There is
-      no delete/reset.
+      no delete/reset. *(manual)*
 - [ ] The PWA still installs, updates through the prompt, and shows the offline screen instead of a
-      partial app.
-- [ ] Both locales pass key parity; the new copy is reviewed in Chinese.
+      partial app. *(manual)*
+- [ ] Both locales pass key parity; the new copy is reviewed in Chinese. *(parity automated; Chinese
+      review is the user's)*
 
 ## Tasks (ordered)
 

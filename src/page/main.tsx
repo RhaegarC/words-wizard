@@ -2,6 +2,7 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
 import App from "./App"
+import { AuthProvider } from "./auth/AuthProvider"
 import { LocaleProvider } from "./i18n/LocaleProvider"
 import { listenForBeforeInstallPrompt } from "./pwa/beforeInstallPrompt"
 import "./index.css"
@@ -19,7 +20,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <LocaleProvider>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </LocaleProvider>
   </StrictMode>,
 )

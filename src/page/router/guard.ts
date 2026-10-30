@@ -1,23 +1,37 @@
 import type { Route } from "./routes"
 
 /**
- * The boot guard. Character creation blocks everything until a profile has a
- * character; a returning child is never sent back to creation, and a profile
- * that has not chosen a topic is held on the picker.
+ * The boot guard. Sign-in blocks everything; then character creation blocks
+ * everything until a profile has a character. A returning child is never sent
+ * back to creation, and a profile without a topic is held on the picker.
  */
-export function resolveRoute(
-  route: Route | null,
-  hasProfile: boolean,
-  hasTopic = true,
-): Route {
-  if (!hasProfile) {
+export interface RouteState {
+  readonly signedIn: boolean
+  readonly hasProfile: boolean
+  readonly hasTopic?: boolean
+}
+
+export function resolveRoute(route: Route | null, state: RouteState): Route {
+  if (!state.signedIn) {
+    return { id: "signin" }
+  }
+
+  if (route?.id === "signin") {
+    return state.hasProfile ? { id: "home" } : { id: "create" }
+  }
+
+  if (!state.hasProfile) {
     return { id: "create" }
   }
 
   const resolved: Route =
     route?.id === "create" ? { id: "home" } : (route ?? { id: "home" })
 
-  if (!hasTopic && resolved.id !== "topics" && resolved.id !== "install") {
+  if (
+    state.hasTopic === false &&
+    resolved.id !== "topics" &&
+    resolved.id !== "install"
+  ) {
     return { id: "topics" }
   }
 

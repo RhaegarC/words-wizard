@@ -115,7 +115,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 21 | [Worker foundation & Entra token validation](archive/21-worker-foundation.md) | Done | Phase 0 |
 | 22 | [D1 content store & content API](archive/22-d1-content-store.md) | Done | 21 |
 | 23 | [User profile, progress & session commit](archive/23-user-data-api.md) | Done | 21, 22 |
-| 24 | [Client online integration](24-client-online-integration.md) | Planned | 22, 23 |
+| 24 | [Client online integration](24-client-online-integration.md) | In review | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | Planned | 21–24 |
 | 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress | 22 |
 

@@ -60,7 +60,7 @@ export function exportFileName(now: number): string {
 
 function exportProfile(profile: Profile): Profile {
   return {
-    ...(profile.id === undefined ? {} : { id: profile.id }),
+    id: profile.id,
     name: profile.name,
     characterName: profile.characterName,
     avatar: profile.avatar,
@@ -83,7 +83,6 @@ function exportProfile(profile: Profile): Profile {
 
 function exportProgress(row: Progress): Progress {
   return {
-    ...(row.id === undefined ? {} : { id: row.id }),
     profileId: row.profileId,
     wordId: row.wordId,
     status: row.status,
@@ -99,7 +98,6 @@ function exportProgress(row: Progress): Progress {
 
 function exportMetric(row: Metric): Metric {
   return {
-    ...(row.id === undefined ? {} : { id: row.id }),
     profileId: row.profileId,
     name: row.name,
     value: row.value,

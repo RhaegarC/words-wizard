@@ -4,6 +4,7 @@ import { deriveCharacterState } from "./character"
 import type { Avatar } from "./content/types"
 import { isMonthlyReviewDue } from "./monthlyReview"
 import { stageProgress, type StageProgress } from "./progression"
+import type { IntroductionWrite } from "./provider"
 import { buildSession, estimatedMinutes, sessionSeed } from "./session"
 import type { CharacterState, Pack, Profile, Progress, Word } from "./types"
 
@@ -28,6 +29,8 @@ export interface BuildHomeViewInput {
   profile: Profile
   progress: readonly Progress[]
   content: HomeContent
+  /** Per-pack introduction rows from `/v1/me`; they decide pack unlock. */
+  introductions: readonly IntroductionWrite[]
   now: number
   config: AppConfig
 }
@@ -66,7 +69,7 @@ export interface HomeView {
 }
 
 export function buildHomeView(input: BuildHomeViewInput): HomeView {
-  const { profile, progress, content, now, config } = input
+  const { profile, progress, introductions, content, now, config } = input
   // Home promises exactly what the session builder will deliver, including
   // its duration, so it asks the builder rather than re-deriving counts.
   const plan = buildSession({
@@ -75,9 +78,10 @@ export function buildHomeView(input: BuildHomeViewInput): HomeView {
     packs: content.packs,
     words: content.words,
     now,
-    seed: sessionSeed(profile.id ?? -1, now, "daily", content.contentVersion),
+    seed: sessionSeed(profile.id, now, "daily", content.contentVersion),
     // Modes are not shown on Home, so speech capability is irrelevant here.
     speechAvailable: false,
+    introductions,
   })
   const wordIds = new Set(content.words.map((word) => word.id))
   const learnedCount = progress.filter(

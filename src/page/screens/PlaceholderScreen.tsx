@@ -18,6 +18,7 @@ const FEATURE_FOR_ROUTE: Record<Route["id"], string> = {
   settings: "14",
   create: "06",
   install: "15",
+  signin: "24",
 }
 
 /**

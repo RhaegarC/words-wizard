@@ -41,6 +41,7 @@ export type Route =
   | { id: "settings" }
   | { id: "create" }
   | { id: "install" }
+  | { id: "signin" }
 
 export type RouteId = Route["id"]
 
@@ -63,6 +64,7 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "settings" },
   { id: "create" },
   { id: "install" },
+  { id: "signin" },
 ]
 
 const SIMPLE_HASHES: Record<Exclude<RouteId, "words" | "word-detail">, string> =
@@ -80,6 +82,7 @@ const SIMPLE_HASHES: Record<Exclude<RouteId, "words" | "word-detail">, string> =
     settings: "#/settings",
     create: "#/create",
     install: "#/install",
+    signin: "#/signin",
   }
 
 const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
@@ -97,6 +100,7 @@ const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   settings: "common.screen.settings",
   create: "common.screen.create",
   install: "common.screen.install",
+  signin: "common.screen.signin",
 }
 
 export function buildHash(route: Route): string {
@@ -171,6 +175,8 @@ export function parseHash(hash: string): Route | null {
       return onlyOneSegment(segments) ? { id: "create" } : null
     case "install":
       return onlyOneSegment(segments) ? { id: "install" } : null
+    case "signin":
+      return onlyOneSegment(segments) ? { id: "signin" } : null
     case "session":
       return parseSession(segments)
     case "words":
@@ -195,6 +201,7 @@ export function parentOf(route: Route): Route | null {
   switch (route.id) {
     case "home":
     case "create":
+    case "signin":
       return null
     case "word-detail":
       return { id: "words", tab: route.tab ?? "collection" }

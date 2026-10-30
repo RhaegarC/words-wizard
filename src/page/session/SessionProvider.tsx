@@ -14,7 +14,8 @@ import {
   getAllWords,
   getContentMeta,
 } from "../content"
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
+import type { PackIntroduction } from "@shared/me"
 import { DEVICE_KEYS } from "@shared/device"
 import { checkProfileAfterSession } from "../db/lifecycle"
 import { METRIC_NAMES } from "@shared/metrics"
@@ -101,7 +102,11 @@ function isReviewRoute(route: Route): boolean {
   )
 }
 
-const EMPTY_PLAN: SessionPlan = { words: [], caughtUp: true }
+const EMPTY_PLAN: SessionPlan = {
+  words: [],
+  caughtUp: true,
+  introductions: [],
+}
 const EMPTY_PREVIEW: SessionPreview = {
   reviewCount: 0,
   newCount: 0,
@@ -109,7 +114,7 @@ const EMPTY_PREVIEW: SessionPreview = {
   caughtUp: true,
 }
 
-export type CommitStatus = "idle" | "saving" | "done" | "error"
+export type CommitStatus = "idle" | "saving" | "done" | "queued" | "error"
 
 type CommitState = {
   status: CommitStatus
@@ -173,6 +178,9 @@ export function SessionProvider({
     ? liveSpeech.available
     : (recordedSpeech ?? liveSpeech.available)
   const [progress, setProgress] = useState<readonly Progress[] | null>(null)
+  const [introductions, setIntroductions] = useState<
+    readonly PackIntroduction[] | null
+  >(null)
   const [exitOpen, setExitOpen] = useState(false)
   const [commit, setCommit] = useState<CommitState>({
     status: "idle",
@@ -188,13 +196,12 @@ export function SessionProvider({
   const routes = useMemo(() => phaseRoutes(kind), [kind])
   const reviewDue =
     progress !== null &&
-    profile.id !== undefined &&
     isMonthlyReviewDue(profile, progress, sessionNow.current)
 
   const seed = useMemo(
     () =>
       sessionSeed(
-        profile.id ?? -1,
+        profile.id,
         sessionNow.current,
         kind,
         getContentMeta().contentVersion,
@@ -203,7 +210,7 @@ export function SessionProvider({
   )
 
   const plan = useMemo(() => {
-    if (progress === null || profile.id === undefined) {
+    if (progress === null || introductions === null) {
       return EMPTY_PLAN
     }
 
@@ -228,11 +235,12 @@ export function SessionProvider({
       now: sessionNow.current,
       seed,
       speechAvailable,
+      introductions,
     })
-  }, [kind, progress, profile, seed, speechAvailable])
+  }, [introductions, kind, progress, profile, seed, speechAvailable])
 
   const preview = useMemo(() => {
-    if (progress === null || profile.id === undefined) {
+    if (progress === null || introductions === null) {
       return EMPTY_PREVIEW
     }
 
@@ -253,26 +261,35 @@ export function SessionProvider({
       now: sessionNow.current,
       seed,
       speechAvailable,
+      introductions,
     })
-  }, [kind, plan.words.length, progress, profile, seed, speechAvailable])
+  }, [
+    introductions,
+    kind,
+    plan.words.length,
+    progress,
+    profile,
+    seed,
+    speechAvailable,
+  ])
 
   const [state, setState] = useState<SessionState>(() =>
     createSessionState(EMPTY_PLAN, seed),
   )
 
   useEffect(() => {
-    if (profile.id === undefined) {
-      setProgress([])
-      return
-    }
-
     let active = true
 
-    progressProvider
-      .getAllProgress(profile.id)
-      .then((rows) => {
+    // Progress and introductions decide the plan together: the first keeps
+    // review scheduling, the second decides which pack is unlocked.
+    void Promise.all([
+      progressProvider.getAllProgress(profile.id),
+      progressProvider.getIntroductions(profile.id),
+    ])
+      .then(([rows, introRows]) => {
         if (active) {
           setProgress(rows)
+          setIntroductions(introRows)
         }
       })
       .catch((reason: unknown) => {
@@ -280,6 +297,7 @@ export function SessionProvider({
 
         if (active) {
           setProgress([])
+          setIntroductions([])
         }
       })
 
@@ -401,7 +419,7 @@ export function SessionProvider({
     setExitOpen(false)
 
     // An abandoned session commits no progress; only its counter moves.
-    if (profile.id !== undefined && state.phase !== "idle") {
+    if (state.phase !== "idle") {
       void progressProvider
         .incrementMetric(profile.id, METRIC_NAMES.sessionAbandoned)
         .catch((reason: unknown) => {
@@ -427,11 +445,7 @@ export function SessionProvider({
    * while the transaction is still open.
    */
   const runCommit = useCallback(() => {
-    if (
-      result === null ||
-      progress === null ||
-      profile.id === undefined
-    ) {
+    if (result === null || progress === null) {
       return
     }
 
@@ -441,18 +455,30 @@ export function SessionProvider({
 
     commitStarted.current = result.id
 
-    const built = buildSessionCommit(
-      result,
-      { ...profile, id: profile.id },
-      progress,
-      Date.now(),
-    )
+    const built = buildSessionCommit(result, profile, progress, Date.now(), {
+      contentVersion: getContentMeta().contentVersion,
+      introductions: plan.introductions,
+    })
 
     setCommit({ status: "saving", summary: built.summary })
 
     void commitSessionResult(progressProvider, result.id, built.payload)
-      .then(() => {
-        setCommit({ status: "done", summary: built.summary })
+      .then((outcome) => {
+        // A null outcome means the guard already sent this session.
+        if (outcome === null) {
+          return
+        }
+
+        setCommit({
+          status: outcome === "queued" ? "queued" : "done",
+          summary: built.summary,
+        })
+
+        // A queued commit is not on the server yet, so there is nothing fresh
+        // to read back; the outbox replays it on the next boot.
+        if (outcome === "queued") {
+          return
+        }
 
         // Feature 05's post-session check: the boot snapshot is stale, and a
         // missing profile must take the recovery path rather than keep a
@@ -474,7 +500,7 @@ export function SessionProvider({
         commitStarted.current = null
         setCommit({ status: "error", summary: built.summary })
       })
-  }, [onProfileLost, onProfileUpdated, profile, progress, result])
+  }, [onProfileLost, onProfileUpdated, plan.introductions, profile, progress, result])
 
   // The summary route is what completes the loop, so reaching it commits.
   useEffect(() => {
@@ -485,7 +511,7 @@ export function SessionProvider({
 
   const value = useMemo(
     () => ({
-      ready: progress !== null,
+      ready: progress !== null && introductions !== null,
       kind,
       reviewDue,
       plan,
@@ -506,6 +532,7 @@ export function SessionProvider({
     }),
     [
       progress,
+      introductions,
       kind,
       reviewDue,
       plan,

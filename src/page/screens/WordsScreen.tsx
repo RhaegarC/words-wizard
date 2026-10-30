@@ -5,7 +5,7 @@ import { topicTone } from "../components/tone"
 import { WordArtwork } from "../components/WordArtwork"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { getAllWords, getTopics } from "../content"
-import { progressProvider } from "../db"
+import { progressProvider } from "../api/provider"
 import { METRIC_NAMES } from "@shared/metrics"
 import {
   applyFilters,
@@ -55,7 +55,7 @@ export function WordsScreen({
   const recordedTab = useRef<WordsTab | null>(null)
 
   useEffect(() => {
-    if (profile.id === undefined || recordedTab.current === tab) {
+    if (recordedTab.current === tab) {
       return
     }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type {
+  CommitOutcome,
   ProgressProvider,
   SessionCommitPayload,
 } from "@shared/provider"
@@ -11,12 +12,20 @@ const NOW = 1_760_000_000_000
 
 function makePayload(): SessionCommitPayload {
   return {
-    profileId: 1,
+    profileId: "oid-1",
     now: NOW,
     xpEarned: 7,
     profile: { xp: 52 },
     progress: [],
+    introductions: [],
     metrics: {},
+    session: {
+      id: "session-1",
+      kind: "daily",
+      localDate: "2026-10-30",
+      contentVersion: "1",
+      finishedAt: NOW,
+    },
   }
 }
 
@@ -30,6 +39,7 @@ function recordingProvider() {
   const provider = {
     commitSession: async (payload: SessionCommitPayload) => {
       commits.push(payload)
+      return "saved" satisfies CommitOutcome
     },
   } as unknown as ProgressProvider
 
@@ -39,10 +49,10 @@ function recordingProvider() {
 describe("SessionCommitGuard", () => {
   it("runs a session's commit once and rejects a second submit", async () => {
     const guard = new SessionCommitGuard()
-    const commit = vi.fn(async () => {})
+    const commit = vi.fn(async () => "saved" as const)
 
-    await expect(guard.run("session-1", commit)).resolves.toBe(true)
-    await expect(guard.run("session-1", commit)).resolves.toBe(false)
+    await expect(guard.run("session-1", commit)).resolves.toBe("saved")
+    await expect(guard.run("session-1", commit)).resolves.toBeNull()
     expect(commit).toHaveBeenCalledTimes(1)
   })
 
@@ -54,15 +64,16 @@ describe("SessionCommitGuard", () => {
     })
     const commit = vi.fn(async () => {
       await gate
+      return "saved" as const
     })
 
     const first = guard.run("session-1", commit)
     const second = await guard.run("session-1", commit)
 
-    expect(second).toBe(false)
+    expect(second).toBeNull()
 
     release()
-    await expect(first).resolves.toBe(true)
+    await expect(first).resolves.toBe("saved")
     expect(commit).toHaveBeenCalledTimes(1)
   })
 
@@ -76,18 +87,18 @@ describe("SessionCommitGuard", () => {
       "transaction failed",
     )
 
-    const retry = vi.fn(async () => {})
+    const retry = vi.fn(async () => "saved" as const)
 
-    await expect(guard.run("session-1", retry)).resolves.toBe(true)
+    await expect(guard.run("session-1", retry)).resolves.toBe("saved")
     expect(retry).toHaveBeenCalledTimes(1)
   })
 
   it("tracks each session id separately", async () => {
     const guard = new SessionCommitGuard()
-    const commit = vi.fn(async () => {})
+    const commit = vi.fn(async () => "saved" as const)
 
-    await expect(guard.run("session-1", commit)).resolves.toBe(true)
-    await expect(guard.run("session-2", commit)).resolves.toBe(true)
+    await expect(guard.run("session-1", commit)).resolves.toBe("saved")
+    await expect(guard.run("session-2", commit)).resolves.toBe("saved")
     expect(commit).toHaveBeenCalledTimes(2)
   })
 })
@@ -100,10 +111,10 @@ describe("commitSessionResult", () => {
 
     await expect(
       commitSessionResult(provider, "session-1", payload, guard),
-    ).resolves.toBe(true)
+    ).resolves.toBe("saved")
     await expect(
       commitSessionResult(provider, "session-1", payload, guard),
-    ).resolves.toBe(false)
+    ).resolves.toBeNull()
 
     expect(commits).toEqual([payload])
   })

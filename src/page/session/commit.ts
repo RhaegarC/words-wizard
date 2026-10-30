@@ -1,4 +1,5 @@
 import type {
+  CommitOutcome,
   ProgressProvider,
   SessionCommitPayload,
 } from "@shared/provider"
@@ -16,19 +17,15 @@ export class SessionCommitGuard {
    * tick cannot both reach the store. A failed commit is forgotten so the
    * child can retry.
    */
-  async run(
-    sessionId: string,
-    commit: () => Promise<void>,
-  ): Promise<boolean> {
+  async run<T>(sessionId: string, commit: () => Promise<T>): Promise<T | null> {
     if (this.committed.has(sessionId)) {
-      return false
+      return null
     }
 
     this.committed.add(sessionId)
 
     try {
-      await commit()
-      return true
+      return await commit()
     } catch (error) {
       this.committed.delete(sessionId)
       throw error
@@ -44,6 +41,6 @@ export function commitSessionResult(
   sessionId: string,
   payload: SessionCommitPayload,
   guard: SessionCommitGuard = sessionCommitGuard,
-): Promise<boolean> {
+): Promise<CommitOutcome | null> {
   return guard.run(sessionId, () => provider.commitSession(payload))
 }

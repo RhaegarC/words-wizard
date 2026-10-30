@@ -110,10 +110,9 @@ export interface BuildReviewInput {
 
 /** One review exercise per selected word; never an intro card or a new word. */
 export function buildReview(input: BuildReviewInput): SessionPlan {
-  const rows =
-    input.profile.id === undefined
-      ? []
-      : input.progress.filter((row) => row.profileId === input.profile.id)
+  const rows = input.progress.filter(
+    (row) => row.profileId === input.profile.id,
+  )
   const entries = selectReviewWords(
     rows,
     input.words,
@@ -121,7 +120,8 @@ export function buildReview(input: BuildReviewInput): SessionPlan {
   ).map((wordId) => ({ wordId, kind: "review" as const }))
   const words = assignSessionWords(entries, input.seed, input.speechAvailable)
 
-  return { words, caughtUp: words.length === 0 }
+  // A review introduces no words; it only revisits progress rows.
+  return { words, caughtUp: words.length === 0, introductions: [] }
 }
 
 function byStrengthThenOldest(left: Progress, right: Progress): number {

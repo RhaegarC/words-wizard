@@ -599,7 +599,9 @@ export async function applyCare(
 
   if (seen !== null) return toServerProfile(row)
 
-  const profile = toServerProfile(row)
+  // The pure rules take the shared `Profile`; the Worker's row has no id
+  // column because the user id is the key. Supply the oid for the type only.
+  const profile = { ...toServerProfile(row), id: oid }
   const outcome =
     action === "freeze"
       ? spendOnFreeze(profile, now)

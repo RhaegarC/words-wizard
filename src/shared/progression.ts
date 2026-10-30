@@ -1,6 +1,7 @@
 import { config } from "./config"
 import { METRIC_NAMES, type MetricName } from "./metrics"
 import type {
+  IntroductionWrite,
   ProfilePatch,
   SessionCommitPayload,
   SessionProgressWrite,
@@ -28,7 +29,7 @@ import type {
 const DAY_MS = 86_400_000
 
 /** A profile read at boot always has an id; the commit cannot be built without it. */
-export type SessionProfile = Profile & { id: number }
+export type SessionProfile = Profile & { id: string }
 
 export interface StageProgress {
   stage: StageId
@@ -271,6 +272,10 @@ export function buildSessionCommit(
   profile: SessionProfile,
   existingProgress: readonly Progress[],
   now: number,
+  options: {
+    contentVersion?: string
+    introductions?: readonly IntroductionWrite[]
+  } = {},
 ): SessionCommit {
   const existingByWord = new Map<string, Progress>()
 
@@ -408,9 +413,17 @@ export function buildSessionCommit(
     payload: {
       profileId: profile.id,
       now,
+      session: {
+        id: result.id,
+        kind: result.kind,
+        localDate: localDateKey(now),
+        contentVersion: options.contentVersion ?? "",
+        finishedAt: result.completedAt,
+      },
       xpEarned: xp.total,
       profile: profilePatch,
       progress,
+      introductions: options.introductions ?? [],
       metrics,
     },
     summary: {

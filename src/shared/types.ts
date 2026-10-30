@@ -75,9 +75,9 @@ export interface Pack {
   order: number
 }
 
-/** PRD §8.3. */
+/** PRD §8.3, Mission 2: the id is the Entra `oid`. */
 export interface Profile {
-  id?: number
+  id: string
   name: string
   characterName: string
   avatar: string
@@ -102,8 +102,7 @@ export type ProgressStatus = "new" | "learning" | "mastered"
 
 /** PRD §8.3. One row per `profileId` + `wordId`. */
 export interface Progress {
-  id?: number
-  profileId: number
+  profileId: string
   wordId: string
   status: ProgressStatus
   strength: number
@@ -117,8 +116,7 @@ export interface Progress {
 
 /** PRD §8.3, §15. Local counters only; never sent anywhere. */
 export interface Metric {
-  id?: number
-  profileId: number
+  profileId: string
   name: string
   value: number
   updatedAt: number

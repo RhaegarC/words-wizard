@@ -49,8 +49,7 @@ function makeProgress(
   overrides: Partial<Progress> = {},
 ): Progress {
   return {
-    id: undefined,
-    profileId: 1,
+    profileId: "profile-1",
     wordId,
     status: "learning",
     strength: 0.4,

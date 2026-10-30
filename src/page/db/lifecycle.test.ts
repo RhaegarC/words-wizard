@@ -4,7 +4,7 @@ import type { Profile } from "@shared/types"
 import { profileAtBoot, verifyProfileAfterSession } from "./lifecycle"
 
 const PROFILE: Profile = {
-  id: 7,
+  id: "profile-7",
   name: "Mia",
   characterName: "Luma",
   avatar: "luma",
