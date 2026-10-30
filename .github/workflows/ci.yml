@@ -30,7 +30,44 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm worker:typecheck
       - run: pnpm test
       - run: pnpm build
       - run: pnpm check:dist
+
+  remote-d1:
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: src
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: src/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run the remote D1 tier when credentials exist
+        env:
+          WORDS_TEST_CLOUDFLARE_API_TOKEN: ${{ secrets.WORDS_TEST_CLOUDFLARE_API_TOKEN }}
+          WORDS_TEST_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.WORDS_TEST_CLOUDFLARE_ACCOUNT_ID }}
+          WORDS_TEST_D1_DATABASE_ID: ${{ secrets.WORDS_TEST_D1_DATABASE_ID }}
+        run: |
+          if [ -z "${WORDS_TEST_CLOUDFLARE_API_TOKEN}" ] ||
+             [ -z "${WORDS_TEST_CLOUDFLARE_ACCOUNT_ID}" ] ||
+             [ -z "${WORDS_TEST_D1_DATABASE_ID}" ]; then
+            echo "::notice title=Remote D1 tier skipped::Set WORDS_TEST_CLOUDFLARE_API_TOKEN, WORDS_TEST_CLOUDFLARE_ACCOUNT_ID, and WORDS_TEST_D1_DATABASE_ID to run it."
+            exit 0
+          fi
+
+          pnpm test:db:remote

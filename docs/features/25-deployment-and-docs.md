@@ -1,19 +1,21 @@
 # Feature 25 — Deployment, Domains & Documentation
 
-> Priority: Must (release gate) · Mission 2 · **Status: Planned — documentation only**
+> Priority: Must (release gate) · Mission 2 · **Status: In progress — CI, smoke check, and
+> documentation implemented; infrastructure and production deployment are operator-owned**
 > Depends on: 21–24. Blocks: public release.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
 ## Summary
 
-Put Mission 2 on the real domain and make the documentation true again. Create the production D1
-database, connect the Worker to Cloudflare Workers Builds, attach `wordsapi.nioh.uk` and
-`words.nioh.uk`, set the build-time environment, rewrite CI and the deployment policy test, and
-replace the Mission 1 PRD assumptions with PRD v0.3. Record the Entra setup, the D1 operations, the
-admin deletion procedure, and the privacy note.
+Make the documentation true and the repository ready for the real domain. The repository half
+rewrites CI and the deployment policy test, extends `check:deploy` to the Worker and CORS, replaces
+the Mission 1 PRD assumptions with PRD v0.3, and records the Entra setup, D1 operations, admin
+deletion procedure, and privacy note. The **operator half** creates the production and test D1
+databases, connects Workers Builds and Pages, attaches `wordsapi.nioh.uk` and `words.nioh.uk`, sets
+the production environment, and runs the production smoke check.
 
-After this feature, `develop` is deployable, the production URL is the online app, and no document
-still claims the product has no backend.
+After the repository half, `develop` is deployable and every document describes the online product.
+The production URLs go live when the operator completes the other half.
 
 ## User story
 
@@ -41,7 +43,7 @@ credential-gated.
 
 ## Acceptance criteria
 
-### Infrastructure
+### Infrastructure (operator-owned)
 
 - [ ] The production D1 database exists, its id is in `src/worker/wrangler.jsonc`, and the full
       migration set applies to it from the Worker Builds deploy command.
@@ -53,70 +55,76 @@ credential-gated.
       the service worker updates through the prompt.
 - [ ] CORS from `https://words.nioh.uk` succeeds; an unlisted origin receives no
       `Access-Control-Allow-Origin`.
-- [ ] Pages preview deployments remain off; `delete-preview.yml` stays as a documented no-op or is
-      removed once the policy test no longer expects it. No branch environment is created.
+- [ ] Pages preview deployments remain off; `delete-preview.yml` stays as a delete-only safety net.
+      No branch environment is created.
 - [ ] No GitHub Actions workflow contains a Cloudflare **deploy** token, `wrangler pages deploy`, or
       a Pages direct-upload step.
 
 ### CI and checks
 
-- [ ] `pnpm typecheck` covers page, worker, and tests; `pnpm test` includes the local D1 harness and
+- [x] `pnpm typecheck` covers page, worker, and tests; `pnpm test` includes the local D1 harness and
       the client seam test.
-- [ ] `pnpm build` + `pnpm check:dist` still pass; the `prebuild` / `validate:content` removal from
+- [x] `pnpm build` + `pnpm check:dist` still pass; the `prebuild` / `validate:content` removal from
       feature 22 is confirmed and no doc still references the JSON validator.
-- [ ] A separate `test:db:remote` job runs only when the test credentials are present and reports a
+- [x] A separate `test:db:remote` job runs only when the test credentials are present and reports a
       visible skip otherwise.
-- [ ] `src/page/scripts/deployment-config.test.ts` is rewritten for the new topology: it asserts the
+- [x] `src/page/scripts/deployment-config.test.ts` is rewritten for the new topology: it asserts the
       CI steps, the absence of direct Pages uploads, the Worker Builds/migration contract, and the
-      test-only credential naming. The assertion that no workflow may mention Cloudflare secrets is
-      removed; it no longer describes the deployment model. This turns the currently red test green.
-- [ ] `check:deploy` checks the Pages origin, one hashed asset, and the Worker `/health`, and fails
+      test-only credential naming. It also keeps the narrow assertion that no workflow uses a
+      Cloudflare deploy token; the only exception is `delete-preview.yml`, which may hold account
+      credentials solely to delete a preview.
+- [x] `check:deploy` checks the Pages origin, one hashed asset, and the Worker `/health`, and fails
       loudly on a stale content version or a missing CORS header.
-- [ ] The full suite is green on `develop`, including the remote tier where credentials exist.
+- [x] The full suite is green locally; the remote tier skips visibly when its three credentials are
+      absent.
 
 ### Documentation
 
-- [ ] **`docs/PRD.md` v0.3** replaces the Mission 1 posture: goals/non-goals (§2), key decisions
+- [x] **`docs/PRD.md` v0.3** replaces the Mission 1 posture: goals/non-goals (§2), key decisions
       (§4), architecture and storage (§8, replacing the Dexie schema with the API/D1 model), hosting
       and deployment (§8.9), phased delivery (§13), decision log (§14), success metrics (§15), and
       the screen inventory (sign-in). Offline-first claims are marked superseded, not silently left.
-- [ ] **`docs/operations.md`** records: tenant and app registration (SPA redirect URIs, exposed API
+- [x] **`docs/operations.md`** records: tenant and app registration (SPA redirect URIs, exposed API
       scope, manifest values), Worker vars, D1 creation and binding, migration apply commands,
       Workers Builds setup, custom domains, log/health checks, rollback, and the **admin-only data
       deletion procedure** — a single cascade delete by `oid`, run against production only with
       explicit approval.
-- [ ] **`docs/privacy.md`** states what is stored (`oid`, character name, avatar, topic, locale, XP,
+- [x] **`docs/privacy.md`** states what is stored (`oid`, character name, avatar, topic, locale, XP,
       streak, progress, metrics, session history), what is **not** stored (email, Entra display name,
       photo, tenant list), where it lives (Cloudflare D1; Microsoft handles authentication), that
       there is no analytics or advertising, that deletion is by request through the operator, and how
-      to ask. It is linked from Settings.
-- [ ] **README** describes local development with a local Worker and D1, the environment variables,
+      to ask. `src/page/public/privacy.html` is linked from Settings and carries the same facts.
+- [x] **README** describes local development with a local Worker and D1, the environment variables,
       the test tiers and their skip behaviour, the build, and the deploy path.
-- [ ] `docs/features/17-content-production.md` describes D1 authoring (migrations, review, validator)
+- [x] `docs/features/17-content-production.md` describes D1 authoring (migrations, review, validator)
       and its real status; Mission 1's sprint index is moved to `archive/` with its links fixed and a
       historical banner.
-- [ ] The backlog no longer says accounts, a backend, or cloud sync are rejected for v1; those rows
+- [x] The backlog no longer says accounts, a backend, or cloud sync are rejected for v1; those rows
       move to the current mission or to future candidates, and the new out-of-scope items are listed.
 - [ ] Every command in the docs has been run, or a `Verification:` line records what was observed and
-      what could not be verified locally.
+      what could not be verified locally. `docs/operations.md` carries the line; this is completed
+      once the operator's production commands are recorded.
 
 ## Tasks (ordered)
 
-1. Create `words-wizard`; copy its id into `wrangler.jsonc`; apply the migration set locally and then
-   remotely; confirm `PRAGMA foreign_key_check`.
-2. Create `words-wizard-test`; add its id to the test environment (not to the production config).
-3. Connect the Worker to Workers Builds with the install/deploy commands; confirm a deploy runs
-   migrations before `wrangler deploy`.
-4. Add `wordsapi.nioh.uk` as a Worker custom domain and confirm TLS and `/health`.
-5. Add `words.nioh.uk` to the Pages project; set the four `VITE_*` env vars; redeploy.
-6. Rewrite `.github/workflows/ci.yml`: typecheck page+worker+tests; run the suite; build and
+1. **Operator:** create `words-wizard`; copy its id into `wrangler.jsonc`; apply the migration set
+   locally and then remotely; confirm `PRAGMA foreign_key_check`.
+2. **Operator:** create `words-wizard-test`; add its id to the test environment (not to the
+   production config).
+3. **Operator:** connect the Worker to Workers Builds with the install/deploy commands; confirm a
+   deploy runs migrations before `wrangler deploy`.
+4. **Operator:** add `wordsapi.nioh.uk` as a Worker custom domain and confirm TLS and `/health`.
+5. **Operator:** add `words.nioh.uk` to the Pages project; set the four `VITE_*` env vars; redeploy.
+6. [x] Rewrite `.github/workflows/ci.yml`: typecheck page+worker+tests; run the suite; build and
    `check:dist`; add the gated remote job; confirm feature 22 already removed `validate:content`.
-7. Rewrite `deployment-config.test.ts` for the topology above; run it red first, then green.
-8. Extend `check-deploy.mjs` to the Worker health and CORS checks; run it against production.
-9. Write `docs/operations.md` and `docs/privacy.md` from the commands actually run.
-10. Rewrite the README; update feature 17 and the backlog.
-11. Revise the PRD to v0.3; update the Mission 2 sprint statuses; archive Mission 1's sprint index.
-12. Run the manual acceptance list from the sprint and record the evidence in the PR.
+7. [x] Rewrite `deployment-config.test.ts` for the topology above; run it red first, then green.
+8. [x] Extend `check-deploy.mjs` to the Worker health and CORS checks; production run is
+   operator-owned.
+9. [x] Write `docs/operations.md` and `docs/privacy.md` from the commands actually run.
+10. [x] Rewrite the README; update feature 17 and the backlog.
+11. [x] Revise the PRD to v0.3; update the Mission 2 sprint statuses; archive Mission 1's sprint
+    index.
+12. **Operator:** run the manual acceptance list from the sprint and record the evidence in the PR.
 
 ## Tests
 

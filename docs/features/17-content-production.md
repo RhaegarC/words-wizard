@@ -1,7 +1,7 @@
 # Feature 17 — Content Production: D1 Vocabulary Authoring
 
-> Priority: Must (release blocker) · Mission 2 · **Status: In progress — early content authored;
-> teacher review and the D1 move pending**
+> Priority: Must (release blocker) · Mission 2 · **Status: In progress — no D1 vocabulary rows
+> yet; authoring, teacher review, artwork, and the final gate pending**
 > Depends on: 04 (schema rules), 22 (D1 content store and validator hook). Authoring can continue in
 > parallel; the final gate runs against D1.
 >
@@ -10,6 +10,11 @@
 > `src/content/` file paths and the `pnpm validate:content` loop are Mission 1's and are replaced by
 > the database integrity gate. **Do not author into JSON.** New words are written once, directly
 > into D1. See the [Mission 2 sprint](00-mission-2-sprint.md).
+>
+> **State on 2026-10-30:** the D1 vocabulary tables are empty. The only authored words are the
+> retired Mission 1 JSON pilot, which survives in git history and was never moved to D1. The
+> sign-offs in `src/shared/content/rules/REVIEW.md` describe that retired model and cover no D1
+> row; every record must be reviewed again after authoring.
 
 ## Summary
 
@@ -18,7 +23,7 @@ tables with bilingual, Cambridge-allowlisted words, assigns them to day-sized pa
 produces and reviews word images, has a Chinese-speaking English teacher review all of it, and flips
 `content_meta.dataset` to `final`.
 
-Topics are the categories the offline word list uses — Animals, The body and the face, Clothes,
+Topics are the categories the starter word list uses — Animals, The body and the face, Clothes,
 Colours, Family & friends, Food & drink, Health, Numbers, The home, Materials, Names, Places &
 directions, and School. Packs are the sub-categories within a topic. A pack is day-sized at about
 five words but has no fixed size; a longer pack spans several days, and the session builder takes
@@ -99,7 +104,7 @@ reviewed migration, not by editing a bundled file.
 ## Tasks (ordered)
 
 1. Finalise the topic list and topic metadata (immutable slug, bilingual title, icon, description,
-   `sort_order`) from the offline categories. Reserve ids before authoring so references never move.
+   `sort_order`) from the starter categories. Reserve ids before authoring so references never move.
 2. Group each topic into packs of about five words (a day's session). A pack may be larger; write
    `sort_order` and reserve pack ids.
 3. Select words from `cambridge-allowlist.json`, assign their Cambridge level, and reserve word ids.
@@ -114,7 +119,7 @@ reviewed migration, not by editing a bundled file.
 8. Apply to a local D1 and run the database integrity test at `dev`; fix every error.
 9. Speech spot-check and native read-through; fix and re-validate.
 10. Flip `dataset` to `final`, bump `contentVersion`, run the gate with zero errors and zero
-    warnings, and hand the release to feature 25.
+    warnings, and hand the release to the operator.
 
 ## Tests
 

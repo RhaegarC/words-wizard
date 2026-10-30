@@ -11,6 +11,8 @@ const pageRoot = join(srcRoot, "page")
 export default defineConfig({
   // The SPA lives in page/; the package, shared code, and build output stay in src/.
   root: pageRoot,
+  // Read .env from the package root (src/), not Vite's default of page/.
+  envDir: srcRoot,
   // Relative asset URLs so the build also works from a sub-path.
   base: "./",
   plugins: [

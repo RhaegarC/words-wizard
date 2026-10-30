@@ -41,22 +41,46 @@
     <h1>Words Wizard — Privacy</h1>
     <p>
       Words Wizard is a children's vocabulary app. This page explains what the
-      app stores and why.
+      app stores, where it lives, and how deletion works. We collect only what
+      is needed for a child's progress to follow their sign-in to another
+      device.
     </p>
 
     <h2>What we store</h2>
     <ul>
       <li>
-        Your Microsoft account identifier, so your progress follows you to
-        another device.
+        Your Microsoft Entra object id (<code>oid</code>), so your progress
+        follows you to another device. We do not store your email address,
+        display name, or photo.
       </li>
       <li>
-        Your chosen buddy name and avatar, your topic, your practice progress,
-        and the counters shown in Settings.
+        Your chosen buddy name and avatar, your topic, locale, XP, streak, Care
+        Token state, and practice progress.
+      </li>
+      <li>
+        Session history and the counters shown in Settings, such as sessions
+        completed and words learned or mastered.
       </li>
       <li>
         A small set of device flags in your browser, such as whether the app is
-        installed and whether read-aloud is available.
+        installed and whether read-aloud is available. These are not sent to the
+        API.
+      </li>
+    </ul>
+
+    <h2>Where it lives</h2>
+    <ul>
+      <li>
+        <strong>Cloudflare D1</strong> stores the <code>oid</code> and the
+        per-user rows. Cloudflare also serves the app and the API.
+      </li>
+      <li>
+        <strong>Microsoft</strong> handles sign-in. The app never sees your
+        password.
+      </li>
+      <li>
+        Your browser keeps the Entra session, any unsent practice, and the
+        device flags. Signing out clears all three.
       </li>
     </ul>
 
@@ -65,25 +89,53 @@
       <li>We do not read your email, contacts, or files.</li>
       <li>We do not run analytics, advertising, or third-party tracking.</li>
       <li>We do not sell or share your data.</li>
+      <li>We do not keep a copy after a verified deletion request.</li>
     </ul>
 
     <h2>Signing out</h2>
     <p>
-      Signing out removes this browser's session and any unsent practice. Your
-      saved progress stays with your account and returns when you sign in
-      again.
+      Signing out removes this browser's session, any unsent practice, and the
+      device flags. Your saved progress stays with your account and returns when
+      you sign in again.
+    </p>
+
+    <h2>Deletion</h2>
+    <p>
+      There is no delete button in the app. A parent or account holder can ask
+      for deletion through the repository issue tracker. The operator confirms
+      the request, deletes the account's row in Cloudflare D1, and checks that no
+      related rows remain. This removes the profile, progress, sessions, and
+      counters; the learning content is not personal data.
+    </p>
+    <p>
+      Contact:
+      <a href="https://github.com/RhaegarC/words-wizard/issues"
+        >https://github.com/RhaegarC/words-wizard/issues</a
+      >
     </p>
 
     <hr />
 
     <h1>单词魔法师 — 隐私</h1>
-    <p>单词魔法师是一款儿童英语单词应用。这里说明我们会保存什么，以及为什么。</p>
+    <p>
+      单词魔法师是一款儿童英语单词应用。这里说明我们会保存什么、保存在哪里，以及如何删除。我们只收集让学习进度跟随登录账号到另一台设备所必需的信息。
+    </p>
 
     <h2>我们保存的内容</h2>
     <ul>
-      <li>你的 Microsoft 账户标识，用于在不同设备间同步学习进度。</li>
-      <li>你选择的伙伴名字和头像、当前主题、练习进度，以及设置页显示的计数器。</li>
-      <li>浏览器中的少量设备标记，例如是否已安装应用、是否支持朗读。</li>
+      <li>
+        Microsoft Entra 对象 ID（<code>oid</code>），用于在不同设备间同步学习进度。我们不会保存你的电子邮件地址、显示名称或照片。
+      </li>
+      <li>你选择的伙伴名字和头像、当前主题、语言、经验值、连续练习天数、关怀令牌状态，以及练习进度。</li>
+      <li>练习记录，以及设置页显示的计数器，例如完成的练习次数、学会和掌握的单词数。</li>
+      <li>浏览器中的少量设备标记，例如是否已安装应用、是否支持朗读。这些不会发送到 API。</li>
+    </ul>
+
+    <h2>保存在哪里</h2>
+    <ul>
+      <li><strong>Cloudflare D1</strong> 保存 <code>oid</code> 和每位用户的记录。Cloudflare 也提供应用和 API。</li>
+      <li><strong>Microsoft</strong> 负责登录。应用不会看到你的密码。</li>
+      <li>浏览器保存 Entra 登录状态、尚未发送的练习和设备标记。退出登录会清除这三项。</li>
     </ul>
 
     <h2>我们不会做的事</h2>
@@ -91,11 +143,23 @@
       <li>不会读取你的邮件、联系人或文件。</li>
       <li>不做统计分析、广告或第三方追踪。</li>
       <li>不会出售或分享你的数据。</li>
+      <li>在确认删除请求后，不会保留副本。</li>
     </ul>
 
     <h2>退出登录</h2>
     <p>
-      退出登录会清除这个浏览器里的登录状态和尚未发送的练习。已保存的进度会留在你的账户中，再次登录即可继续。
+      退出登录会清除这个浏览器里的登录状态、尚未发送的练习和设备标记。已保存的进度会留在你的账户中，再次登录即可继续。
+    </p>
+
+    <h2>删除</h2>
+    <p>
+      应用里没有删除按钮。家长或账户持有人可以通过仓库的问题页面提出删除请求。运维人员会确认请求，删除 Cloudflare D1 中该账户的记录，并检查没有相关记录残留。这会删除个人档案、进度、练习记录和计数器；学习内容本身不是个人数据。
+    </p>
+    <p>
+      联系方式：
+      <a href="https://github.com/RhaegarC/words-wizard/issues"
+        >https://github.com/RhaegarC/words-wizard/issues</a
+      >
     </p>
   </body>
 </html>

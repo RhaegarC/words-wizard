@@ -1,11 +1,11 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
 > Status: **Mission 1 is historical.** Features 01–16 and 18–20 are done and archived; feature 17
-> content production continues inside [Mission 2](00-mission-2-sprint.md), which makes the product
-> online and supersedes this mission's offline-first, no-account, Dexie-only posture.
-> Source of truth: [docs/PRD.md](../PRD.md) v0.2. Where this file and the PRD disagree, the PRD wins;
-> where Mission 2 disagrees with both, the [Mission 2 sprint](00-mission-2-sprint.md) wins until
-> PRD v0.3 lands.
+> content production continues inside [Mission 2](../00-mission-2-sprint.md), which makes the product
+> online and supersedes this mission's offline-first, no-account, Dexie-only posture. The Definition
+> of Done checkboxes below are the original plan, not a current status.
+> Source of truth: [docs/PRD.md](../../PRD.md) v0.3. This file records the Mission 1 plan; where it
+> and v0.3 disagree, v0.3 wins.
 
 ## Goal
 
@@ -41,28 +41,28 @@ parallel from feature 04 because it is authoring work, not code.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 01 | [App foundation & test harness](archive/01-app-foundation.md) | Done | — |
-| 02 | [App shell & hash routing](archive/02-app-shell-routing.md) | Done | 01 |
-| 03 | [Bilingual UI (i18n)](archive/03-i18n.md) | Done | 01, 02 |
-| 04 | [Content layer & validation](archive/04-content-layer.md) | Done | 01 |
-| 05 | [Persistence layer (Dexie)](archive/05-persistence.md) | Done | 01 |
-| 06 | [First run: character creation & topic picker](archive/06-first-run.md) | Done | 02, 03, 04, 05 |
-| 07 | [Session engine](archive/07-session-engine.md) | Done | 04, 05, 06 |
-| 08 | [Five practice modes](archive/08-practice-modes.md) | Done | 03, 04, 07 |
-| 09 | [Progression: commit, XP, streak, tokens, summary](archive/09-progression.md) | Done | 05, 07, 08 |
-| 10 | [Character state & character screen](archive/10-character-state.md) | Done | 04, 05, 09 |
-| 11 | [Home hub](archive/11-home.md) | Done | 06, 07, 09, 10 |
-| 12 | [My Words: Collection & Word Book](archive/12-my-words.md) | Done | 04, 05, 08, 09 |
-| 13 | [Monthly Review](archive/13-monthly-review.md) | Done | 07, 08, 09, 11 |
-| 14 | [Settings, export & diagnostics](archive/14-settings.md) | Done | 03, 05, 06, 09, 10 |
-| 15 | [PWA install, offline & updates](archive/15-pwa-offline.md) | Done | 02, 05, 14 |
-| 16 | [Cloudflare Pages deployment & CI](archive/16-cloudflare-pages.md) | Done | 01, 04, 15 |
-| 17 | [Content production: 300 words & 315 illustrations](17-content-production.md) | In progress — Craft & Build reviewed, Explore & Discover authored | 04 (authoring runs in parallel) |
-| 18 | [Spelling-first five-mode practice & 10-word sessions](archive/18-spelling-practice-and-session-size.md) | Done | 07, 08 |
-| 19 | [Buddy portraits, settings return & detail polish](archive/19-buddy-portraits-and-settings-polish.md) | Done | 03, 06, 12, 14, 15 |
-| 20 | [Five words a day & comprehensive practice](archive/20-five-word-daily-and-comprehensive.md) | Done | 07, 08, 09, 12, 18 |
+| 01 | [App foundation & test harness](01-app-foundation.md) | Done | — |
+| 02 | [App shell & hash routing](02-app-shell-routing.md) | Done | 01 |
+| 03 | [Bilingual UI (i18n)](03-i18n.md) | Done | 01, 02 |
+| 04 | [Content layer & validation](04-content-layer.md) | Done | 01 |
+| 05 | [Persistence layer (Dexie)](05-persistence.md) | Done | 01 |
+| 06 | [First run: character creation & topic picker](06-first-run.md) | Done | 02, 03, 04, 05 |
+| 07 | [Session engine](07-session-engine.md) | Done | 04, 05, 06 |
+| 08 | [Five practice modes](08-practice-modes.md) | Done | 03, 04, 07 |
+| 09 | [Progression: commit, XP, streak, tokens, summary](09-progression.md) | Done | 05, 07, 08 |
+| 10 | [Character state & character screen](10-character-state.md) | Done | 04, 05, 09 |
+| 11 | [Home hub](11-home.md) | Done | 06, 07, 09, 10 |
+| 12 | [My Words: Collection & Word Book](12-my-words.md) | Done | 04, 05, 08, 09 |
+| 13 | [Monthly Review](13-monthly-review.md) | Done | 07, 08, 09, 11 |
+| 14 | [Settings, export & diagnostics](14-settings.md) | Done | 03, 05, 06, 09, 10 |
+| 15 | [PWA install, offline & updates](15-pwa-offline.md) | Done | 02, 05, 14 |
+| 16 | [Cloudflare Pages deployment & CI](16-cloudflare-pages.md) | Done | 01, 04, 15 |
+| 17 | [Content production: D1 vocabulary authoring](../17-content-production.md) | In progress — no D1 vocabulary rows yet; see the current feature file | 04 (authoring runs in parallel) |
+| 18 | [Spelling-first five-mode practice & 10-word sessions](18-spelling-practice-and-session-size.md) | Done | 07, 08 |
+| 19 | [Buddy portraits, settings return & detail polish](19-buddy-portraits-and-settings-polish.md) | Done | 03, 06, 12, 14, 15 |
+| 20 | [Five words a day & comprehensive practice](20-five-word-daily-and-comprehensive.md) | Done | 07, 08, 09, 12, 18 |
 
-Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
+Completed feature files live in this directory; the table keeps the row for history.
 
 ## Vertical slice map
 
@@ -119,7 +119,7 @@ Completed feature files move to [`archive/`](archive/); the table keeps the row 
 - Branching and PRs follow the project workflow: feature branches target `develop`; `master` is the
   release branch that 16 deploys from.
 
-## Out of scope (see [backlog.md](backlog.md))
+## Out of scope (see [backlog.md](../backlog.md))
 
 Badges, multi-profile UI, Tricky Words, story mode, timed challenges, speaking practice, custom
 words/import, cloud sync, and any parent dashboard. Phase 2/3 in PRD §13.
