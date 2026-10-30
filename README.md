@@ -55,7 +55,7 @@ Mission 2 stores the vocabulary in four D1 tables — `topics`, `packs`, `words`
 — with no fixed count of any of them. Topics are the offline categories; packs are day-sized
 sub-categories, and a pack may span several days. One row represents one headword; a word may
 belong to packs of several topics and is introduced anew in each, while mastery stays at word
-level. See [feature 22](docs/features/22-d1-content-store.md).
+level. See [feature 22](docs/features/archive/22-d1-content-store.md).
 
 Content is authored AI-assisted, reviewed in full by a Chinese-speaking English teacher, and
 committed as reviewed migration SQL. The integrity gate assembles the bundle from D1 and runs

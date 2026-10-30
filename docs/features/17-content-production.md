@@ -6,7 +6,7 @@
 > parallel; the final gate runs against D1.
 >
 > **Mission 2 update:** authoring moves from bundled JSON to versioned D1 migrations in
-> [feature 22](22-d1-content-store.md). The validator and review gates below stay; the
+> [feature 22](archive/22-d1-content-store.md). The validator and review gates below stay; the
 > `src/content/` file paths and the `pnpm validate:content` loop are Mission 1's and are replaced by
 > the database integrity gate. **Do not author into JSON.** New words are written once, directly
 > into D1. See the [Mission 2 sprint](00-mission-2-sprint.md).
