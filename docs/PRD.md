@@ -1,30 +1,35 @@
 # Product Requirements Document
 ## Bilingual English Word Learning PWA for Children (Ages 9–12)
 
-**Version:** 0.2 (MVP decisions locked)
+**Version:** 0.3 (Mission 2 online architecture)
 **Status:** Approved for implementation
-**Last Updated:** 2026-10-21
+**Last Updated:** 2026-10-30
 
 > This version supersedes the exploratory notes in `docs/sample_data/Init/`. Where they
 > disagree, this document governs.
+
+> **Mission 2 supersedes the offline-first, no-backend posture of v0.2.** The app is
+> online-only, signs in with Microsoft Entra ID, and stores content and learner data in
+> Cloudflare D1 behind a Worker API. Mission 1's Dexie/IndexedDB schema and offline
+> practice are historical; they are not part of the current product.
 
 ---
 
 ## 1. Overview
 
-A lightweight, offline-first Progressive Web App (PWA) that helps Chinese-speaking ESL
-children aged 9–12 learn English vocabulary through short, game-like practice sessions.
-The interface and learning content are bilingual (English + 中文): Chinese is the meaning
-layer, English is the target language.
+A lightweight Progressive Web App (PWA) that helps Chinese-speaking ESL children aged
+9–12 learn English vocabulary through short, game-like practice sessions. The interface
+and learning content are bilingual (English + 中文): Chinese is the meaning layer,
+English is the target language.
 
 Learning is framed around a virtual character ("word buddy") that the child creates
 whenever no character exists, grows stronger as the child practices, and falls asleep
 after 7 days without practice.
 
-**No backend.** No API, database server, accounts, sync, telemetry, or runtime
-third-party services. All learner data lives on-device. The app is designed to be
-"Added to Home Screen" on iPad and installed as a PWA on Edge. The installed-PWA
-context is the primary usage scenario, and data durability depends on it (§8.5).
+The app is **online-only**. A child signs in with Microsoft Entra ID; content and
+learner data live in Cloudflare D1 behind a Worker API, so the same profile follows the
+identity across devices. The PWA is still installable, but there is no offline practice
+or cached-content fallback (§8.5).
 
 ---
 
@@ -33,22 +38,23 @@ context is the primary usage scenario, and data durability depends on it (§8.5)
 ### Goals
 - Make bilingual vocabulary practice short (5–10 min), repeatable, and fun for
   Chinese-speaking ESL learners aged 9–12.
-- Work fully offline after first load.
+- Work online-only, with a clear retry surface when the API is unavailable.
 - Give children ownership and motivation via a virtual character they create and grow.
 - Let children see what they have learned (Collection + Word Book) and check retention
   monthly.
-- Keep the product technically lightweight: no servers, no accounts, no sync, no
-  telemetry.
+- Keep the product technically small: one SPA, one Worker, one D1 database, no
+  third-party analytics.
 - Structure content and data so future features (phrases, speaking, stories,
   facilitator tools) can be added without redesign.
 
 ### Non-Goals (v1)
-- Multi-device sync or cloud backup.
+- Offline practice, cached content fallback, or a guest profile.
+- Multiple profiles per identity or a profile switcher.
 - Social features, leaderboards, or class/teacher dashboards.
 - Speech recognition or pronunciation scoring.
 - Native app packaging (Capacitor/React Native).
 - Parent accounts, remote dashboards, or notifications.
-- Multi-profile UI (schema remains multi-profile ready).
+- A content CMS or admin portal (Mission 3).
 - Custom word lists or JSON import.
 - Badges, Tricky Words, story mode, or timed challenges.
 
@@ -61,8 +67,9 @@ context is the primary usage scenario, and data durability depends on it (§8.5)
 | **Primary learner** | Chinese-speaking ESL child aged 9–12, roughly Cambridge Starters–Flyers level. Uses iPad (installed PWA) or desktop/Edge. |
 | **Secondary (facilitator)** | Parent or teacher who sets up the device, may export a backup, or reads the diagnostics view. Not a daily user. |
 
-The app is single-profile per device in v1. Two siblings sharing a device share one
-character and one progress record.
+One Entra identity maps to one profile. The same identity on another device sees the
+same buddy, XP, streak, progress, and settings. There is no guest mode and no profile
+switcher; two siblings need two accounts.
 
 ---
 
@@ -70,11 +77,13 @@ character and one progress record.
 
 1. Word library is static content; progress is dynamic per learner. Words are never
    mutated by learning.
-2. Themes are kid-chosen vocabulary topics drawn from real-world categories (the offline word
-   list's categories), never game IP. The topic count is open.
-3. Storage: IndexedDB via Dexie.js. No localStorage for progress. No SQLite.
+2. Themes are kid-chosen vocabulary topics drawn from real-world categories (the starter
+   word list's categories), never game IP. The topic count is open.
+3. Storage: Cloudflare D1 behind the Worker API. The browser keeps only the Entra
+   session, an outbox for an unsent session, and device flags; there is no IndexedDB
+   progress store.
 4. PWA + Add to Home Screen is the primary delivery model. Installation is a strong,
-   repeated prompt, not a hard gate; `navigator.storage.persist()` supports it.
+   repeated prompt, not a hard gate. The app is online-required either way.
 5. The character is created whenever no character exists, before any practice.
    Creation = name + avatar from built-in avatars.
 6. The 7-day dormancy is a feature: the character falls asleep after 7 days without
@@ -86,22 +95,30 @@ character and one progress record.
    **Collection** (countable, filterable) and **Word Book** (illustrated,
    mastered-only).
 9. A single unified **Care Token** covers both streak freeze and character care.
-10. A JSON export exists as an optional facilitator tool. It is not the primary
-    data-protection mechanism; installation + `persist()` is.
+10. A JSON export exists as an optional facilitator tool. It is produced from the API,
+    not from a local database.
 11. Pronunciation uses the **Web Speech API** (`speechSynthesis`), with an IPA fallback.
-    No bundled audio files in v1. Local speech voices work offline; if none is
-    available, the app shows IPA and substitutes a non-audio mode.
+    No bundled audio files in v1. If no voice is available, the app shows IPA and
+    substitutes a non-audio mode.
 12. Word images are AI-generated, human-reviewed, and served from R2; `words.image` holds the
     URL, and an emoji/first-letter tile fills in until one exists. Buddy portraits remain bundled
     with the app.
 13. The UI and content are **fully bilingual (EN/中文)**. Chinese is the default on
     zh-CN devices; a Settings toggle switches languages.
-14. The app is hosted on **Cloudflare Pages**. Navigation uses hash routes, so every
+14. The app is hosted on **Cloudflare Pages** at `words.nioh.uk`; the API is a
+    **Cloudflare Worker** at `wordsapi.nioh.uk`. Navigation uses hash routes, so every
     route is a fragment and no server rewrite is required.
 15. **All five practice modes** ship in the MVP: picture match, word → meaning,
     spelling builder, fill-the-blank, listen & choose.
-16. Product metrics are **local counters only**, surfaced in diagnostics and included
-    in export. No telemetry or third-party analytics.
+16. Product metrics are **per-user counters in D1**, surfaced in diagnostics and
+    included in export. No telemetry or third-party analytics.
+17. Identity is **Microsoft Entra ID** through a SPA registration using authorization
+    code + PKCE and no client secret. The Entra `oid` is the only user key the API
+    stores or accepts.
+18. The API is a **Hono Worker** that validates the bearer token against the tenant
+    JWKS, enforces a CORS allowlist, and serves content with an `ETag`.
+19. **Online-only** is a product decision, not a temporary limitation: there is no
+    offline practice, and a failed call shows retry rather than cached progress.
 
 ---
 
@@ -177,7 +194,8 @@ from the comprehensive pool and from the monthly rotation. IPA is always visible
 
 ### 5.4 Session End
 
-Commit the following in a **single Dexie transaction**:
+Commit the following in **one idempotent API request**, applied as a single D1
+batch:
 
 - per-word progress and the XP earned during the session;
 - the session-completion XP (**+5**);
@@ -188,18 +206,19 @@ Then show the summary: words practiced, words mastered, XP earned, stage progres
 streak, and Care Token progress.
 
 **No per-answer commit.** Leaving mid-session shows a gentle confirmation; confirming
-discards the session. A browser kill cannot be intercepted and may lose the session;
-this is accepted.
+discards the session. If the commit request cannot reach the API, the finished session
+is kept in a small local outbox and replayed on the next boot. A browser kill before the
+session ends cannot be intercepted and may lose it; this is accepted.
 
 ### 5.5 Character Creation Gate
 
-On app open, check for a profile with a character. If none exists, route to **Character
+After sign-in, check for a profile with a character. If none exists, route to **Character
 Creation** before practice.
 
 - **Name:** free text with suggestions, maximum 16 characters. This names the buddy;
   `profile.name` defaults to the same value.
-- **Avatar:** choose one of six bundled buddy portraits; the file name is the
-  character's name (Alex, Cody, Creeper, Malenia, May, Steve).
+- **Avatar:** choose one of eight bundled buddy portraits; the file name is the
+  character's name (Alex, Cody, Creeper, Malenia, May, Radahn, Steve, Warden).
 - Confirm sets `createdAt = lastPracticeAt = now` and starts the dormancy clock.
 - Re-customization in Settings does not reset the clock.
 
@@ -221,7 +240,7 @@ Topic
         └── Word        (via pack_words, ordered by position)
 ```
 
-- **Topics are the offline categories:** Animals, The body and the face, Clothes, Colours,
+- **Topics are the starter word list's categories:** Animals, The body and the face, Clothes, Colours,
   Family & friends, Food & drink, Health, Numbers, The home, Materials, Names, Places &
   directions, and School. The list is open; content may add topics later.
 - **Packs have no fixed size.** A pack is a sub-category of about five words for one day's
@@ -235,8 +254,8 @@ Topic
 
 ### 6.2 Theme / Topic Rules
 
-- Topics are the real-world categories of the offline word list (`docs/sample_data/vocab.json`),
-  never a game genre or a game IP.
+- Topics are the real-world categories of the starter word list
+  (`docs/sample_data/vocab.json`), never a game genre or a game IP.
   - Examples: Animals, Food & drink, The home, School, Places & directions.
 - **Forbidden anywhere in content:** game names, logos, characters, or game-specific slang
   (e.g., "Minecraft," "creeper," "redstone").
@@ -349,7 +368,8 @@ Pack {
 
 ### 7.0 Character Creation
 
-- Triggered whenever no character exists (first use or data loss — see §8.4).
+- Triggered whenever a signed-in identity has no profile or character (first sign-in,
+  or a profile that no longer exists — see §8.4).
 - Fields: `characterName` (string), `avatar` (id from bundled `avatars[]`).
 - `createdAt` is set at creation and is the origin of the dormancy clock.
 - Re-customization (name, avatar) is available in Settings; it does not reset the clock.
@@ -550,50 +570,53 @@ One token type, one currency, two spend options.
 
 ## 8. Technical Architecture
 
-> **Mission 2 supersedes §8.2–§8.7:** content and user data move from Dexie to D1 behind a
-> Cloudflare Worker, and the app becomes online-required. See the
-> [Mission 2 sprint](features/00-mission-2-sprint.md) and features 22–24. Feature 25 rewrites
-> these sections into PRD v0.3.
+Mission 2 moved content and learner data from the browser to Cloudflare D1 behind a
+Worker API, and made the app online-required. The SPA is a thin client: it renders what
+the API returns and commits finished sessions back to it. See the
+[Mission 2 sprint](features/00-mission-2-sprint.md) and features 22–24.
 
 ### 8.1 Stack
 
 | Layer | Choice |
 |-------|--------|
-| App type | PWA (installable, offline-capable) |
+| App type | PWA (installable, online-only) |
 | Framework | React 19 + Vite 8 + TypeScript + Tailwind CSS 4 (promoted from `figma/`) |
-| Storage | IndexedDB via **Dexie.js 4** |
-| Content | Bundled read-only JSON behind a data-access layer |
+| Storage | Cloudflare D1 behind the Worker API; the browser keeps only the session, outbox, and device flags |
+| Content | D1, served as one bundle by `GET /v1/content` |
 | Pronunciation | **Web Speech API** + IPA fallback |
 | Routing | Hash routes (`#/home`, `#/practice`, …) |
-| Hosting | Cloudflare Pages |
-| Sync | None |
-| Backend | None |
+| Hosting | Cloudflare Pages (app) + Cloudflare Workers (API) |
+| Sync | Server-side; one profile per Entra `oid` |
+| Backend | Hono Worker on Cloudflare Workers |
 
 ### 8.2 Storage Rules
 
-- **Do not** use localStorage for progress or profiles.
-- localStorage may hold only trivial UI config; the locale lives on the profile.
-- **Do not** use SQLite/WA-SQLite.
-- Word content is bundled; only profiles, progress, metrics, and device state are
-  persisted in IndexedDB.
+- **D1 is authoritative** for content and user data. The browser is not a progress
+  store.
+- localStorage holds only the Entra session, the pending-session outbox, and device
+  flags (install status, speech availability, last boot). The locale lives on the
+  profile.
+- **Do not** use IndexedDB, Dexie, SQLite, or WA-SQLite for progress.
+- Every authenticated request carries the Entra access token. The Worker derives the
+  `oid` from the validated token and never trusts a client-supplied user id.
 
-### 8.3 Dexie Schema
+### 8.3 Data Model
 
-```js
-const db = new Dexie('WordsWizardDB');
-db.version(1).stores({
-  profiles: '++id, name, createdAt',
-  progress: '++id, profileId, wordId, status, nextReviewAt, &[profileId+wordId]',
-  metrics: '++id, profileId, name, updatedAt',
-  device: 'key', // device-level key/value: install status, persist result, counters
-});
-```
+| Group | Tables |
+|---|---|
+| Content | `topics`, `packs`, `words`, `pack_words`, `avatars`, `avatar_stages`, `content_meta` |
+| User | `users`, `profiles`, `progress`, `pack_introductions`, `sessions`, `session_metrics`, `metrics`, `metric_events` |
 
-**Profile record:**
+`users.oid` is the Entra object id and the only user key. Every user-owned table
+declares `ON DELETE cascade` to `users(oid)`. `profiles` has one row per user;
+`progress` has one row per `(user_id, word_id)`; `pack_introductions` has one row per
+`(user_id, pack_id, word_id)` and drives pack unlock.
+
+**Profile facts** (v0.2 fields, keyed by `users.oid`):
 
 ```ts
 Profile {
-  id?: number
+  userId: string                // users.oid
   name: string
   characterName: string
   avatar: string
@@ -614,12 +637,11 @@ Profile {
 }
 ```
 
-**Progress record:**
+**Progress record** is the v0.2 shape with `userId` in place of `profileId`:
 
 ```ts
 Progress {
-  id?: number
-  profileId: number
+  userId: string
   wordId: string
   status: 'new' | 'learning' | 'mastered'
   strength: number          // 0–1, drives spacing
@@ -632,85 +654,63 @@ Progress {
 }
 ```
 
-One row per `profileId` + `wordId`, enforced by the unique compound index.
+`sessions`, `session_metrics`, `metrics`, and `metric_events` carry session history and
+the counters shown in Settings. The API computes them; the client does not write an
+`oid` of its own.
 
 The Settings screen edits `Profile.locale`, `Profile.characterName`, and
 `Profile.avatar`. Install-prompt dismissal is per-session UI state and is not persisted.
 
-**Device record (not profile-scoped):**
+**Browser state (not progress):** `localStorage` holds the Entra session, the unsent
+session outbox, and device flags such as `installed`, `speechAvailable`, and
+`lastBootAt`. Sign-out clears all three.
 
-```ts
-Device {
-  key: string
-  value: unknown
-}
-```
+### 8.4 Startup
 
-Keys include `installed`, `storagePersisted`, `speechAvailable`,
-`profileAbsentAtBoot`, and `lastBootAt`.
+After sign-in, the app calls `GET /v1/me`.
 
-**Local metrics (per profile):** session starts/completions/abandons, words learned and
-mastered, Collection/Word Book opens, Monthly Reviews offered/completed, revivals
-(session vs token), stage-ups, and speech-unavailable events.
-
-### 8.4 Startup Data Check
-
-On boot, check for a profile with a character.
-
-- **Present:** normal flow.
-- **Absent:** route to Character Creation. The same copy covers first use and data loss
-  ("Let's make a new friend!"). If the app is running installed, increment
-  `profileAbsentAtBoot`; there is no network reporting.
-- Call `navigator.storage.persist()` on first launch and record the result in `device`.
-- A light post-session check verifies the profile still exists. If lost, show the
+- **Profile present:** normal flow. Boot drains the pending-session outbox before reads.
+- **Profile absent:** route to Character Creation. The same copy covers first sign-in
+  and a profile that no longer exists ("Let's make a new friend!").
+- **API unreachable or `401`:** show the retry surface or return to sign-in. A `401`
+  never falls through to Character Creation. There is no local fallback.
+- A light post-session check re-reads `/v1/me`; if the profile is gone, show the
   graceful recovery entry point rather than a blank or broken screen.
 
-### 8.5 Persistence & Data Safety (PWA-primary)
+### 8.5 Persistence & Data Safety (Online)
 
-**The installed-PWA context is the primary scenario and the foundation of data
-durability.**
-
-- **Safari's 7-day storage eviction does not apply to PWAs added to the Home Screen.**
-  WebKit exempts Home Screen web apps: they have their own usage-day counter, which
-  resets with actual app use. The 7-day cap applies to Safari tabs only.
-- **"Add to Home Screen" is a strong onboarding prompt, not a hard gate.** The app shows
-  a prominent install card after character creation with platform-specific steps,
-  explains that a Safari tab can lose progress after a week, allows dismissal once per
-  session, and re-shows it each session until installed. Practice is never blocked.
-- Installed status is detected with
-  `matchMedia('(display-mode: standalone)')` or `navigator.standalone` (iOS). If
-  detection is unreliable, the prompt errs toward showing.
-- `navigator.storage.persist()` is called on first launch and the result recorded. It is
-  a supporting defense against system storage pressure, not the primary protection.
-- Edge (desktop/Android) is Chromium-based: ample quota; eviction only under extreme
-  disk pressure.
-- Clock tampering and timezone changes are accepted: the app trusts the device clock.
-- Day boundaries use the device's local calendar day.
-- **Export Progress (JSON)** in Settings is an optional facilitator tool for device
-  migration and manual backup. Import is Phase 3.
+- **D1 is the source of truth** for content and progress. A device holds no progress
+  and cannot drift from the server.
+- The session commit is idempotent by session id. If the request fails, the finished
+  session goes into the local outbox and is replayed on the next boot; the outbox is
+  cleared when it is applied or when the user signs out.
+- A browser kill or cleared storage loses only the session in progress and the outbox;
+  it does not lose committed progress.
+- The install prompt remains a strong onboarding step, but installation is not a
+  durability requirement: the profile follows the Entra account.
+- Clock tampering and timezone changes are accepted: the client computes local day
+  boundaries from the device clock.
+- **Export Progress (JSON)** in Settings is an optional facilitator tool built from the
+  API data. Import is Phase 3.
 
 ### 8.6 Platform Notes
 
-- **iPad Safari (installed PWA):** primary target. IndexedDB supported; Home Screen web
-  app exempt from 7-day eviction; `persist()` best-effort. Web Speech voices vary by
-  device; use tap-to-hear and IPA fallback.
-- **iPad Safari (browser tab):** supported for trial use, but subject to 7-day eviction.
-  The app detects this context and prompts installation.
-- **Edge (desktop/Android):** full IndexedDB and PWA support; primary development and
-  debugging target.
+- **iPad Safari / installed PWA:** primary target. Online required. Web Speech voices
+  vary by device; use tap-to-hear and IPA fallback.
+- **Edge (desktop/Android):** primary development and debugging target.
+- **No offline mode on any platform.** A missing network shows the retry surface, not
+  cached progress.
 
-### 8.7 Offline Updates & Service Worker
+### 8.7 App Shell & Service Worker
 
-- Precache the app shell, bundled JSON, locales, and **all illustrations**
-  (~300 word images + 8 buddy portraits).
-- Image target: **WebP, ~512 px, ~20–40 KB each**, roughly 10–15 MB total. Measure first
-  load on an iPad.
-- Content and app updates ship as version bumps. A new service worker **does not**
-  silently `skipWaiting`; the app shows "A new pack is ready!" and refreshes on
-  confirmation.
-- The app must remain fully functional offline at all times after first load; no runtime
-  fetch of content or images. Pronunciation uses the browser's speech engine: local
-  voices work offline, and IPA plus a non-audio mode cover devices without one.
+- Precache the app shell only: built JS/CSS/HTML, locales, manifest, and icons. Content
+  comes from `/v1/content` and is never precached.
+- Avatar art is cache-first at runtime; word images (R2) are cache-first with a bounded
+  cache. API responses are never cached by the service worker.
+- A new service worker **does not** silently `skipWaiting`; the app shows "A new pack is
+  ready!" and refreshes on confirmation.
+- Content updates are server-side: a new `contentVersion` and `ETag` make a stale cache
+  detectable without an app rebuild. The app still needs the network to read it.
 
 ### 8.8 Internationalization
 
@@ -730,23 +730,26 @@ durability.**
 
 ### 8.9 Hosting & Deployment
 
-- **Cloudflare Pages (Free plan)**, deployed from GitHub Actions with Wrangler direct
-  upload. The app builds to `src/dist/`; that directory is the deployment root and contains
-  `index.html`, `_headers`, and the hashed assets.
+- **Cloudflare Pages** serves the SPA at `words.nioh.uk` from `src/dist/`. **Cloudflare
+  Workers Builds** deploys the API to `wordsapi.nioh.uk`.
+- Both are connected to the GitHub repository through Cloudflare's Git integration; a
+  push to `master` builds and deploys. There is no deploy workflow and no Cloudflare
+  deploy token in GitHub Actions.
+- The Worker deploy command applies pending D1 migrations before `wrangler deploy`, so
+  production cannot run ahead of its schema.
 - Hash routing means every route is a fragment (`#/home`), so `index.html` is the only
-  document the server ever returns. No SPA rewrite or `_redirects` file is used; a request
-  for a missing file returns a real 404.
+  document the server returns. No SPA rewrite or `_redirects` file is used; a missing
+  file is a real 404.
 - `_headers` (shipped from `src/public/`) carries the cache policy: hashed `assets/*`
   immutable for a year, artwork and icons for 7 days, locale JSON for 1 hour, and
   `index.html`, the service worker, and the manifest `no-cache`.
-- HTTPS is available on the default `*.pages.dev` endpoint. Custom domains are attached to
-  the Pages project with automatic TLS — no separate CDN configuration is required.
-- **CI (GitHub Actions):** pull requests run install, typecheck, tests, content validation,
-  build, and a dist check. Pushes to `master` run the same checks and then deploy the
-  prebuilt `src/dist/` with `wrangler pages deploy`.
-- The API token and account id live in GitHub Actions secrets; no credential is committed.
-  Rollback is a Cloudflare deployment rollback, or re-running the deployment workflow on an
-  older commit.
+- **CI (GitHub Actions)** runs on pull requests to `develop`: frozen install, typecheck,
+  tests, build, and dist check. A separate gated job runs the remote D1 tier when the
+  `WORDS_TEST_*` secrets exist; it never uses production credentials.
+- Rollback is a Cloudflare deployment rollback for either project. Database migrations
+  are forward-only; fix a bad migration with a new one.
+- The `words.nioh.uk` and `wordsapi.nioh.uk` custom domains are attached in Cloudflare
+  with automatic TLS. Setup is recorded in [operations.md](operations.md).
 
 ---
 
@@ -809,9 +812,9 @@ durability.**
 Kept small and optional; not the default experience.
 
 **MVP:**
-- **JSON export** for backup and device migration.
-- **Diagnostics view:** install status, `persist()` result, storage estimate, and local
-  counters.
+- **JSON export** of the signed-in profile, built from the API.
+- **Diagnostics view:** install status, content version, pending outbox count, and the
+  per-user counters.
 
 **Phase 2:**
 - Tricky Words view for the child.
@@ -831,8 +834,8 @@ No parent accounts, remote dashboard, or notifications in v1.
 - Progress data is separated from UI so new features reuse it.
 - Topic/pack groupings live in data, not code.
 - **Built-in avatars live in bundled data (`avatars[]`), not code.**
-- Storage is accessed through a `ProgressProvider` interface so a future cloud sync can
-  replace Dexie without touching UI code.
+- Storage is accessed through a `ProgressProvider` interface; the API provider is one
+  implementation, so transport changes do not touch screen code.
 - All tunables live in a single config module:
 
 ```ts
@@ -878,9 +881,9 @@ export const config = {
 | Phase | Scope |
 |-------|-------|
 | **MVP** | Character creation gate; strong install prompt; topics and day-sized packs with no fixed counts; bilingual content and UI; all 5 practice modes; per-pack word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); D1 content and user storage; Web Speech + IPA fallback; word images (R2 URL) with emoji fallback and 8 buddy portraits; JSON export; per-user metrics and diagnostics; Cloudflare Pages and Worker hosting; hash routing; Vitest domain, model, database, and host tiers. |
-| **Phase 2** | Badges; multi-profile switcher UI; Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
+| **Phase 2** | Badges; Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
 | **Phase 3** | Facilitator panel (focus list, custom words, import); story mode; timed challenges; speaking practice; phrases and sentences; native packaging. |
-| **Future** | Co-op/team mode; parent dashboard (requires a backend); cloud sync. |
+| **Future** | Co-op/team mode; parent/teacher reporting over the Mission 3 admin portal. |
 
 ---
 
@@ -892,7 +895,7 @@ export const config = {
 | 2 | Care Token cadence | +1 per 5 completed sessions, cap 3; freeze and quick wake. |
 | 3 | Session length | 5 new words (intro + spelling) + one comprehensive exercise per word = 5 unique words / 15 screens, about 10 min. The daily review block is withdrawn. Supersedes feature 18's 10-new / 65-screen shape in feature 20. |
 | 4 | Word audio | Web Speech API + IPA fallback; no bundled audio. |
-| 5 | Topic count | Superseded by decision 18: topics are the offline categories, and packs have no fixed size or count. |
+| 5 | Topic count | Superseded by decision 18: topics are the starter word list's categories, and packs have no fixed size or count. |
 | 6 | ESL support | Bilingual EN + 中文, full UI and content; toggle; zh default on zh-CN. |
 | 7 | iPad onboarding | Strong, repeated install prompt; never a hard gate. |
 | 8 | Never-practiced dormancy | In-app only; no notifications. |
@@ -901,48 +904,51 @@ export const config = {
 | 11 | Monthly Review cadence | Rolling 28 days; ≥5 learned; cap 20. |
 | 12 | Mastery demotion | Strength < 0.5. |
 | 13 | Repository visibility | Child-facing; facilitator sees export and diagnostics only. |
-| 14 | Multi-profile | Single-profile UI; `profileId` retained in schema. |
+| 14 | Multi-profile | One profile per Entra identity; no profile switcher. `users.oid` is the key. |
 | 15 | Streak reset | 7-day grace; token covers one missed day; best streak kept. |
 | 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
 | 17 | Daily word limit | One five-word set introduced per local day **per pack**; after it commits, the same five can be practised again until midnight, but no new words from that pack. A pack larger than five continues on later days. Feature 20; per-pack scope in decision 18. |
 | 18 | Vocabulary model (Mission 2, 2026-10-29) | Four D1 tables (`topics`, `packs`, `words`, `pack_words`); one row per headword; a word may belong to packs of several topics and is introduced anew per pack; sequential pack unlock when the previous pack is fully introduced; soft delete via `archivedAt`; no fixed counts; `image` is a URL (R2 later) with `emoji` fallback. Replaces the bundled JSON and 20-slot shape. |
+| 19 | Identity (Mission 2, 2026-10-29) | Microsoft Entra ID SPA registration with authorization code + PKCE and no client secret. The `oid` is the only user key; email, display name, and photo are not stored. |
+| 20 | Online-only (Mission 2, 2026-10-30) | No offline practice, cached content fallback, or guest profile. A failed API call shows retry. Installation remains a prompt, not a durability gate. |
+| 21 | API (Mission 2, 2026-10-29) | Hono Worker; bearer token validated against the tenant JWKS; CORS allowlist; versioned content with `ETag`; idempotent session commit; one D1 batch per commit. |
+| 22 | Deployment (Mission 2, 2026-10-30) | Cloudflare Git integration for Pages and Workers Builds. The Worker deploy applies migrations first. CI checks but never deploys, and the remote D1 job uses only `WORDS_TEST_*` credentials. |
 
-**Additional v0.2 decisions:**
+**Additional v0.3 decisions:**
 
 - Stage and vitality are derived; no stored duplicates.
 - Learned status begins on the first exercise attempt in a session that completes.
-- Progress commits at session end; confirm-on-exit; browser-kill loss accepted.
+- Progress commits at session end; confirm-on-exit; an unsent commit waits in the local
+  outbox; a browser kill before the session ends is accepted.
 - All five practice modes ship.
 - One My Words screen with Collection and Word Book tabs.
-- Hash routing; Cloudflare Pages hosting.
-- Local counters only; no telemetry.
-- Vitest domain and content validation; manual E2E.
+- Hash routing; Pages + Worker hosting.
+- Per-user counters in D1; no telemetry.
+- Vitest unit, model, database, host, and remote tiers; manual E2E.
 - Flat bilingual word schema.
 - Content is AI-assisted and teacher-reviewed.
 
 ---
 
-## 15. Success Metrics (local-only)
+## 15. Success Metrics (per-user)
 
-The no-backend, no-telemetry design means aggregate rates cannot be computed centrally.
-The MVP records per-device counters and exports them; product decisions rely on moderated
-testing and exported evidence.
+There is no telemetry pipeline: counters live in D1 per `oid` and are shown only to the
+signed-in user. Product decisions rely on moderated testing and exported evidence.
 
-| Local counter | What it tells you |
+| Per-user counter | What it tells you |
 |---|---|
 | Session starts / completions / abandons | Loop completion and mid-session drop-off. |
-| Install status and `persist()` result | Durability risk on the device. |
+| Install status and content version | Whether the device is current and running installed. |
 | Words learned / mastered per week | Progression pace. |
 | Stage-ups and days-to-stage | Whether the XP curve fits. |
 | Collection and Word Book opens | Whether "seeing what you earned" motivates. |
 | Monthly Reviews offered / completed | Checkpoint engagement. |
 | Strength delta after Monthly Review | Whether the review catches decay in time. |
 | Revivals (session vs quick wake) | Dormancy recovery rate. |
-| Profile absent at boot (installed only) | Abnormal data loss. |
 | Speech unavailable | Web Speech coverage on real devices. |
 
-**Not measurable in v1:** global install rate, retention cohorts, cross-device metrics,
-or class/teacher reporting.
+**Not measurable in v1:** global install rate, retention cohorts, and class/teacher
+reporting. There is no aggregate view across users.
 
 ---
 
@@ -952,7 +958,8 @@ or class/teacher reporting.
 
 | # | Screen | Purpose | Entry points | Phase |
 |---|--------|---------|--------------|-------|
-| 1 | **Character Creation** | Name + avatar | No profile at boot | MVP |
+| 0 | **Sign-in** | Microsoft Entra sign-in | Boot; expired session | MVP |
+| 1 | **Character Creation** | Name + avatar | No profile after sign-in | MVP |
 | 2 | **Install Prompt** | Add to Home Screen | After creation; each boot until installed | MVP |
 | 3 | **Topic Picker** | Choose a topic | After install; Home "change topic" | MVP |
 | 4 | **Home** | Hub: character, streak, today's session, cards | After setup / boot | MVP |
@@ -968,7 +975,7 @@ or class/teacher reporting.
 | 14 | **Sleepy / Sleeping** | Gentle wake screen + how to wake | Auto when `state !== 'awake'` | MVP |
 | 15 | **Monthly Review Intro** | "20 words want a visit" | Home card, when due | MVP |
 | 16 | **Monthly Review Summary** | Strong vs needs-a-look counts | End of Monthly Review | MVP |
-| 17 | **Settings** | Locale toggle, re-customize, export, install status, diagnostics | Home gear | MVP |
+| 17 | **Settings** | Locale toggle, re-customize, export, install status, diagnostics, sign out | Home gear | MVP |
 | 18 | **Tricky Words** | Auto-populated from mistakes | Home card or Settings | Phase 2 |
 | 19 | **Facilitator Panel** | Focus list, custom words, import | Settings (gated) | Phase 3 |
 
@@ -978,9 +985,12 @@ There is no profile switcher in v1.
 
 ```
 Boot
- └─ profile exists? ──no──> [1] Character Creation ──> [2] Install Prompt
-                    │                                      └──> [3] Topic Picker ──> [4] Home
-                    └─yes─> [4] Home
+ └─ signed in? ──no──> [0] Sign-in
+                    │
+                    └─yes─> GET /v1/me
+                              ├─ profile? ──no──> [1] Character Creation ──> [2] Install Prompt
+                              │                                      └──> [3] Topic Picker ──> [4] Home
+                              └─yes─> [4] Home
 
 #/home ──> #/topics
         ──> #/session ──> #/session/intro ──> #/session/exercise ⇄ feedback
@@ -988,10 +998,11 @@ Boot
         ──> #/words?tab=collection | #/words?tab=wordbook ──> #/words/:wordId ──> back
         ──> #/character
         ──> #/review (when due) ──> #/review/summary
-        ──> #/settings ──> export / diagnostics / re-customize / locale
+        ──> #/settings ──> export / diagnostics / re-customize / locale / sign out
 ```
 
-Hash routes only; no server rewrite.
+Hash routes only; no server rewrite. Signing out or a rejected token returns to `[0]`
+Sign-in; it never falls through to Character Creation.
 
 ### A.3 Empty states
 
@@ -1010,6 +1021,7 @@ Hash routes only; no server rewrite.
 
 ### A.4 Modal / blocking rules
 
+- **[0] Sign-in** — blocking; the app cannot load a profile without a token.
 - **[1] Character Creation** — blocking; no way past without creating.
 - **[2] Install Prompt** — prominent; dismissible once per session; re-shown each
   session until installed; never blocks practice.

@@ -1,8 +1,9 @@
 # Mission 2 — Sprint Goal: "Your buddy follows you"
 
-> Status: **Planned — documentation only. No Mission 2 code has been written.**
-> Source of truth: [docs/PRD.md](../PRD.md) v0.2 as amended by this mission. Where the PRD and a
-> Mission 2 feature doc disagree, the Mission 2 doc wins until PRD v0.3 lands in feature 25.
+> Status: **In progress — features 21–24 are merged; feature 25 is in review; production
+> provisioning and deployment remain with the operator.**
+> Source of truth: [docs/PRD.md](../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
+> disagree, the Mission 2 doc wins.
 > Baseline: Mission 1 (features 01–20) is shipped on `develop`; feature 17 content production
 > continues inside this mission.
 
@@ -56,29 +57,29 @@ Browser (PWA, words.nioh.uk)
       auth-code + PKCE, and a silent renew keeps the session alive until sign-out.
 - [ ] A fresh identity gets no profile until character creation; the same identity on another device
       gets the same profile, XP, streak, progress, and settings.
-- [ ] Content is fetched from `GET /v1/content`; bundled content JSON is gone; `ETag` / `304`
+- [x] Content is fetched from `GET /v1/content`; bundled content JSON is gone; `ETag` / `304`
       works; every active topic, pack, word, and avatar row is served from D1, and archived rows
       are not.
-- [ ] A word introduced in one pack is introduced anew in another; word mastery stays shared, and
+- [x] A word introduced in one pack is introduced anew in another; word mastery stays shared, and
       the next pack in a topic unlocks only when every word of the previous pack has been
       introduced for that user.
-- [ ] A finished session commits exactly once in one D1 batch; replaying the same session id leaves
+- [x] A finished session commits exactly once in one D1 batch; replaying the same session id leaves
       every counter unchanged; a failed commit leaves no partial rows.
-- [ ] A commit that cannot reach the API is parked in a `localStorage` outbox and applied once on
+- [x] A commit that cannot reach the API is parked in a `localStorage` outbox and applied once on
       reconnect; the UI tells the child it is waiting rather than losing the session.
-- [ ] The app boots online-only: no network or no API produces a clear retry screen, not a partial
+- [x] The app boots online-only: no network or no API produces a clear retry screen, not a partial
       app.
-- [ ] Local Dexie data is deleted once on first load of the new version, with a one-time notice.
-- [ ] A signed-in child can re-customise the buddy, change topic and locale, export their data, and
+- [x] Local Dexie data is deleted once on first load of the new version, with a one-time notice.
+- [x] A signed-in child can re-customise the buddy, change topic and locale, export their data, and
       read a short bilingual privacy note. There is no delete or reset control.
 - [ ] `wordsapi.nioh.uk/health` answers; `words.nioh.uk` serves the app; CORS rejects an unlisted
       origin; a real Entra token is accepted and a forged one is rejected.
 - [ ] The Worker and page deploy from Workers Builds / Pages Git integration with no Cloudflare
       deploy secret in GitHub.
-- [ ] Tests follow the project's tier model: unit, model, local D1 database, host, and a
+- [x] Tests follow the project's tier model: unit, model, local D1 database, host, and a
       credential-gated remote D1 run. The content-integrity gate assembles the bundle from D1 and
       runs `validateContent`.
-- [ ] PRD v0.3, `docs/operations.md`, `docs/privacy.md`, the README, and this sprint index describe
+- [x] PRD v0.3, `docs/operations.md`, `docs/privacy.md`, the README, and this sprint index describe
       what actually shipped; Mission 1 docs are marked historical.
 - [ ] Feature 17's final-dataset gate passes against D1 before any public release.
 
@@ -116,8 +117,8 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 22 | [D1 content store & content API](archive/22-d1-content-store.md) | Done | 21 |
 | 23 | [User profile, progress & session commit](archive/23-user-data-api.md) | Done | 21, 22 |
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
-| 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | Planned | 21–24 |
-| 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress | 22 |
+| 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
+| 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
 
@@ -151,15 +152,17 @@ Phase 0  restructure (chore PR)
   until feature 24 unifies them as Entra `oid` strings.
 - **Only 24 makes `develop` deployable again.** It is the first merge where sign-in, content, and
   progress all come from the real services.
-- **25 is the only feature that applies migrations to the production database and creates the
-  custom domains.** Earlier features verify against local D1 and the credential-gated remote test
-  database, never production.
-- **No branch preview environments.** Pages previews stay off; `delete-preview.yml` stays as a
-  no-op safety net until feature 25 decides its final form.
+- **The operator owns production provisioning.** Feature 25 records the Worker, Pages, D1, Entra,
+  and Workers Builds contract and extends the smoke check, but it does not create databases,
+  domains, or a Git connection. Earlier features verify against local D1 and the credential-gated
+  remote test database, never production.
+- **No branch preview environments.** Pages previews stay off; `delete-preview.yml` is the one
+  workflow allowed account credentials, and only to delete preview deployments after a merge.
 - **Feature 17 must pass the final gate before release.** Mission 2 is functional with the current
-  dev dataset, but it is not the product until the D1 content set is complete and validated.
-- **Mission 1 docs are historical.** The PRD's "no backend / no accounts / offline" sections are
-  superseded here; feature 25 rewrites them. Until then, cite this sprint and the feature docs.
+  empty D1 vocabulary, but it is not the product until the D1 content set is complete and
+  validated.
+- **Mission 1 docs are historical.** The archived Mission 1 sprint and PRD v0.2's "no backend / no
+  accounts / offline" posture are superseded by PRD v0.3 and this sprint.
 
 ## Out of scope
 

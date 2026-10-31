@@ -18,34 +18,40 @@ Connect the Pages project to `RhaegarC/words-wizard` with these settings:
 | Build environment | Node 22, pnpm 10 |
 | Preview deployments | Off |
 
-Production URL: <https://words-wizard.pages.dev>. Attach `words.nioh.uk` under **Custom domains**;
-TLS is automatic.
+Production URL: <https://words.nioh.uk>. Attach the custom domain under **Custom domains**; TLS
+is automatic.
 
-No environment variables are needed today. Feature 24 adds the API base URL — set
-`VITE_API_BASE_URL=https://wordsapi.nioh.uk` in **Settings → Environment variables → Production**
-when that lands.
+Set these in **Settings → Environment variables → Production** for the build:
+
+- `VITE_ENTRA_CLIENT_ID` — the SPA application (client) id
+- `VITE_ENTRA_TENANT_ID` — the Entra tenant id
+- `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
+- `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
+
+They are public configuration; there is no client secret. The matching Worker vars and the D1
+database are in [worker.md](worker.md); the full topology is in [operations.md](../operations.md).
 
 Do not add a deployment workflow or a `CLOUDFLARE_API_TOKEN` secret: the Git integration owns
 deployment, and `src/page/scripts/deployment-config.test.ts` asserts it.
 
 ## Deploy
 
-1. Open a pull request against `develop`. CI runs `typecheck`, `worker:typecheck`, `test`,
-   `build`, and `check:dist`.
+1. Open a pull request against `develop`. CI runs `typecheck`, `test`, `build`, and
+   `check:dist`.
 2. Merge the pull request, then promote `develop` → `master`. The merge into `master` is the
    release action.
 3. Pages rebuilds automatically. Watch it under **Workers & Pages → words-wizard → Deployments**.
-4. Verify the deployed build from the repository:
+4. Verify the deployed build and its API from the repository:
 
    ```bash
    cd src
-   pnpm check:deploy https://words.nioh.uk
+   EXPECTED_CONTENT_VERSION=0.3.0 pnpm check:deploy
    ```
 
-   It fetches `/`, one hashed asset, and one image, and asserts their status, content type, and
-   cache headers.
+   It checks the Pages document and a hashed asset, the Worker `/health`, the content version
+   and ETag, the allowed CORS origin, and that an unlisted origin gets no CORS header.
 
 ## Rollback
 
 **Workers & Pages → words-wizard → Deployments** → pick the previous successful deployment →
-**Rollback**. The page holds no server-side state, so a rollback needs nothing else.
+**Rollback**. The page stores no learner data, so D1 is unaffected by an app rollback.

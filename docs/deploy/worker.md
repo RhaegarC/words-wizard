@@ -15,8 +15,8 @@ deployment workflow and no Cloudflare deploy token are involved.
 
 2. Put the id into `src/worker/wrangler.jsonc` at `d1_databases[0].database_id`. The committed
    value is a placeholder, and a deploy against it fails.
-3. Replace the `REPLACE_WITH_*` Entra values in the same file. Feature 25 records the real tenant
-   id, client id, issuer, and JWKS URL.
+3. Replace the `REPLACE_WITH_*` Entra values in the same file. The tenant id, API audience
+   (`EXPECTED_AUDIENCE`), issuer, and JWKS URL are the values in [operations.md](../operations.md).
 4. Confirm `nioh.uk` is an active zone in the account: the `routes` entry attaches
    `wordsapi.nioh.uk` at deploy time.
 
@@ -48,7 +48,15 @@ Workers Builds is pre-authenticated by Cloudflare. Do not add a GitHub secret fo
 
 1. Open a pull request against `develop`, merge it, then promote `develop` → `master`.
 2. The merge into `master` triggers a build: install → apply D1 migrations → `wrangler deploy`.
-3. Verify:
+3. Verify with the post-deploy check, which covers Pages and the Worker together:
+
+   ```bash
+   cd src
+   EXPECTED_CONTENT_VERSION=0.3.0 pnpm check:deploy
+   ```
+
+   It also checks the Worker `/health`, the content version and ETag, and both the allowed and
+   an unlisted CORS origin. For the raw responses:
 
    ```bash
    curl https://wordsapi.nioh.uk/health

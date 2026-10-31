@@ -4,9 +4,15 @@ Feature 17 requires a Chinese-speaking English teacher to read every record for
 level, natural English, natural Chinese, and age-appropriateness before the
 dataset can be marked `final`. This file records that sign-off.
 
-**Craft & Build is reviewed and signed off. Explore & Discover is authored but
-not yet reviewed.** Do not change `content-meta.json` to `dataset: "final"`
-until every authored pack has a reviewer and a date.
+> **Retired on 2026-10-30.** The entries below are sign-offs for the Mission 1 JSON pilot
+> (Craft & Build, Explore & Discover). Those records were never moved to D1, and the current
+> topic model does not include those topics. **No row in this file approves a D1 vocabulary
+> row.** When feature 17 authors D1 content, replace this record with sign-offs for the new
+> topics and packs.
+
+**Craft & Build was reviewed and signed off in the retired JSON pilot. Explore &
+Discover was authored but not reviewed.** The old `content-meta.json` was never moved to D1;
+do not mark anything `final` until every authored D1 pack has a reviewer and a date.
 
 ## Craft & Build scope
 
