@@ -19,6 +19,7 @@ import {
   type AuthConfig,
 } from "./config"
 import { createMsal } from "./msal"
+import { createSessionLoader } from "./session"
 import {
   NoAccountError,
   createTokenGetter,
@@ -48,6 +49,13 @@ export interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+/**
+ * One MSAL client and one redirect handling per page, shared by StrictMode's
+ * double mount. The redirect response is single-use, so a second client would
+ * consume it and leave the app signed out; see `auth/session.ts`.
+ */
+const loadSession = createSessionLoader((config) => createMsal(config))
 
 function toAccount(account: AccountInfo | null): AccountLike | null {
   if (account === null) {
@@ -94,21 +102,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const client = createMsal(config)
+    const session = loadSession(config)
     let active = true
-    setMsal(client)
 
-    void client
-      .initialize()
-      .then(() => client.handleRedirectPromise())
-      .then(async (result) => {
-        const signedIn =
-          result?.account ?? client.getActiveAccount() ?? client.getAllAccounts()[0] ?? null
+    // The loader only shapes the redirect and account calls; the object is the
+    // full client the sign-in and token helpers use.
+    setMsal(session.client as PublicClientApplication)
 
-        if (signedIn !== null) {
-          client.setActiveAccount(signedIn)
-        }
-
+    void session.ready
+      .then((signedIn) => {
         if (!active) {
           return
         }
