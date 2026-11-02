@@ -161,10 +161,11 @@ The app uses **Vitest** across the tiers in the project's testing standard:
   `WORDS_TEST_CLOUDFLARE_API_TOKEN`, `WORDS_TEST_CLOUDFLARE_ACCOUNT_ID`, and
   `WORDS_TEST_D1_DATABASE_ID` are set. It never reads a production `CLOUDFLARE_API_TOKEN`.
 - **Doc-assertion** — the deployment and documentation contract in
-  `src/page/scripts/deployment-config.test.ts`.
+  `src/page/test/scripts/deployment-config.test.ts`.
 
-Tests live beside the code as `src/page/**/*.test.ts`, `src/shared/**/*.test.ts`, and
-`src/worker/**/*.test.ts`. The database and remote tiers skip visibly when their engine or
+Tests live in each area's `test/` folder, mirroring the code they exercise:
+`src/page/test/**/*.test.ts`, `src/shared/test/**/*.test.ts`, and
+`src/worker/test/**/*.test.ts`. The database and remote tiers skip visibly when their engine or
 credentials are unavailable; a skip is reported, not silent.
 
 **Manual end-to-end checks** on iPad Safari and Edge remain the tier for install, Entra sign-in,

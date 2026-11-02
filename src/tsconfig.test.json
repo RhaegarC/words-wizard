@@ -2,8 +2,8 @@
   "extends": "./tsconfig.base.json",
   "include": [
     "page/vite-env.d.ts",
-    "page/**/*.test.ts",
-    "shared/**/*.test.ts",
-    "worker/**/*.test.ts"
+    "page/test/**/*.test.ts",
+    "shared/test/**/*.test.ts",
+    "worker/test/**/*.test.ts"
   ]
 }

@@ -15,9 +15,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: [
-      "page/**/*.test.ts",
-      "shared/**/*.test.ts",
-      "worker/**/*.test.ts",
+      "page/test/**/*.test.ts",
+      "shared/test/**/*.test.ts",
+      "worker/test/**/*.test.ts",
     ],
     // Local-calendar day math must be proven off UTC and across both DST
     // transitions; a UTC run would not exercise either.
