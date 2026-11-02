@@ -5,4 +5,4 @@ Bugs are tracked separately from features. One file per bug; resolved bugs move 
 
 | # | Bug | Severity | Status |
 |---|-----|----------|--------|
-| 01 | [Microsoft redirect sign-in never completes](01-microsoft-redirect-signin.md) | Normal | In review — PR pending |
+| 01 | [Microsoft redirect sign-in never completes](01-microsoft-redirect-signin.md) | Normal | In review — [PR #65](https://github.com/RhaegarC/words-wizard/pull/65) |

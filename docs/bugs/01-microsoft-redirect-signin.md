@@ -1,6 +1,6 @@
 # Bug 01 — Microsoft redirect sign-in never completes
 
-> Severity: Normal · Status: In review — PR pending
+> Severity: Normal · Status: In review — PR [#65](https://github.com/RhaegarC/words-wizard/pull/65)
 > Reported: 2026-11-02 · Feature: 24 (client online integration)
 
 ## Summary
