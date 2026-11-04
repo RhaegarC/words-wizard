@@ -12,7 +12,12 @@ import type { AccountInfo, PublicClientApplication } from "@azure/msal-browser"
 import { clearContent } from "../content"
 import { configureProgressProvider } from "../api/provider"
 import { Outbox } from "../api/outbox"
-import { accountDisplayName, accountOid, type AccountLike } from "./account"
+import {
+  accountDisplayName,
+  accountOid,
+  toAccountLike,
+  type AccountLike,
+} from "./account"
 import {
   AuthConfigError,
   authConfigFromEnv,
@@ -57,21 +62,6 @@ const AuthContext = createContext<AuthContextValue | null>(null)
  */
 const loadSession = createSessionLoader((config) => createMsal(config))
 
-function toAccount(account: AccountInfo | null): AccountLike | null {
-  if (account === null) {
-    return null
-  }
-
-  return {
-    localAccountId: account.localAccountId,
-    idTokenClaims: (account.idTokenClaims ?? undefined) as
-      | Record<string, unknown>
-      | undefined,
-    name: account.name,
-    username: account.username,
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [msal, setMsal] = useState<PublicClientApplication | null>(null)
   const [config] = useState<AuthConfig | null>(() => {
@@ -115,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        setAccount(toAccount(signedIn))
+        setAccount(toAccountLike(signedIn))
         setStatus(signedIn === null ? "signed-out" : "signed-in")
       })
       .catch((error: unknown) => {
@@ -172,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return createTokenGetter(
       {
-        getActiveAccount: () => toAccount(msal.getActiveAccount()),
+        getActiveAccount: () => toAccountLike(msal.getActiveAccount()),
         acquireTokenSilent: (request) =>
           msal.acquireTokenSilent({
             account: request.account as AccountInfo,

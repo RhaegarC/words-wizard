@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { accountDisplayName, accountOid } from "../../auth/account"
+import {
+  accountDisplayName,
+  accountOid,
+  toAccountLike,
+} from "../../auth/account"
 
 describe("accountOid", () => {
   it("reads the Entra object id from the ID token claims", () => {
@@ -30,6 +34,43 @@ describe("accountOid", () => {
 
   it("returns null without an account", () => {
     expect(accountOid(null)).toBeNull()
+  })
+})
+
+describe("toAccountLike", () => {
+  const msalAccount = {
+    homeAccountId: "uid.utid",
+    environment: "login.microsoftonline.com",
+    tenantId: "utid",
+    localAccountId: "uid",
+    username: "mia@example.test",
+    name: "Mia Chen",
+    idTokenClaims: { oid: "oid-1" },
+  }
+
+  /**
+   * `acquireTokenSilent` derives its cache key from `homeAccountId` and
+   * matches the stored credentials by `environment` and `tenantId`. An
+   * account object without them makes the SDK throw after a successful
+   * redirect, which the app reports as the generic boot error.
+   */
+  it("keeps the fields MSAL uses to find cached credentials", () => {
+    expect(toAccountLike(msalAccount)).toMatchObject({
+      homeAccountId: "uid.utid",
+      environment: "login.microsoftonline.com",
+      tenantId: "utid",
+    })
+  })
+
+  it("still exposes the identity the UI needs", () => {
+    const account = toAccountLike(msalAccount)
+
+    expect(accountOid(account)).toBe("oid-1")
+    expect(accountDisplayName(account)).toBe("Mia Chen")
+  })
+
+  it("returns null without an account", () => {
+    expect(toAccountLike(null)).toBeNull()
   })
 })
 
