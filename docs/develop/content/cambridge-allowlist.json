@@ -1,0 +1,9751 @@
+{
+  "source": {
+    "file": "docs/sample_data/739104-starters-movers-flyers-word-list-2025.pdf",
+    "title": "Pre A1 Starters, A1 Movers and A2 Flyers Wordlists",
+    "version": "2025"
+  },
+  "levels": {
+    "1": "Pre A1 Starters",
+    "2": "A1 Movers",
+    "3": "A2 Flyers"
+  },
+  "words": [
+    {
+      "text": "a",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "about",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "add",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "afternoon",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "again",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "alien",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "alphabet",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "an",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "and",
+      "level": 1,
+      "partsOfSpeech": [
+        "conjunction"
+      ]
+    },
+    {
+      "text": "angry",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "animal",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "answer",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "apartment",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK flat"
+    },
+    {
+      "text": "apple",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "arm",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "armchair",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ask",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "at",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "baby",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "badminton",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bag",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ball",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "balloon",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "banana",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "baseball",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "baseball cap",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "basketball",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "as sports equipment"
+    },
+    {
+      "text": "bath",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bathroom",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "be",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "beach",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bean",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bear",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "beautiful",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "bed",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bedroom",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bee",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "behind",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "between",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "big",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "bike",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bird",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "birthday",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "black",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "blue",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "board",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "board game",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "boat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "body",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "book",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bookcase",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bookshop",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "boots",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bounce",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "box",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "boy",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bread",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "breakfast",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "brother",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "brown",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "burger",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bus",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "but",
+      "level": 1,
+      "partsOfSpeech": [
+        "conjunction"
+      ]
+    },
+    {
+      "text": "bye",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "cake",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "camera",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "can",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "candy",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK sweet(s)"
+    },
+    {
+      "text": "car",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "carrot",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "catch",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "e.g. a ball"
+    },
+    {
+      "text": "chair",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "chicken",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "child/children",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "chips",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US fries"
+    },
+    {
+      "text": "chocolate",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "choose",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "clap",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "class",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "classmate",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "classroom",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "clean",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "verb"
+      ]
+    },
+    {
+      "text": "clock",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "close",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "closed",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "clothes",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "coconut",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "colour",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ],
+      "note": "US color"
+    },
+    {
+      "text": "come",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "complete",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "computer",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cool",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "correct",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "count",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "cousin",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cow",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "crayon",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "crocodile",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cross",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "cupboard",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dad",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "day",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "desk",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dining room",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "dinner",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dirty",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "do",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "dog",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "doll",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "donkey",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "don’t worry",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "door",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "double",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "draw",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "drawing",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dress",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "drink",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "drive",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "duck",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ear",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "eat",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "egg",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "elephant",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "end",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "English",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "enjoy",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "eraser",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK rubber"
+    },
+    {
+      "text": "evening",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "example",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "eye",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "face",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "family",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fantastic",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "father",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "favourite",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "note": "US favorite"
+    },
+    {
+      "text": "find",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "fish",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "s + pl"
+    },
+    {
+      "text": "fishing",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "flat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US apartment"
+    },
+    {
+      "text": "floor",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "flower",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fly",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "food",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "foot/feet",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "football",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US soccer"
+    },
+    {
+      "text": "for",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "friend",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fries",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK chips"
+    },
+    {
+      "text": "frog",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "from",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "fruit",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fun",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "funny",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "game",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "garden",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "get",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "giraffe",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "girl",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "give",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "glasses",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "go",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "go to bed",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "go to sleep",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "goat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "good",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "goodbye",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "grandfather",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grandma",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grandmother",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grandpa",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grape",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "gray",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "note": "UK grey"
+    },
+    {
+      "text": "great",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "green",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "grey",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "note": "US gray"
+    },
+    {
+      "text": "guitar",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hair",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hall",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hand",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "handbag",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "happy",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "hat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "have",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "have got",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "he",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "head",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "helicopter",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hello",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "her",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "here",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "hers",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "hi",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "him",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "hippo",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "his",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "hit",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "hobby",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hockey",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hold",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "home",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "adverb"
+      ]
+    },
+    {
+      "text": "hooray",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "horse",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "house",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "how",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "how many",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "how old",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "I",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "ice cream",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "in",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "in front of",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "it",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "its",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "jacket",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "jeans",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "jellyfish",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "juice",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "jump",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "keyboard",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "computer"
+    },
+    {
+      "text": "kick",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "kid",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kitchen",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kite",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kiwi",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "know",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "lamp",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "learn",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "leg",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "lemon",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "lemonade",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "lesson",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "let’s",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "letter",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "as in alphabet"
+    },
+    {
+      "text": "like",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition",
+        "verb"
+      ]
+    },
+    {
+      "text": "lime",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "line",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "listen",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "live",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "living room",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "lizard",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "long",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "look",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "look at",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "lorry",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US truck"
+    },
+    {
+      "text": "a lot",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb",
+        "pronoun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "a lot of",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "lots",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "lots of",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "love",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "lunch",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "make",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "man/men",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mango",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "many",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "mat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "me",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "me too",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "meat",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "meatballs",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "milk",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mine",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "mirror",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Miss",
+      "level": 1,
+      "partsOfSpeech": [
+        "title"
+      ]
+    },
+    {
+      "text": "monkey",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "monster",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "morning",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mother",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "motorbike",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mouse/mice",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mouse",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "computer"
+    },
+    {
+      "text": "mouth",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Mr",
+      "level": 1,
+      "partsOfSpeech": [
+        "title"
+      ]
+    },
+    {
+      "text": "Mrs",
+      "level": 1,
+      "partsOfSpeech": [
+        "title"
+      ]
+    },
+    {
+      "text": "mum",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "music",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "my",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective"
+      ]
+    },
+    {
+      "text": "name",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "new",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "next to",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "nice",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "night",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "no",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb",
+        "determiner"
+      ]
+    },
+    {
+      "text": "nose",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "not",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "now",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "number",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "of",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "oh",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "oh dear",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "OK",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "old",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "on",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "one",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "onion",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "open",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "verb"
+      ]
+    },
+    {
+      "text": "or",
+      "level": 1,
+      "partsOfSpeech": [
+        "conjunction"
+      ]
+    },
+    {
+      "text": "orange",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "our",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective"
+      ]
+    },
+    {
+      "text": "ours",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "page",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "paint",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "painting",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "paper",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "pardon",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "park",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "part",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pea",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pear",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pen",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pencil",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "person/people",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pet",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "phone",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "photo",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "piano",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pick up",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "picture",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pie",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pineapple",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pink",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "plane",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "play",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "playground",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "please",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "point",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "polar bear",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "poster",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "potato",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "purple",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "put",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "question",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "radio",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "read",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "really",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "red",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "rice",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ride",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "right",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "right",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "note": "as in correct"
+    },
+    {
+      "text": "robot",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "room",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "rubber",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US eraser"
+    },
+    {
+      "text": "rug",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ruler",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "run",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "sad",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "sand",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sausage",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "say",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "scary",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "school",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sea",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "see",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "see you",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "sentence",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "she",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "sheep",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "s + pl"
+    },
+    {
+      "text": "shell",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ship",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shirt",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shoe",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shop",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US store"
+    },
+    {
+      "text": "short",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "shorts",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "show",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "silly",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "sing",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "sister",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sit",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "skateboard",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "skateboarding",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "skirt",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sleep",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "small",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "smile",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "snake",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "so",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "soccer",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK football"
+    },
+    {
+      "text": "sock",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sofa",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "some",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "song",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sorry",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective",
+        "interrogative"
+      ]
+    },
+    {
+      "text": "spell",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "spider",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sport",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stand",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "start",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "stop",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "store",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK shop"
+    },
+    {
+      "text": "story",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "street",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sun",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sweet(s)",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "variants": [
+        "sweet",
+        "sweets"
+      ],
+      "note": "US candy"
+    },
+    {
+      "text": "swim",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "table",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "table tennis",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "tablet",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tail",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "take a photo/picture",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "talk",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "teacher",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "teddy",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "bear"
+    },
+    {
+      "text": "television/TV",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tell",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "tennis",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tennis racket",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "thank you",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "thanks",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "that",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "the",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "their",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective"
+      ]
+    },
+    {
+      "text": "theirs",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "them",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "then",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "there",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "these",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "they",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "thing",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "this",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "those",
+      "level": 1,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "throw",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "tick",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "tiger",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "to",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "today",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "tomato",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "too",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "toy",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "train",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tree",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "trousers",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "truck",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK lorry"
+    },
+    {
+      "text": "try",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "T-shirt",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "TV/television",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ugly",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "under prepunderstand vus",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "very",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "walk",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "wall",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "want",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "watch",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "water",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "watermelon",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wave",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "we",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "wear",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "well",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ]
+    },
+    {
+      "text": "well done",
+      "level": 1,
+      "partsOfSpeech": [
+        "discourse marker"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "what",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "where",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "which",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "white",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "who",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "whose",
+      "level": 1,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "window",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "with",
+      "level": 1,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "woman/women",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "word",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "would like",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "wow",
+      "level": 1,
+      "partsOfSpeech": [
+        "exclamation"
+      ]
+    },
+    {
+      "text": "write",
+      "level": 1,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "year",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "yellow",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "yes",
+      "level": 1,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "you",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "young",
+      "level": 1,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "your",
+      "level": 1,
+      "partsOfSpeech": [
+        "possessive",
+        "adjective"
+      ]
+    },
+    {
+      "text": "yours",
+      "level": 1,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "zebra",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "zoo",
+      "level": 1,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "above",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "address",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "afraid",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "after",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "age",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "all",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb",
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "all right",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "along",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "always",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "another",
+      "level": 2,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "any",
+      "level": 2,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "app",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "around",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "asleep",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "at",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "aunt",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "awake",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "back",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "bad",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "badly",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "balcony",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "band",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "music"
+    },
+    {
+      "text": "basement",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bat",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "be called",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "beard",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "because",
+      "level": 2,
+      "partsOfSpeech": [
+        "conjunction"
+      ]
+    },
+    {
+      "text": "before",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "below",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "best",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "better",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "blanket",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "blond(e)",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "variants": [
+        "blond",
+        "blonde"
+      ]
+    },
+    {
+      "text": "boring",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "both",
+      "level": 2,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "bottle",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bottom",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "bowl",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "brave",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "break",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "brilliant",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "bring",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "build",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "building",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bus station",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "bus stop",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "busy",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "buy",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "by",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "café",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cage",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "call",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "car park",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "careful",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "carefully",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "carry",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "catch",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "e.g. a bus"
+    },
+    {
+      "text": "CD",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "centre",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US center"
+    },
+    {
+      "text": "change",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "cheese",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cinema",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "circle",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "circus",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "city",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "city/town centre",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US center",
+      "phrase": true
+    },
+    {
+      "text": "clever",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "climb",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "cloud",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cloudy",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "clown",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "coat",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "coffee",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cold",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "come on",
+      "level": 2,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "comic",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "comic book",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "cook",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "cough",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "could",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "as in past of can for ability"
+    },
+    {
+      "text": "country",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "countryside",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cry",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "cup",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "curly",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "dance",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "dangerous",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "daughter",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dentist",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "difference",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "different",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "difficult",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "doctor",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dolphin",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "down",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "downstairs",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "dream",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "dress up",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "drive",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "driver",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "drop",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "dry",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "verb"
+      ]
+    },
+    {
+      "text": "DVD",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "earache",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "easy",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "e-book",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "elevator",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK lift"
+    },
+    {
+      "text": "email",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "every",
+      "level": 2,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "everyone",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "everything",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "exciting",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "excuse me",
+      "level": 2,
+      "partsOfSpeech": [
+        "discourse marker"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "fair",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "fall",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "famous",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "farm",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "farmer",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fat",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "feed",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "field",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "film",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ],
+      "note": "US movie"
+    },
+    {
+      "text": "film (US movie) star",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "fine",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "first",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "fish",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "fix",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "floor",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "e.g. ground, 1st, etc."
+    },
+    {
+      "text": "fly",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "forest",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Friday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "frightened",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "funfair",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "get dressed",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "get off",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "get on",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "get undressed",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "get up",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "glass",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "go shopping",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "goal",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "granddaughter",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grandparent",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grandson",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grass",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ground",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "grow",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "grown-up",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "have (got) to",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "headache",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "helmet",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "help",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "hide",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "holiday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "homework",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hop",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "hospital",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hot",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "how",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "how much",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "interrogative"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "how often",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "interrogative"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "huge",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "hundred",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hungry",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "hurt",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "ice",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ice skates",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "ice skating",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "idea",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ill",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "inside",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "noun",
+        "preposition"
+      ]
+    },
+    {
+      "text": "internet",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "into",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "invite",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "island",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "jungle",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kangaroo",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kick",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kind nkitten",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "lake",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "laptop",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "last",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "laugh",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "leaf/leaves",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "library",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "lift",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US elevator"
+    },
+    {
+      "text": "lion",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "little",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "look for",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "lose",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "loud",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "loudly",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "machine",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "map",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "market",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "matter",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mean",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "message",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "milkshake",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mistake",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "model",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Monday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "moon",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "more",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "most",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "mountain",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "moustache",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "move",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "movie",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK film"
+    },
+    {
+      "text": "must",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "naughty",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "near",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "neck",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "need",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "net",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "never",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "noise",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "noodles",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "nothing",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "nurse",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "o’clock",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "off",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "often",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "on",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "only",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "opposite",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "out",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "out of",
+      "level": 2,
+      "partsOfSpeech": [
+        "preposition"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "outside",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "noun",
+        "preposition"
+      ]
+    },
+    {
+      "text": "pair",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pancake",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "panda",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "parent",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "parrot",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "party",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pasta",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "penguin",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "picnic",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pirate",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "place",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "plant",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "plate",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "player",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pool",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pop star",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "practice",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "practise",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "present",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pretty",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "puppy",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "put on",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "quick adjquickly advquiet adjquietly",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "rabbit",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "rain",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "rainbow",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ride",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "river",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "road",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "rock",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "roller skates",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "roller skating",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "roof",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "round",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "safe",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "sail",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "salad",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sandwich",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Saturday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sauce",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "scarf",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "score",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "seat",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "second",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "send",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "shall",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "shape",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shark",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shop",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "shopping",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shopping centre",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US center",
+      "phrase": true
+    },
+    {
+      "text": "shoulder",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shout",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "shower",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sick",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "skate",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "skip",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "sky",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "slow",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "slowly",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "snail",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "snow",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "someone",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "something",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "sometimes",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "son",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "soup",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sports centre",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US center",
+      "phrase": true
+    },
+    {
+      "text": "square",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "stair(s)",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "variants": [
+        "stair",
+        "stairs"
+      ]
+    },
+    {
+      "text": "star",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "station",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stomach",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stomach-ache",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "straight",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "strong",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "Sunday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sunny",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "supermarket",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "surprised",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "sweater",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sweet",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "swim",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "swimming pool",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "swimsuit",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "take",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "take off",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "i.e. get undressed",
+      "phrase": true
+    },
+    {
+      "text": "tall",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "tea",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "teach",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "temperature",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "terrible",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "text",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "than",
+      "level": 2,
+      "partsOfSpeech": [
+        "conjunction",
+        "preposition"
+      ]
+    },
+    {
+      "text": "then",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "thin",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "think",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "third",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "thirsty",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "Thursday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ticket",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tired",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "tooth/teeth",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "toothache",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "toothbrush",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "toothpaste",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "top",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "towel",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "town",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "town/city centre",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US center",
+      "phrase": true
+    },
+    {
+      "text": "tractor",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "travel",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "treasure",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "trip",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Tuesday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "uncle",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "up",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "upstairs",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "vegetable",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "video",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "village",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wait",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "wake (up)",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "variants": [
+        "wake",
+        "wake up"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "walk",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wash",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "water",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "waterfall",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wave",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "weak",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "weather",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "website",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "Wednesday",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "week",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "weekend",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "well",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "wet",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "whale",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "when",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "conjunction",
+        "interrogative"
+      ]
+    },
+    {
+      "text": "where",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "which",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "who",
+      "level": 2,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "why",
+      "level": 2,
+      "partsOfSpeech": [
+        "interrogative"
+      ]
+    },
+    {
+      "text": "wind",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "windy",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "work",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "world",
+      "level": 2,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "worse",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "worst",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "would",
+      "level": 2,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "wrong",
+      "level": 2,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "yesterday",
+      "level": 2,
+      "partsOfSpeech": [
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "a.m.",
+      "level": 3,
+      "partsOfSpeech": [],
+      "note": "for time"
+    },
+    {
+      "text": "across",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "act",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "actor",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "actually",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "adventure",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "after",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "conjunction"
+      ]
+    },
+    {
+      "text": "ago",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "agree",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "air",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "airport",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "alone",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "already",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "also",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "amazing",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "ambulance",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "anyone",
+      "level": 3,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "anything",
+      "level": 3,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "anywhere",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "appear",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "April",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "arrive",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "art",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "artist",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "as",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "as ... as",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "astronaut",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "at the moment",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "August",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "autumn",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US fall"
+    },
+    {
+      "text": "away",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "backpack",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK rucksack"
+    },
+    {
+      "text": "bandage",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bank",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "beetle",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "before",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "conjunction"
+      ]
+    },
+    {
+      "text": "begin",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "believe",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "belt",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bicycle",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bin",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "biscuit",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US cookie"
+    },
+    {
+      "text": "bit",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "bored",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "borrow",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "bracelet",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "break",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "bridge",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "broken",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "brush",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "burn",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "business",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "businessman/woman",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "butter",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "butterfly",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "by myself",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "by yourself",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "calendar",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "camel",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "camp",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "card",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cartoon",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "castle",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cave",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "century",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cereal",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "channel",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "chat",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "cheap",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "chemist",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "’s"
+    },
+    {
+      "text": "chess",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "chopsticks",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "club",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "collect",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "college",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "comb",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "competition",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "concert",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "conversation",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cooker",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cookie",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK biscuit"
+    },
+    {
+      "text": "corner",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "costume",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "could",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "for possibility"
+    },
+    {
+      "text": "creature",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "crown",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cushion",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "cut",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "cycle",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "dark",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "date",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "as in time"
+    },
+    {
+      "text": "dear",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "note": "as in Dear Harry"
+    },
+    {
+      "text": "December",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "decide",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "deep",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "delicious",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "desert",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "design",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "designer",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "diary",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dictionary",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "dinosaur",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "disappear",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "drum",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "during",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "each",
+      "level": 3,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "eagle",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "early",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "Earth",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "east",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "elbow",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "else",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "empty",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "end",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "engine",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "engineer",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "enormous",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "enough",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "enter",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "a competition"
+    },
+    {
+      "text": "entrance",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "envelope",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "environment",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ever",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "everywhere",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "excellent",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "exclamation"
+      ]
+    },
+    {
+      "text": "excited",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "exit",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "expensive",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "explain",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "explore",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "extinct",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "factory",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fall",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK autumn"
+    },
+    {
+      "text": "fall over",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "far",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "fast",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "February",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "feel",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "festival",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fetch",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "a few",
+      "level": 3,
+      "partsOfSpeech": [
+        "determiner"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "file",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "as in open and close a file"
+    },
+    {
+      "text": "find out",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "finger",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "finish",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "fire",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fire engine",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US fire truck",
+      "phrase": true
+    },
+    {
+      "text": "fire fighter",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "fire station",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "flag",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "flashlight",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK torch"
+    },
+    {
+      "text": "flour",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fog",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "foggy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "follow",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "for",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "forget",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "fork",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "fridge",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "friendly",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "frightening",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "front",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "full",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "fur",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "furry",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "future",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "gate",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "geography",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "get to",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "glass",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "glove",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "glue",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "go away",
+      "level": 3,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "go out",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "gold",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "golf",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "group",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "guess",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "gym",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "half",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "happen",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "hard",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "hate",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "hear",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "heavy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "high",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "hill",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "history",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hole",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "honey",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hope",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "horrible",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "hotel",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "hour",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "how long",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "interrogative"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "hurry",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "husband",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "if",
+      "level": 3,
+      "partsOfSpeech": [
+        "conjunction"
+      ]
+    },
+    {
+      "text": "if you want",
+      "level": 3,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "important",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "improve",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "in a minute",
+      "level": 3,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "information",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "insect",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "instead",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "instrument",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "interested",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "interesting",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "invent",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "invitation",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "jam",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "January",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "job",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "join",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "a club"
+    },
+    {
+      "text": "journalist",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "journey",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "July",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "June",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "just",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "keep",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "key",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "kilometre",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US kilometer"
+    },
+    {
+      "text": "kind",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "king",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "knee",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "knife",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "land",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "language",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "large",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "late",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "later",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "lazy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "leave",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "left",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ],
+      "note": "as in direction"
+    },
+    {
+      "text": "let",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "letter",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "as in mail"
+    },
+    {
+      "text": "lie",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "as in lie down"
+    },
+    {
+      "text": "lift",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "ride"
+    },
+    {
+      "text": "lift",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "light",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "a little",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "determiner"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "London",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "look after",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "look like",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "lovely",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "low",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "lucky",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "magazine",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "make sure",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "manager",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "March",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "married",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "match",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "football"
+    },
+    {
+      "text": "maths",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US math"
+    },
+    {
+      "text": "May",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "may",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "meal",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mechanic",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "medicine",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "meet",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "meeting",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "member",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "metal",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "midday",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "middle",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "adjective"
+      ]
+    },
+    {
+      "text": "midnight",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "might",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "million",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "mind",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "minute",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "missing",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "mix",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "money",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "month",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "motorway",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "much",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "museum",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "necklace",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "nest",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "news",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "newspaper",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "next",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "adverb"
+      ]
+    },
+    {
+      "text": "no problem",
+      "level": 3,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "noisy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "no-one",
+      "level": 3,
+      "partsOfSpeech": [
+        "pronoun"
+      ]
+    },
+    {
+      "text": "north",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "November",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "nowhere",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "ocean",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "October",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "octopus",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "of course",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "office",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "olives",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "once",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "online",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "other",
+      "level": 3,
+      "partsOfSpeech": [
+        "determiner",
+        "pronoun"
+      ]
+    },
+    {
+      "text": "oven",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "over",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "preposition"
+      ]
+    },
+    {
+      "text": "p.m.",
+      "level": 3,
+      "partsOfSpeech": [],
+      "note": "for time"
+    },
+    {
+      "text": "pajamas",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "UK pyjamas"
+    },
+    {
+      "text": "passenger",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "past",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "preposition"
+      ]
+    },
+    {
+      "text": "path",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pepper",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "perhaps",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "photographer",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "piece",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pilot",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pizza",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "planet",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "plastic",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "platform",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pleased",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "pocket",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "police officer",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "police station",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "pond",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "poor",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "pop music",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "popular",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "post",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "post office",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "postcard",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "prefer",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "prepare",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "prize",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "problem",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "programme",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US program"
+    },
+    {
+      "text": "project",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pull",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "push",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "puzzle",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "pyjamas",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US pajamas"
+    },
+    {
+      "text": "pyramid",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "quarter nqueen nquite advquiz",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "race",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "racing",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ],
+      "note": "car; bike"
+    },
+    {
+      "text": "railway",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ready",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "remember",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "repair",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "repeat",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "restaurant",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "rich",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "right",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "right",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "as in direction"
+    },
+    {
+      "text": "ring",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "rock music",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "rocket",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "rucksack",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US backpack"
+    },
+    {
+      "text": "salt",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "same",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "save",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "science",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "scissors",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "score",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "screen",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "search",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "secret",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sell",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "September",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "several",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "shampoo",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "shelf",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "should",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "silver",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "noun"
+      ]
+    },
+    {
+      "text": "since",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "singer",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "ski",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "skyscraper",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sledge",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "smell",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "snack",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "snowball",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "snowboard",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "snowboarding",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "snowman",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "so",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "conjunction"
+      ]
+    },
+    {
+      "text": "soap",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "soft",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "somewhere",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "soon",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "sore",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "sound",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "south",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "space",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "spaceship",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "speak",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "special",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "spend",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "spoon",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "spot",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "spotted",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "spring",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stadium",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stage",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "theatre"
+    },
+    {
+      "text": "stamp",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stay",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "step",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "still",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "stone",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "storm",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "straight on",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "strange",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "strawberry",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stream",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "stripe",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "striped",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "student",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "study",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "subject",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "such",
+      "level": 3,
+      "partsOfSpeech": [
+        "determiner"
+      ]
+    },
+    {
+      "text": "suddenly",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "sugar",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "suitcase",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "summer",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sunglasses",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "sure",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "surname",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "surprise",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "swan",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "swing",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "take",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "note": "as in time e.g. it takes 20 minutes"
+    },
+    {
+      "text": "taste",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "taxi",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "team",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "telephone",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tent",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "thank",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "theatre",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US theater"
+    },
+    {
+      "text": "thousand",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "through",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "tidy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective",
+        "verb"
+      ]
+    },
+    {
+      "text": "time",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "timetable",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "toe",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "together",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "tomorrow",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "tonight",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb",
+        "noun"
+      ]
+    },
+    {
+      "text": "torch",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US flashlight"
+    },
+    {
+      "text": "tortoise",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "touch",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "tour",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "traffic",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "trainers",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "tune",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "turn",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "turn off",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "turn on",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "twice",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "tyre",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ],
+      "note": "US tire"
+    },
+    {
+      "text": "umbrella",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "unfriendly",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "unhappy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "uniform",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "university",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "unkind",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "untidy",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "until",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "unusual",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "use",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "usually",
+      "level": 3,
+      "partsOfSpeech": [
+        "adverb"
+      ]
+    },
+    {
+      "text": "view nviolin nvisit",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "volleyball",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "waiter",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "warm",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "way",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "west",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wheel",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "while",
+      "level": 3,
+      "partsOfSpeech": [
+        "conjunction"
+      ]
+    },
+    {
+      "text": "whisper",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "whistle",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "wife",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wifi",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wild",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "will",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "win",
+      "level": 3,
+      "partsOfSpeech": [
+        "verb"
+      ]
+    },
+    {
+      "text": "wing",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "winner",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "winter",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wish",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun",
+        "verb"
+      ]
+    },
+    {
+      "text": "without",
+      "level": 3,
+      "partsOfSpeech": [
+        "preposition"
+      ]
+    },
+    {
+      "text": "wonderful",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "wood",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "wool",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "worried",
+      "level": 3,
+      "partsOfSpeech": [
+        "adjective"
+      ]
+    },
+    {
+      "text": "x-ray",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    },
+    {
+      "text": "yet advyoghurt nyou’re welcome",
+      "level": 3,
+      "partsOfSpeech": [
+        "exclamation"
+      ],
+      "phrase": true
+    },
+    {
+      "text": "zero",
+      "level": 3,
+      "partsOfSpeech": [
+        "noun"
+      ]
+    }
+  ]
+}
