@@ -1,7 +1,7 @@
 # Mission 2 — Sprint Goal: "Your buddy follows you"
 
-> Status: **In progress — features 21–24 are merged; feature 25 is in review; production
-> provisioning and deployment remain with the operator.**
+> Status: **In progress — features 21–24 are merged; feature 25 is in review; feature 26's
+> design is locked; production provisioning and deployment remain with the operator.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
 > disagree, the Mission 2 doc wins.
 > Baseline: Mission 1 (features 01–20) is shipped on `develop`; feature 17 content production
@@ -118,6 +118,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 23 | [User profile, progress & session commit](archive/23-user-data-api.md) | Done | 21, 22 |
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
+| 26 | [User profile, email & role sync](26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Not started — design locked | 23, 24, 25 |
 | 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
@@ -131,6 +132,7 @@ Phase 0  restructure (chore PR)
               ├─► 23  user data API: /v1/me, profile, sessions, metrics, care
               │     └─► 24  client: MSAL, loader, API provider, outbox, Dexie removal
               │           └─► 25  domains, Workers Builds, CI, PRD v0.3, operations
+              │                 └─► 26  email + role sync, avatar upload to R2, top-right chip
               └─► 17  author remaining words/art as content migrations (parallel)
 ```
 
@@ -152,6 +154,12 @@ Phase 0  restructure (chore PR)
   until feature 24 unifies them as Entra `oid` strings.
 - **Only 24 makes `develop` deployable again.** It is the first merge where sign-in, content, and
   progress all come from the real services.
+- **Feature 26 needs an operator-created R2 bucket.** It adds the `AVATARS` binding and
+  `avatars.nioh.uk`, and extends feature 25's operations contract with the create/domain commands;
+  without the bucket the avatar routes fail closed on a missing binding, and the rest of the
+  profile feature still ships. It also defines the Entra
+  app roles (`user`, `teacher`, `admin`) that Mission 3 authorizes against — but stores them only,
+  and authorizes nothing.
 - **The operator owns production provisioning.** Feature 25 records the Worker, Pages, D1, Entra,
   and Workers Builds contract and extends the smoke check, but it does not create databases,
   domains, or a Git connection. Earlier features verify against local D1 and the credential-gated
@@ -170,5 +178,6 @@ Guest mode, offline practice or cached content fallback, multiple profiles per i
 switcher UI, parent/teacher dashboards, content CMS or admin UI, import, account self-deletion,
 push notifications, badges/achievements, recorded audio, speech recognition, branch preview
 environments, and any analytics beyond the existing per-user counters. Deletion is an operator
-procedure, not a product feature. The admin portal is deferred to
-[Mission 3](00-mission-3-sprint.md).
+procedure, not a product feature. Role-based authorization and every gated route are deferred to
+[Mission 3](00-mission-3-sprint.md); feature 26 stores the role but enforces nothing with it. The
+admin portal is deferred there too.
