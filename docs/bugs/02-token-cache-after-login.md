@@ -1,6 +1,6 @@
 # Bug 02 — Token acquisition fails after a successful sign-in
 
-> Severity: Normal · Status: In review
+> Severity: Normal · Status: In review — PR [#69](https://github.com/RhaegarC/words-wizard/pull/69)
 > Reported: 2026-11-04 · Feature: 24 (client online integration)
 
 ## Summary
