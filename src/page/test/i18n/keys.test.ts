@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 type Dictionary = Record<string, string>
 
 function readLocale(locale: "en" | "zh"): Dictionary {
-  const url = new URL(`../../public/locales/${locale}.json`, import.meta.url)
+  const url = new URL(`../../i18n/locales/${locale}.json`, import.meta.url)
 
   return JSON.parse(readFileSync(url, "utf8")) as Dictionary
 }
