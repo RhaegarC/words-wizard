@@ -1,7 +1,7 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
 > Status: **Planned — scope only. Details are intentionally unfilled.**
-> Depends on: Mission 2 (features 21–25) complete and deployed.
+> Depends on: Mission 2 (features 21–26) complete and deployed.
 > Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. Where this
 > file and a later Mission 3 feature doc disagree, the feature doc wins once its design is locked.
 
@@ -18,7 +18,11 @@ The child-facing app does not change in this mission beyond whatever the content
 
 - **Entra ID sign-in and the Worker edge** (features 21 and 23): every caller already has a
   verified `oid`, and the error envelope, CORS, and D1 binding are in place. The portal reuses the
-  identity provider; only authorization is new — feature 23 deliberately ships no roles.
+  identity provider.
+- **Roles and identity data** (feature 26): the core registration defines the `user`, `teacher`,
+  and `admin` app roles, and every authenticated request syncs the token's role into
+  `profiles.role` alongside `users.email`. The portal consumes that stored role; what is new here
+  is **authorization** — refusing a caller before any read or write — not role capture.
 - **The four content tables** (feature 22): `topics`, `packs`, `words`, and `pack_words`, plus
   `content_meta`. The portal writes these rows; it does not change their shape.
 - **The shared validator**: structural rules always, editorial rules at `dataset: 'final'`. The
@@ -61,8 +65,10 @@ Provisional. The feature split and numbering are decided when the design is lock
 
 To be resolved in a design session before any feature is specced.
 
-- **Role model.** Entra app roles, security groups, or a small `admins` table? What does a teacher
-  do that an administrator does not?
+- **Role model.** Entra app roles are settled by feature 26: `user`, `teacher`, and `admin`, with
+  the token authoritative and `profiles.role` stored per user. What remains open is what a teacher
+  may do that an administrator may not, and whether an unauthorized caller gets `403` or a
+  not-found response.
 - **Where the portal lives.** A separate Pages app on its own host, a route in the existing SPA, or
   a Worker-served admin UI. The choice drives CORS, CSP, and how the admin bundle is kept out of
   the child-facing build.
@@ -71,8 +77,9 @@ To be resolved in a design session before any feature is specced.
   step only if both paths share one validator.
 - **Draft versus live.** Does a save go live immediately with a content-version bump, or wait for
   approval? If it waits, where do drafts live?
-- **Artwork storage.** R2 bucket layout, path convention, upload limits, and the cache headers the
-  child app sees.
+- **Artwork storage.** Feature 26 establishes the pattern — a dedicated R2 bucket behind a Worker
+  binding, a public custom domain, and an immutable cached read path. Word artwork stays in a
+  **separate** bucket and layout; the avatar bucket is not reused.
 - **Audit trail.** Whether an audit table ships in this mission or the next, and how long it is
   kept.
 - **Archive and restore.** Whether the portal can restore an archived row, and what that means for
@@ -92,15 +99,15 @@ To be resolved in a design session before any feature is specced.
 
 ## Feature table
 
-No Mission 3 feature is specced yet. Mission 2 ends at feature 25, so Mission 3 claims **26
-onwards**; a number stays reserved until a file exists.
+No Mission 3 feature is specced yet. Mission 2 ends at feature 26 (user profile), so Mission 3
+claims **27 onwards**; a number stays reserved until a file exists.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 26 | Admin portal foundation | Not specced | 25 |
-| 27 | Vocabulary admin | Not specced | 26 |
-| 28 | Artwork pipeline | Not specced | 26 |
-| 29 | Review and release workflow | Not specced | 27, 28 |
+| 27 | Admin portal foundation | Not specced | 25, 26 |
+| 28 | Vocabulary admin | Not specced | 27 |
+| 29 | Artwork pipeline | Not specced | 27 |
+| 30 | Review and release workflow | Not specced | 28, 29 |
 
 ## Out of scope
 
