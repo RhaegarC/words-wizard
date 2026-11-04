@@ -56,7 +56,11 @@ pnpm install
 
 `VITE_API_BASE_URL` points at the local Worker, never at production. The Entra registration must
 list `http://localhost:8443/` as a redirect URI in addition to `https://words.nioh.uk/`, or
-sign-in returns to an unregistered origin. `.env` is gitignored; these values are public
+sign-in returns to an unregistered origin. It must also expose the
+`api://<client-id>/access_as_user` scope and issue v2 access tokens; without those, sign-in
+succeeds and the first boot fails with the generic retry screen. The full registration checklist
+is in [operations.md → Entra ID](../operations.md#entra-id); the end-to-end sign-in flow and its
+failure modes are in [login.md](login.md). `.env` is gitignored; these values are public
 configuration, not secrets.
 
 ### Run against the local API

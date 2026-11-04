@@ -1,6 +1,7 @@
 # Bug 02 — Token acquisition fails after a successful sign-in
 
-> Severity: Normal · Status: In review — PR [#69](https://github.com/RhaegarC/words-wizard/pull/69)
+> Severity: Normal · Status: Fixed — PR [#69](https://github.com/RhaegarC/words-wizard/pull/69) merged
+> 2026-11-04, plus a tenant configuration change outside the repository
 > Reported: 2026-11-04 · Feature: 24 (client online integration)
 
 ## Summary
@@ -43,6 +44,27 @@ screen. The browser console shows a `TypeError` from MSAL rather than an authent
 
 ## Root cause
 
+Two independent defects sat on the same path. The code defect failed first and hid the second;
+fixing it exposed the tenant configuration that made sign-in unusable either way.
+
+### 1. Tenant configuration — the blocking defect
+
+The Entra app registration (`RgLearn`, the client id in `VITE_ENTRA_CLIENT_ID`) exposed no API:
+
+- `identifierUris` was `[]`, so `api://<client-id>` did not exist;
+- `api.oauth2PermissionScopes` was `[]`, so `access_as_user` could not be granted;
+- `api.requestedAccessTokenVersion` was `null` (v1 tokens), while the Worker requires the v2
+  issuer and the client id as `aud`;
+- the SPA redirect list held only `http://localhost:8443/`, not `https://words.nioh.uk/`.
+
+A redirect sign-in therefore succeeded, but the silent request for
+`api://<client-id>/access_as_user` could never be satisfied: Entra rejects a resource or scope
+the app does not expose (an `invalid_scope`-class error, e.g. `AADSTS500011`/`AADSTS65005`).
+`createTokenGetter` does not treat that as an interaction-required error, and `boot()` renders
+`errors.generic`. **No client change can fix this**; the registration must be corrected.
+
+### 2. Account narrowing — the masking defect
+
 `AuthProvider` narrowed MSAL's `AccountInfo` to the app's `AccountLike` before handing it to
 `createTokenGetter`, and the narrowing kept only `localAccountId`, `idTokenClaims`, `name`, and
 `username`. The token getter passes that object straight back to
@@ -57,8 +79,16 @@ an `InteractionRequiredAuthError`. `createTokenGetter` only redirects on the lat
 
 `environment` and `tenantId` matter for the same lookup: MSAL matches cached credentials by them.
 
+Because the cache lookup runs before the network request, the `TypeError` was the first failure
+observed. Correcting the narrowing let the request proceed to Entra, where the missing scope
+still failed — the "still the same" report after the code fix. Both had to be fixed.
+
 ## Fix
 
+- Tenant (outside the repository): set the Application ID URI to `api://<client-id>`, add the
+  enabled delegated `access_as_user` scope, set `requestedAccessTokenVersion: 2`, add
+  `https://words.nioh.uk/` alongside the localhost redirect URI, and grant admin consent.
+  Recorded as a checklist in [operations.md → Entra ID](../operations.md#entra-id).
 - `auth/account.ts` — the narrowing now lives here as `toAccountLike` and preserves
   `homeAccountId`, `environment`, and `tenantId` alongside the identity fields the UI uses.
 - `auth/AuthProvider.tsx` — uses `toAccountLike` for both the context account and the token
@@ -74,7 +104,14 @@ an `InteractionRequiredAuthError`. `createTokenGetter` only redirects on the lat
 
 ## Verification
 
-- `pnpm test` — 757 passed, 5 skipped (container-tagged tiers), after the fix.
+- `pnpm test` — 757 passed, 5 skipped (container-tagged tiers), after the code fix.
 - `pnpm typecheck` and `pnpm build`/`pnpm check:dist` — clean.
-- Manual: real Entra redirect sign-in on `http://localhost:8443/`; the app must leave the gate and
-  reach `#/create` or `#/home` without the retry screen.
+- Tenant: `az ad app show` now reports the identifier URI, the enabled `access_as_user` scope,
+  `requestedAccessTokenVersion: 2`, and both redirect URIs. A device-code request for
+  `api://<client-id>/access_as_user` returns `200` with a device code, proving Entra accepts the
+  scope.
+- Diagnostics ruled out the rest of the path: `GET /v1/content` returns `200`, `/health` returns
+  `200`, and `/v1/me` answers `401` with the correct CORS headers to a tokenless caller.
+- Manual end-to-end: restart both dev servers, clear site data for `http://localhost:8443/`, and
+  sign in; the app must leave the gate and reach `#/create` or `#/home`. This is the final check
+  after the tenant change.

@@ -30,15 +30,38 @@ repository.
 
 ## Entra ID
 
-1. Register a **single-page application** in the tenant. Add both redirect
-   URIs:
+1. Register a **single-page application** in the tenant and add both redirect
+   URIs under **Authentication → Single-page application**:
    - `https://words.nioh.uk/`
    - `http://localhost:8443/`
-2. Expose an API scope named `access_as_user`. The browser requests
-   `openid`, `profile`, and that scope.
-3. Put the tenant and client ids into the Worker vars and the Pages build
+2. Under **Expose an API**, set the Application ID URI to
+   `api://<client-id>` and add an enabled delegated scope named
+   `access_as_user` (`type: User`). The browser requests `openid`, `profile`,
+   and that scope.
+3. Under **Expose an API → Edit application manifest**, set
+   `api.requestedAccessTokenVersion` to `2`. The Worker verifies the v2
+   issuer (`…/v2.0`) and the client id as `aud`; a v1 token fails both.
+4. Grant admin consent for the tenant so no user hits a consent prompt.
+5. Put the tenant and client ids into the Worker vars and the Pages build
    environment. There is **no client secret**: the browser app is public and
    uses authorization code + PKCE.
+
+**All five steps are load-bearing.** A registration that signs users in but
+exposes no API on the configured Application ID URI produces a valid redirect
+and then fails the silent token request with `invalid_scope`; the page shows
+the generic retry screen because the failure happens before any API call. That
+symptom was reported as [bug 02](bugs/02-token-cache-after-login.md) and
+required this registration to be corrected; check it before debugging the
+client. Verify the registration with:
+
+```bash
+az ad app show --id <client-id> \
+  --query '{uris:identifierUris, scopes:api.oauth2PermissionScopes, version:api.requestedAccessTokenVersion, spa:spa.redirectUris}'
+```
+
+`identifierUris` must contain `api://<client-id>`, the scope list must contain
+`access_as_user` with `isEnabled: true`, `version` must be `2`, and both
+redirect URIs must be present.
 
 The Worker validates the access token against the tenant's JWKS endpoint:
 
