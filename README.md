@@ -179,7 +179,7 @@ verified in the browser.
 <https://wordsapi.nioh.uk>. There is no GitHub deployment workflow and no Cloudflare
 deploy token in this repository. The full production setup is in
 [docs/operations.md](docs/operations.md), with per-project notes in
-[docs/deploy/page.md](docs/deploy/page.md) and [docs/deploy/worker.md](docs/deploy/worker.md).
+[docs/develop/page.md](docs/develop/page.md) and [docs/develop/worker.md](docs/develop/worker.md).
 
 Pages project settings:
 
