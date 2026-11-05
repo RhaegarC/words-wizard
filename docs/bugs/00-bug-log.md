@@ -7,4 +7,4 @@ Bugs are tracked separately from features. One file per bug; resolved bugs move 
 |---|-----|----------|--------|
 | 01 | [Microsoft redirect sign-in never completes](01-microsoft-redirect-signin.md) | Normal | In review — [PR #65](https://github.com/RhaegarC/words-wizard/pull/65) |
 | 02 | [Token acquisition fails after a successful sign-in](02-token-cache-after-login.md) | Normal | Fixed — [PR #69](https://github.com/RhaegarC/words-wizard/pull/69) merged; Entra registration corrected |
-| 03 | [Saving a finished session fails for a real Entra oid](03-session-id-length.md) | Normal | In review — [PR #78](https://github.com/RhaegarC/words-wizard/pull/78) |
+| 03 | [Saving a finished session fails for a real Entra oid](archive/03-session-id-length.md) | Normal | Fixed — [PR #78](https://github.com/RhaegarC/words-wizard/pull/78) merged |
