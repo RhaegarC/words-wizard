@@ -78,17 +78,32 @@ describe("validateServerSessionPayload", () => {
 })
 
 describe("session record", () => {
-  it("requires a non-empty id of at most 64 characters", () => {
+  it("requires a non-empty id of at most 128 characters", () => {
     expect(issues((p) => (p.session.id = ""))).toContain("session-id-invalid")
     expect(issues((p) => (p.session.id = " ".repeat(3)))).toContain(
       "session-id-invalid",
     )
-    expect(issues((p) => (p.session.id = "a".repeat(64)))).not.toContain(
+    expect(issues((p) => (p.session.id = "a".repeat(128)))).not.toContain(
       "session-id-invalid",
     )
-    expect(issues((p) => (p.session.id = "a".repeat(65)))).toContain(
+    expect(issues((p) => (p.session.id = "a".repeat(129)))).toContain(
       "session-id-invalid",
     )
+  })
+
+  it("accepts the id the client builds from an Entra oid", () => {
+    // `session.ts` composes `<profileId>:<kind>:<localDate>:<startedAt>`, and
+    // the API provider's profile id is the token's 36-character GUID oid.
+    const oid = "ccb380dd-25b7-43ea-a371-6b2ffe52cfcd"
+
+    for (const kind of ["daily", "monthly"] as const) {
+      expect(
+        issues((p) => {
+          p.session.kind = kind
+          p.session.id = `${oid}:${kind}:2026-11-05:1793875028539`
+        }),
+      ).not.toContain("session-id-invalid")
+    }
   })
 
   it("accepts only the two session kinds", () => {
