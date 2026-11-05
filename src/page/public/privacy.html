@@ -94,6 +94,15 @@
         Your browser keeps the Entra session, any unsent practice, and the
         device flags. Signing out clears all three.
       </li>
+      <li>
+        A browser that used the previous, offline version may still hold its old
+        database (<code>WordsWizardDB</code> in IndexedDB). On the first sign-in
+        after upgrading, the app reads it once and imports that profile and
+        progress into the signed-in account. The old database is deleted only
+        after the import succeeds or the user chooses to discard it in Settings;
+        if the import fails it stays on the device and is retried on the next
+        visit.
+      </li>
     </ul>
 
     <h2>What we do not do</h2>

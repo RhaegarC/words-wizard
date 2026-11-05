@@ -71,7 +71,9 @@ Browser (PWA, words.nioh.uk)
       reconnect; the UI tells the child it is waiting rather than losing the session.
 - [x] The app boots online-only: no network or no API produces a clear retry screen, not a partial
       app.
-- [x] Local Dexie data is deleted once on first load of the new version, with a one-time notice.
+- [x] Local Dexie data is imported once into the signed-in account on first load of the new
+      version, with a one-time notice; the legacy database is deleted only after a successful
+      import or an explicit discard (feature 27, superseding the original delete-at-boot rule).
 - [x] A signed-in child can re-customise the buddy, change topic and locale, export their data, and
       read a short bilingual privacy note. There is no delete or reset control.
 - [x] A signed-in identity syncs its email and app role from the token on every authenticated
@@ -124,7 +126,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
 | 26 | [User profile, email & role sync](archive/26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
-| 27 | [Legacy device data import](27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Specced — design locked; not implemented (docs only) | 23, 24, 26 |
+| 27 | [Legacy device data import](27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
 | 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
@@ -139,7 +141,7 @@ Phase 0  restructure (chore PR)
               │     └─► 24  client: MSAL, loader, API provider, outbox, Dexie removal
               │           └─► 25  domains, Workers Builds, CI, PRD v0.3, operations
               │                 └─► 26  email + role sync, avatar upload to R2, top-right chip
-              │                       └─► 27  legacy device data import (specced, not implemented)
+              │                       └─► 27  legacy device data import
               └─► 17  author remaining words/art as content migrations (parallel)
 ```
 
@@ -173,10 +175,9 @@ Phase 0  restructure (chore PR)
   remote test database, never production.
 - **No branch preview environments.** Pages previews stay off; `delete-preview.yml` is the one
   workflow allowed account credentials, and only to delete preview deployments after a merge.
-- **Feature 27 changes the Mission 1 deletion rule.** Until it lands, boot still deletes
-  `WordsWizardDB` with the feature 24 notice. Feature 27 removes that deletion, imports the data
-  into the signed-in account, and deletes only after success or discard; the DoD line about
-  deleting Dexie data at boot is superseded when it ships.
+- **Feature 27 replaced the Mission 1 deletion rule.** Boot no longer deletes `WordsWizardDB`;
+  feature 27 imports the data into the signed-in account and deletes only after success or an
+  explicit discard. The DoD line about deleting Dexie data at boot is superseded.
 - **Feature 17 must pass the final gate before release.** Mission 2 is functional with the current
   empty D1 vocabulary, but it is not the product until the D1 content set is complete and
   validated.

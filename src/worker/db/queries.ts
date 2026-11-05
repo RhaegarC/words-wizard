@@ -17,6 +17,12 @@ import type {
 } from "../../shared/sessionPayload"
 import type { ProgressStatus, Role } from "../../shared/types"
 
+import type {
+  LegacyImportPayload,
+  LegacyImportResponse,
+} from "../../shared/legacyImport"
+import { isMetricName } from "../../shared/metrics"
+
 import {
   CareUnavailableError,
   ProfileNotFoundError,
@@ -733,4 +739,205 @@ export async function applyCare(
   const updated = await readProfile(db, oid)
   if (updated === null) throw new ProfileNotFoundError()
   return toServerProfile(updated)
+}
+
+/**
+ * D1 caps bound parameters per statement at 100, and a full Mission 1 history
+ * can exceed that. Word-id lookups and progress writes are chunked below it.
+ */
+const IMPORT_CHUNK = 90
+
+/**
+ * The "most advanced wins" comparison (feature 27), in SQL so two tabs cannot
+ * interleave a read-then-write. It mirrors `incomingProgressWins` in
+ * `shared/legacyImport.ts`.
+ */
+const IMPORT_INCOMING_RANK =
+  "(CASE excluded.status WHEN 'mastered' THEN 2 WHEN 'learning' THEN 1 ELSE 0 END)"
+const IMPORT_CLOUD_RANK =
+  "(CASE progress.status WHEN 'mastered' THEN 2 WHEN 'learning' THEN 1 ELSE 0 END)"
+const IMPORT_INCOMING_WINS = `(
+  ${IMPORT_INCOMING_RANK} > ${IMPORT_CLOUD_RANK}
+  OR (${IMPORT_INCOMING_RANK} = ${IMPORT_CLOUD_RANK}
+      AND excluded.strength > progress.strength)
+  OR (${IMPORT_INCOMING_RANK} = ${IMPORT_CLOUD_RANK}
+      AND excluded.strength = progress.strength
+      AND excluded.next_review_at < progress.next_review_at)
+)`
+
+/** The winning row is written whole; mastery is OR-ed in both directions. */
+const UPSERT_IMPORT_PROGRESS = `INSERT INTO progress (
+  user_id, word_id, status, strength, next_review_at, correct_count,
+  wrong_count, first_seen_at, last_seen_at, mastery_xp_awarded
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(user_id, word_id) DO UPDATE SET
+  status = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.status ELSE progress.status END,
+  strength = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.strength ELSE progress.strength END,
+  next_review_at = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.next_review_at ELSE progress.next_review_at END,
+  correct_count = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.correct_count ELSE progress.correct_count END,
+  wrong_count = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.wrong_count ELSE progress.wrong_count END,
+  first_seen_at = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.first_seen_at ELSE progress.first_seen_at END,
+  last_seen_at = CASE WHEN ${IMPORT_INCOMING_WINS} THEN excluded.last_seen_at ELSE progress.last_seen_at END,
+  mastery_xp_awarded = CASE
+    WHEN excluded.mastery_xp_awarded = 1 OR progress.mastery_xp_awarded = 1 THEN 1
+    ELSE 0 END`
+
+/**
+ * Larger/later for every counter and timestamp, and no identity field is in
+ * the statement. A `NULL` incoming timestamp keeps the cloud value.
+ */
+const UPDATE_IMPORT_PROFILE = `UPDATE profiles SET
+  xp = MAX(xp, ?),
+  last_practice_at = MAX(last_practice_at, ?),
+  last_wake_at = CASE
+    WHEN ? IS NULL THEN last_wake_at
+    WHEN last_wake_at IS NULL THEN ?
+    ELSE MAX(last_wake_at, ?) END,
+  frozen_days = MAX(frozen_days, ?),
+  care_tokens = MAX(care_tokens, ?),
+  sessions_since_last_token = MAX(sessions_since_last_token, ?),
+  completed_sessions = MAX(completed_sessions, ?),
+  streak_count = MAX(streak_count, ?),
+  best_streak = MAX(best_streak, ?),
+  last_streak_date = CASE
+    WHEN ? IS NULL THEN last_streak_date
+    WHEN last_streak_date IS NULL THEN ?
+    ELSE MAX(last_streak_date, ?) END,
+  last_monthly_review_at = CASE
+    WHEN ? IS NULL THEN last_monthly_review_at
+    WHEN last_monthly_review_at IS NULL THEN ?
+    ELSE MAX(last_monthly_review_at, ?) END
+WHERE user_id = ?`
+
+/** Idempotent even for the signed monthly-review delta. */
+const UPSERT_IMPORT_METRIC = `INSERT INTO metrics (user_id, name, value, updated_at)
+VALUES (?, ?, ?, ?)
+ON CONFLICT(user_id, name) DO UPDATE SET
+  value = MAX(metrics.value, excluded.value),
+  updated_at = CASE
+    WHEN excluded.value > metrics.value
+      THEN MAX(metrics.updated_at, excluded.updated_at)
+    ELSE metrics.updated_at END`
+
+/** Word ids present in D1, read in chunks under the bound-parameter cap. */
+async function knownWordIds(
+  db: D1Database,
+  wordIds: readonly string[],
+): Promise<Set<string>> {
+  const unique = [...new Set(wordIds)]
+  const found = new Set<string>()
+
+  for (let start = 0; start < unique.length; start += IMPORT_CHUNK) {
+    const chunk = unique.slice(start, start + IMPORT_CHUNK)
+    const rows = await db
+      .prepare(`SELECT id FROM words WHERE id IN (${chunk.map(() => "?").join(", ")})`)
+      .bind(...chunk)
+      .all<{ id: string }>()
+
+    for (const row of rows.results) found.add(row.id)
+  }
+
+  return found
+}
+
+function importProgressStatement(
+  db: D1Database,
+  oid: string,
+  row: LegacyImportPayload["progress"][number],
+): D1PreparedStatement {
+  return db
+    .prepare(UPSERT_IMPORT_PROGRESS)
+    .bind(
+      oid,
+      row.wordId,
+      row.status,
+      row.strength,
+      row.nextReviewAt,
+      row.correctCount,
+      row.wrongCount,
+      row.firstSeenAt,
+      row.lastSeenAt,
+      row.masteryXpAwarded ? 1 : 0,
+    )
+}
+
+/**
+ * Merge a Mission 1 payload into the identity's rows (feature 27).
+ *
+ * Profile and metrics are one atomic batch. Progress is not: a full history can
+ * exceed D1's batch ceiling, so it is written in chunks of idempotent merges.
+ * A failed run therefore leaves a valid prefix, and the retry converges.
+ */
+export async function importLegacyData(
+  db: D1Database,
+  oid: string,
+  payload: LegacyImportPayload,
+): Promise<LegacyImportResponse> {
+  if ((await readProfile(db, oid)) === null) throw new ProfileNotFoundError()
+
+  // An id missing from D1 is skipped and counted, not failed: content may have
+  // been archived or renamed since Mission 1.
+  const known = await knownWordIds(
+    db,
+    payload.progress.map((row) => row.wordId),
+  )
+  const progressRows = payload.progress.filter((row) => known.has(row.wordId))
+  const metricRows = payload.metrics.filter((row) => isMetricName(row.name))
+
+  const profile = payload.profile
+  const statements: D1PreparedStatement[] = [
+    db
+      .prepare(UPDATE_IMPORT_PROFILE)
+      .bind(
+        profile.xp,
+        profile.lastPracticeAt,
+        profile.lastWakeAt,
+        profile.lastWakeAt,
+        profile.lastWakeAt,
+        profile.frozenDays,
+        profile.careTokens,
+        profile.sessionsSinceLastToken,
+        profile.completedSessions,
+        profile.streakCount,
+        profile.bestStreak,
+        profile.lastStreakDate,
+        profile.lastStreakDate,
+        profile.lastStreakDate,
+        profile.lastMonthlyReviewAt,
+        profile.lastMonthlyReviewAt,
+        profile.lastMonthlyReviewAt,
+        oid,
+      ),
+  ]
+
+  for (const row of metricRows) {
+    statements.push(
+      db
+        .prepare(UPSERT_IMPORT_METRIC)
+        .bind(oid, row.name, row.value, row.updatedAt),
+    )
+  }
+
+  // At most 1 + 32 statements, well inside the batch ceiling.
+  await db.batch(statements)
+
+  for (let start = 0; start < progressRows.length; start += IMPORT_CHUNK) {
+    const chunk = progressRows.slice(start, start + IMPORT_CHUNK)
+    await db.batch(
+      chunk.map((row) => importProgressStatement(db, oid, row)),
+    )
+  }
+
+  return {
+    progress: {
+      imported: progressRows.length,
+      skipped: payload.progress.length - progressRows.length,
+    },
+    metrics: {
+      imported: metricRows.length,
+      skipped: payload.metrics.length - metricRows.length,
+    },
+    profileUpdated: true,
+    me: await readMe(db, oid),
+  }
 }

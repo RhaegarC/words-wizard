@@ -1,23 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  discardLegacyLocalData,
   LEGACY_DATABASE_NAME,
-  LOCAL_DATA_DISCARDED_KEY,
+  deleteLegacyDatabase,
   type IndexedDbFactoryLike,
 } from "../../db/localData"
-
-class MemoryStorage {
-  readonly values = new Map<string, string>()
-
-  getItem(key: string): string | null {
-    return this.values.get(key) ?? null
-  }
-
-  setItem(key: string, value: string): void {
-    this.values.set(key, value)
-  }
-}
 
 /** A factory that records the name and lets the test settle the request. */
 function factory() {
@@ -36,52 +23,46 @@ function factory() {
   return { value, names, requests }
 }
 
-describe("discardLegacyLocalData", () => {
-  it("deletes the legacy database once and records that it did", async () => {
-    const storage = new MemoryStorage()
+describe("deleteLegacyDatabase", () => {
+  it("reports deleted when the request succeeds", async () => {
     const fake = factory()
 
-    const result = discardLegacyLocalData(storage, fake.value)
+    const result = deleteLegacyDatabase(fake.value)
     fake.requests[0]!.onsuccess!(new Event("success"))
 
-    await expect(result).resolves.toBe(true)
+    await expect(result).resolves.toBe("deleted")
     expect(fake.names).toEqual([LEGACY_DATABASE_NAME])
-    expect(storage.values.get(LOCAL_DATA_DISCARDED_KEY)).toBe("1")
   })
 
-  it("does not delete again once the flag is set", async () => {
-    const storage = new MemoryStorage()
+  it("reports blocked when another tab holds the database open", async () => {
     const fake = factory()
 
-    storage.values.set(LOCAL_DATA_DISCARDED_KEY, "1")
+    const result = deleteLegacyDatabase(fake.value)
+    fake.requests[0]!.onblocked!(new Event("blocked"))
 
-    await expect(discardLegacyLocalData(storage, fake.value)).resolves.toBe(
-      false,
-    )
-    expect(fake.names).toEqual([])
+    await expect(result).resolves.toBe("blocked")
   })
 
-  it("reports no deletion when the database cannot be reached", async () => {
-    const storage = new MemoryStorage()
+  it("reports unavailable when the request fails", async () => {
     const fake = factory()
 
-    const result = discardLegacyLocalData(storage, fake.value)
+    const result = deleteLegacyDatabase(fake.value)
     fake.requests[0]!.onerror!(new Event("error"))
 
-    await expect(result).resolves.toBe(false)
+    await expect(result).resolves.toBe("unavailable")
   })
 
-  it("leaves the flag unset when storage is blocked", async () => {
-    const storage = new MemoryStorage()
-    const fake = factory()
+  it("reports unavailable when IndexedDB does not exist", async () => {
+    await expect(deleteLegacyDatabase(undefined)).resolves.toBe("unavailable")
+  })
 
-    storage.setItem = () => {
-      throw new Error("blocked")
+  it("reports unavailable when the call throws", async () => {
+    const value: IndexedDbFactoryLike = {
+      deleteDatabase() {
+        throw new Error("denied")
+      },
     }
 
-    await expect(discardLegacyLocalData(storage, fake.value)).resolves.toBe(
-      false,
-    )
-    expect(fake.names).toEqual([])
+    await expect(deleteLegacyDatabase(value)).resolves.toBe("unavailable")
   })
 })

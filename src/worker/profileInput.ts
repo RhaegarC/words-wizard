@@ -33,17 +33,18 @@ export type JsonBodyResult =
 export function parseJsonBody(
   contentLength: string | undefined,
   text: string,
+  maxBytes: number = MAX_BODY_BYTES,
 ): JsonBodyResult {
   const declared =
     contentLength === undefined || contentLength.trim() === ""
       ? null
       : Number(contentLength)
 
-  if (declared !== null && Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
+  if (declared !== null && Number.isFinite(declared) && declared > maxBytes) {
     return { ok: false, issue: "body-too-large" }
   }
 
-  if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) {
+  if (new TextEncoder().encode(text).length > maxBytes) {
     return { ok: false, issue: "body-too-large" }
   }
 

@@ -61,6 +61,7 @@ describe("user routes", () => {
     ["POST", "/v1/me/sessions"],
     ["POST", "/v1/me/metrics"],
     ["POST", "/v1/me/care"],
+    ["POST", "/v1/me/import"],
     ["POST", "/v1/me/avatar"],
     ["DELETE", "/v1/me/avatar"],
   ]
@@ -91,6 +92,24 @@ describe("user routes", () => {
 
     expect(response.status).toBe(405)
     expect(response.headers.get("allow")).toBe("POST, PATCH")
+  })
+
+  it("answers 405 to GET on the import route", async () => {
+    const authenticated = createApp({
+      verifierFor: () => async () => ({
+        oid: "user-a",
+        email: null,
+        role: "user",
+      }),
+    })
+    const response = await authenticated.request(
+      "/v1/me/import",
+      { method: "GET", headers: { Authorization: "Bearer token" } },
+      TEST_ENV,
+    )
+
+    expect(response.status).toBe(405)
+    expect(response.headers.get("allow")).toBe("POST")
   })
 })
 

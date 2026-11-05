@@ -282,6 +282,7 @@ describe("authorization", () => {
       ["POST", "/v1/me/sessions"],
       ["POST", "/v1/me/metrics"],
       ["POST", "/v1/me/care"],
+      ["POST", "/v1/me/import"],
       ["POST", "/v1/me/avatar"],
       ["DELETE", "/v1/me/avatar"],
     ]
@@ -1209,5 +1210,384 @@ describe("avatar storage", () => {
         (await json<{ error: { code: string } }>(response)).error.code,
       ).toBe("not_found")
     }
+  })
+})
+
+describe("legacy import", () => {
+  function legacyProgress(
+    overrides: {
+      wordId?: string
+      status?: "new" | "learning" | "mastered"
+      strength?: number
+      nextReviewAt?: number
+      correctCount?: number
+      wrongCount?: number
+      masteryXpAwarded?: boolean
+      firstSeenAt?: number
+      lastSeenAt?: number
+    } = {},
+  ) {
+    return {
+      wordId: overrides.wordId ?? "u-w1",
+      status: overrides.status ?? "learning",
+      strength: overrides.strength ?? 0.4,
+      nextReviewAt: overrides.nextReviewAt ?? NOW + DAY,
+      correctCount: overrides.correctCount ?? 1,
+      wrongCount: overrides.wrongCount ?? 0,
+      firstSeenAt: overrides.firstSeenAt ?? NOW - 30 * DAY,
+      lastSeenAt: overrides.lastSeenAt ?? NOW - DAY,
+      masteryXpAwarded: overrides.masteryXpAwarded ?? false,
+    }
+  }
+
+  function legacyPayload(
+    overrides: {
+      profile?: Record<string, unknown>
+      progress?: ReturnType<typeof legacyProgress>[]
+      metrics?: Array<{ name: string; value: number; updatedAt: number }>
+    } = {},
+  ) {
+    return {
+      profile: {
+        xp: 50,
+        lastPracticeAt: NOW - DAY,
+        lastWakeAt: null,
+        frozenDays: 0,
+        careTokens: 1,
+        sessionsSinceLastToken: 0,
+        completedSessions: 8,
+        streakCount: 3,
+        bestStreak: 5,
+        lastStreakDate: "2026-10-30",
+        lastMonthlyReviewAt: null,
+        ...overrides.profile,
+      },
+      progress: overrides.progress ?? [legacyProgress()],
+      metrics: overrides.metrics ?? [
+        { name: METRIC_NAMES.sessionCompleted, value: 8, updatedAt: NOW - DAY },
+      ],
+    }
+  }
+
+  it("answers 404 before a profile exists and writes nothing", async () => {
+    const oid = "user-import-noprofile"
+    const response = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload(),
+    })
+
+    expect(response.status).toBe(404)
+    expect(
+      (await json<{ error: { code: string } }>(response)).error.code,
+    ).toBe("profile_not_found")
+    expect(count("progress", `user_id = '${oid}'`)).toBe(0)
+  })
+
+  it("merges progress, profile counters, and metrics and returns the new me", async () => {
+    const oid = "user-import"
+    await createProfile(oid)
+
+    const response = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload({
+        progress: [legacyProgress({ status: "mastered", strength: 0.9 })],
+      }),
+    })
+    const body = await json<{
+      progress: { imported: number; skipped: number }
+      metrics: { imported: number; skipped: number }
+      profileUpdated: boolean
+      me: MeResponse
+    }>(response)
+    const text = JSON.stringify(body)
+
+    expect(response.status, text).toBe(200)
+    expect(body.progress).toEqual({ imported: 1, skipped: 0 })
+    expect(body.metrics).toEqual({ imported: 1, skipped: 0 })
+    expect(body.profileUpdated).toBe(true)
+    expect(body.me.profile).toMatchObject({
+      xp: 50,
+      completedSessions: 8,
+      streakCount: 3,
+      bestStreak: 5,
+      careTokens: 1,
+      lastStreakDate: "2026-10-30",
+    })
+    expect(body.me.progress).toEqual([
+      expect.objectContaining({
+        wordId: "u-w1",
+        status: "mastered",
+        strength: 0.9,
+      }),
+    ])
+    expect(
+      body.me.metrics.find(
+        (metric) => metric.name === METRIC_NAMES.sessionCompleted,
+      )?.value,
+    ).toBe(8)
+  })
+
+  it("skips unknown word ids and metric names and counts them", async () => {
+    const oid = "user-import-unknown"
+    await createProfile(oid)
+
+    const response = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload({
+        progress: [
+          legacyProgress({ wordId: "u-w1" }),
+          legacyProgress({ wordId: "u-missing" }),
+        ],
+        metrics: [
+          { name: METRIC_NAMES.sessionCompleted, value: 4, updatedAt: NOW },
+          { name: "made.up", value: 9, updatedAt: NOW },
+        ],
+      }),
+    })
+    const body = await json<{
+      progress: { imported: number; skipped: number }
+      metrics: { imported: number; skipped: number }
+    }>(response)
+
+    expect(response.status).toBe(200)
+    expect(body.progress).toEqual({ imported: 1, skipped: 1 })
+    expect(body.metrics).toEqual({ imported: 1, skipped: 1 })
+    expect(count("progress", "user_id = 'user-import-unknown'")).toBe(1)
+    expect(
+      count("metrics", "user_id = 'user-import-unknown' AND name = 'made.up'"),
+    ).toBe(0)
+  })
+
+  it("keeps the more advanced row and ORs mastery", async () => {
+    const oid = "user-import-merge"
+    await createProfile(oid)
+    await call("/v1/me/sessions", {
+      token: await token(oid),
+      method: "POST",
+      body: commitPayload({
+        sessionId: "import-merge-session",
+        words: ["u-w1"],
+        profile: { xp: 7 },
+        metrics: {},
+      }),
+    })
+    // The commit wrote u-w1 as learning/0.4. Make it the cloud authority.
+    worker.query(
+      `UPDATE progress SET status = 'mastered', strength = 0.8,
+          next_review_at = ${NOW + DAY}
+        WHERE user_id = '${oid}' AND word_id = 'u-w1'`,
+    )
+
+    const weaker = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload({
+        progress: [
+          legacyProgress({
+            status: "learning",
+            strength: 0.2,
+            masteryXpAwarded: true,
+          }),
+        ],
+        profile: { xp: 3 },
+      }),
+    })
+    const weakBody = await json<{ me: MeResponse }>(weaker)
+
+    expect(weaker.status).toBe(200)
+    expect(weakBody.me.profile?.xp).toBe(7)
+    expect(weakBody.me.progress[0]).toMatchObject({
+      status: "mastered",
+      strength: 0.8,
+      masteryXpAwarded: true,
+    })
+
+    const stronger = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload({
+        progress: [legacyProgress({ status: "mastered", strength: 0.95 })],
+        metrics: [],
+        profile: { xp: 3 },
+      }),
+    })
+    const strongBody = await json<{ me: MeResponse }>(stronger)
+
+    expect(strongBody.me.progress[0]).toMatchObject({
+      status: "mastered",
+      strength: 0.95,
+    })
+    expect(strongBody.me.profile?.xp).toBe(7)
+  })
+
+  it("breaks a rank and strength tie on the earlier review", async () => {
+    const oid = "user-import-tie"
+    await createProfile(oid)
+    await call("/v1/me/sessions", {
+      token: await token(oid),
+      method: "POST",
+      body: commitPayload({
+        sessionId: "import-tie-session",
+        words: ["u-w1"],
+        metrics: {},
+      }),
+    })
+    worker.query(
+      `UPDATE progress SET next_review_at = ${NOW + 2 * DAY}
+        WHERE user_id = '${oid}' AND word_id = 'u-w1'`,
+    )
+
+    const response = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload({
+        progress: [
+          legacyProgress({
+            status: "learning",
+            strength: 0.4,
+            nextReviewAt: NOW + DAY,
+          }),
+        ],
+        metrics: [],
+      }),
+    })
+    const body = await json<{ me: MeResponse }>(response)
+
+    expect(body.me.progress[0]?.nextReviewAt).toBe(NOW + DAY)
+  })
+
+  it("changes nothing on an identical replay", async () => {
+    const oid = "user-import-replay"
+    await createProfile(oid)
+    const payload = legacyPayload({
+      progress: [legacyProgress({ status: "mastered", strength: 0.9 })],
+    })
+
+    const first = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: payload,
+    })
+    const before = await json<{ me: MeResponse }>(first)
+    const second = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: payload,
+    })
+    const after = await json<{ me: MeResponse }>(second)
+
+    expect(second.status).toBe(200)
+    expect(after.me).toEqual(before.me)
+    expect(count("progress", "user_id = 'user-import-replay'")).toBe(1)
+    expect(
+      count(
+        "metrics",
+        `user_id = 'user-import-replay' AND name = '${METRIC_NAMES.sessionCompleted}' AND value = 8`,
+      ),
+    ).toBe(1)
+  })
+
+  it("refuses a duplicate word id or metric name with nothing written", async () => {
+    const oid = "user-import-duplicate"
+    const created = await createProfile(oid)
+
+    for (const body of [
+      legacyPayload({
+        progress: [
+          legacyProgress({ wordId: "u-w1" }),
+          legacyProgress({ wordId: "u-w1", strength: 0.9 }),
+        ],
+      }),
+      legacyPayload({
+        metrics: [
+          { name: METRIC_NAMES.sessionCompleted, value: 1, updatedAt: NOW },
+          { name: METRIC_NAMES.sessionCompleted, value: 2, updatedAt: NOW },
+        ],
+      }),
+      legacyPayload({ profile: { characterName: "Mallory" } }),
+    ]) {
+      const response = await call("/v1/me/import", {
+        token: await token(oid),
+        method: "POST",
+        body,
+      })
+
+      expect(response.status).toBe(422)
+      expect(
+        (await json<{ error: { code: string } }>(response)).error.code,
+      ).toBe("validation_failed")
+    }
+
+    expect(count("progress", "user_id = 'user-import-duplicate'")).toBe(0)
+    expect(
+      count(
+        "profiles",
+        `user_id = 'user-import-duplicate' AND xp = ${created?.xp}`,
+      ),
+    ).toBe(1)
+  })
+
+  it("accepts a valid body between 64 and 256 KB and refuses one over 256 KB", async () => {
+    const oid = "user-import-size"
+    await createProfile(oid)
+    const longId = "x".repeat(200)
+
+    const accepted = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      body: legacyPayload({
+        progress: Array.from({ length: 512 }, (_unused, index) =>
+          legacyProgress({ wordId: `${longId}-${index}` }),
+        ),
+        metrics: [],
+      }),
+    })
+    const acceptedBody = await json<{
+      progress: { imported: number; skipped: number }
+    }>(accepted)
+
+    expect(accepted.status).toBe(200)
+    expect(acceptedBody.progress.skipped).toBe(512)
+
+    const refused = await call("/v1/me/import", {
+      token: await token(oid),
+      method: "POST",
+      rawBody: JSON.stringify({
+        ...legacyPayload(),
+        pad: "a".repeat(300 * 1024),
+      }),
+    })
+
+    expect(refused.status).toBe(422)
+    expect(count("progress", "user_id = 'user-import-size'")).toBe(0)
+  })
+
+  it("writes only the token's rows and refuses a body naming another identity", async () => {
+    const owner = "user-import-owner"
+    const stranger = "user-import-stranger"
+    await createProfile(owner)
+    await createProfile(stranger)
+
+    const accepted = await call("/v1/me/import", {
+      token: await token(owner),
+      method: "POST",
+      body: legacyPayload(),
+    })
+
+    expect(accepted.status).toBe(200)
+    expect(count("progress", `user_id = '${owner}'`)).toBe(1)
+    expect(count("progress", `user_id = '${stranger}'`)).toBe(0)
+
+    const smuggled = await call("/v1/me/import", {
+      token: await token(owner),
+      method: "POST",
+      body: { ...legacyPayload(), oid: stranger, profileId: 77 },
+    })
+
+    expect(smuggled.status).toBe(422)
+    expect(count("progress", `user_id = '${stranger}'`)).toBe(0)
   })
 })

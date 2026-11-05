@@ -149,6 +149,7 @@ export function AppShell({
 
       <main key={routeKey} className="content">
         <div className="shell-topbar">
+          <Brand />
           <div className="user-chip">
             {photo !== null ? (
               <img className="user-chip-photo" src={photo} alt="" />

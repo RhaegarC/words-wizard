@@ -1,7 +1,6 @@
 # Feature 27 — Legacy Device Data Import
 
-> Priority: Should (upgrade path from Mission 1) · Mission 2 · **Status: Specced — design
-> locked; not implemented (documentation only)**
+> Priority: Should (upgrade path from Mission 1) · Mission 2 · **Status: Implemented**
 > Depends on: 23 (user-data API), 24 (client online integration), 26 (user profile)
 > Blocks: nothing; it changes the Mission 1 upgrade path.
 > Source of truth: [Mission 2 sprint](00-mission-2-sprint.md) and [PRD](../PRD.md) §8.
@@ -39,7 +38,7 @@ data.
 - Mission 2's Definition of Done records "Local Dexie data is deleted once on first load of the
   new version, with a one-time notice."
 
-When this feature is implemented, the flag and the boot deletion are removed. A device whose
+This feature removed the flag, `discardLegacyLocalData`, and the boot deletion. A device whose
 database was already deleted simply yields no import; nothing recreates it.
 
 ## Locked decisions
@@ -323,27 +322,27 @@ Add `settings.legacy.*` keys and plural families for counts in both locales. Rep
 
 ## Acceptance criteria
 
-- [ ] A signed-in identity with a cloud profile and Mission 1 data imports automatically on the
+- [x] A signed-in identity with a cloud profile and Mission 1 data imports automatically on the
       first boot, before `checkProfileAtBoot`, and the notice reports the counts.
-- [ ] A new identity's import runs immediately after character creation, and the Home screen shows
+- [x] A new identity's import runs immediately after character creation, and the Home screen shows
       the imported counters.
-- [ ] The legacy database is deleted only after a successful import or an explicit discard; a
+- [x] The legacy database is deleted only after a successful import or an explicit discard; a
       failed import leaves it untouched and retries on the next boot.
-- [ ] A Settings fallback card appears while data remains (failed, deferred, unreadable, or empty)
+- [x] A Settings fallback card appears while data remains (failed, deferred, unreadable, or empty)
       and offers the applicable Retry/Discard actions.
-- [ ] The merge follows the three rules above; a replayed payload changes nothing, including
+- [x] The merge follows the three rules above; a replayed payload changes nothing, including
       `masteryXpAwarded`.
-- [ ] Unknown word ids and unknown metric names are skipped and counted; the request still
+- [x] Unknown word ids and unknown metric names are skipped and counted; the request still
       succeeds.
-- [ ] An anonymous caller gets `401`; a caller without a profile gets `404`; a malformed or
+- [x] An anonymous caller gets `401`; a caller without a profile gets `404`; a malformed or
       oversized payload gets `422` with nothing written.
-- [ ] Two identities importing on the same device never touch each other's rows.
-- [ ] A second tab holding the database open produces the blocked-deletion message, not data loss.
-- [ ] No migration and no schema change.
+- [x] Two identities importing on the same device never touch each other's rows.
+- [x] A second tab holding the database open produces the blocked-deletion message, not data loss.
+- [x] No migration and no schema change.
 
 ## Test plan
 
-For the implementation PR, at the project's tiers:
+Implemented at the project's tiers:
 
 - **Shared unit** — `src/shared/test/legacyImport.test.ts`: mapper, validator, rank tie-breaks,
   mastery OR, profile counter merge, `hasImportableData`.
@@ -353,10 +352,10 @@ For the implementation PR, at the project's tiers:
 - **Provider unit** — `src/page/test/api/ApiProgressProvider.test.ts`: POST path and body, snapshot
   replacement, error propagation.
 - **Worker unit** — `src/worker/test/app.test.ts`: `401` and `405` for the route.
-- **Database tier** — extend `src/worker/test/database.test.ts`: insert, merge, tie, mastery OR,
-  idempotency, 404, cross-user isolation, and chunk rollback, all row-scoped.
-- **Host tier** — extend `src/worker/test/userData.test.ts`: `200` plus `me`, skips, `422`, replay,
-  token ownership, `404`, and the 256 KiB cap.
+- **Host tier** — `src/worker/test/userData.test.ts` against real D1: insert, merge, tie, mastery
+  OR, idempotency, `404`, cross-user isolation, `422`, `200` plus `me`, skips, token ownership, and
+  the 256 KiB cap. The merge SQL runs against the real engine here, so the database tier itself was
+  not extended.
 - **Storage unit** — `deleteLegacyDatabase` states; the reader is verified manually. No fake
   IndexedDB stands in for the store.
 - **Manual** — the browser sequence below.
@@ -364,8 +363,8 @@ For the implementation PR, at the project's tiers:
 ## Manual verification
 
 1. Run `pnpm worker:dev` with local D1 migrated (including `InitData.sql`) and `pnpm dev`; sign in.
-2. Paste the DevTools snippet (to be added to the implementation PR) that creates `WordsWizardDB`
-   v1 with a profile, progress rows, and metrics.
+2. In the DevTools console, create `WordsWizardDB` v1 with `profiles`, `progress`, and `metrics`
+   object stores and seed a profile, progress rows, and metrics.
 3. **Existing profile**: reload. The automatic import runs, the notice reports the counts, the
    database is gone from Application → IndexedDB, and Home shows the merged XP.
 4. **No profile**: reload. No import runs at boot; create the character; the import runs
@@ -380,16 +379,16 @@ For the implementation PR, at the project's tiers:
    discarded.
 9. **Idempotency**: import twice from the card; `GET /v1/me` is unchanged.
 
-## Documentation impact when implemented
+## Documentation impact
 
-These are deliberately **not** edited in the documentation-only change that introduced this
-feature:
+These were updated with the implementation:
 
 - `docs/PRD.md` §4 decision 3, §8.2, §8.3, and §8.5.
 - `docs/privacy.md` and `src/page/public/privacy.html`.
 - `README.md` "Local data" and `docs/develop/page.md`.
 - `docs/develop/worker.md` (the `/v1/me/import` contract).
-- The Mission 2 Definition of Done line about deleting Dexie data at boot.
+- The Mission 2 Definition of Done line about deleting Dexie data at boot, with a sequencing
+  caveat marking the original rule as superseded.
 
 ## Risks
 

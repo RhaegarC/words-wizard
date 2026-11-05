@@ -16,7 +16,7 @@ import {
   checkProfileAtBoot,
   ensureStoragePersistence,
 } from "./db/lifecycle"
-import { discardLegacyLocalData } from "./db/localData"
+import { autoImportLegacy, type LegacyImportStatus } from "./db/legacyImport"
 import { RouteTable } from "./dev/RouteTable"
 import { useLocale } from "./i18n/LocaleProvider"
 import { UpdateProvider } from "./pwa/UpdateProvider"
@@ -56,8 +56,8 @@ interface BootDeps {
 
 interface BootOutcome {
   readonly result: BootResult
-  /** True when the Mission 1 IndexedDB was discarded and the notice is due. */
-  readonly notice: boolean
+  /** What happened to the Mission 1 IndexedDB, if this device had one. */
+  readonly legacyImport: LegacyImportStatus
 }
 
 /**
@@ -101,7 +101,9 @@ async function boot(deps: BootDeps): Promise<BootOutcome> {
   // A pending session goes first so the guard decides on the newest state.
   await outbox.drain((payload) => provider.sendCommit(payload).then(() => undefined))
 
-  const notice = await discardLegacyLocalData()
+  // The import runs after the drain, so the merge compares against the newest
+  // cloud state. It never throws and never blocks boot.
+  const legacyImport = await autoImportLegacy(provider)
   const result = await checkProfileAtBoot(provider)
 
   // A supporting defence only; the UI must not wait for it.
@@ -109,7 +111,7 @@ async function boot(deps: BootDeps): Promise<BootOutcome> {
     console.warn("[db] Storage persistence request failed", error)
   })
 
-  return { result, notice }
+  return { result, legacyImport }
 }
 
 export default function App() {
@@ -118,7 +120,9 @@ export default function App() {
   const { hash, route: requested, navigate, replace, leaveGuard } = useHashRoute()
   const [boot, setBoot] = useState<BootResult | null>(null)
   const [bootFailed, setBootFailed] = useState(false)
-  const [notice, setNotice] = useState(false)
+  const [legacyImport, setLegacyImport] = useState<LegacyImportStatus | null>(
+    null,
+  )
   const [reloadKey, setReloadKey] = useState(0)
 
   const { status, config, oid, getAccessToken, signIn } = auth
@@ -142,7 +146,7 @@ export default function App() {
         }
 
         setBoot(outcome.result)
-        setNotice(outcome.notice)
+        setLegacyImport(outcome.legacyImport)
       })
       .catch((error: unknown) => {
         // A redirect to sign-in is already under way; the page is leaving.
@@ -387,26 +391,39 @@ export default function App() {
           shell
         )}
 
-        {notice ? (
+        {legacyImport !== null &&
+        (legacyImport.status === "imported" ||
+          legacyImport.status === "failed") ? (
           <div className="modal-backdrop">
             <div
               className="modal-card"
               role="dialog"
               aria-modal="true"
-              aria-labelledby="local-data-title"
+              aria-labelledby="legacy-import-title"
             >
-              <h2 id="local-data-title" className="modal-title">
-                {t("notice.localDataTitle")}
+              <h2 id="legacy-import-title" className="modal-title">
+                {legacyImport.status === "imported"
+                  ? t("notice.legacyImportedTitle")
+                  : t("notice.legacyFailedTitle")}
               </h2>
-              <p className="modal-body">{t("notice.localDataBody")}</p>
+              <p className="modal-body">
+                {legacyImport.status === "imported"
+                  ? legacyImport.deleted === "blocked"
+                    ? t("notice.legacyImportedKeptBody")
+                    : t("notice.legacyImportedBody", {
+                        count: legacyImport.summary.progress.imported,
+                        words: legacyImport.summary.progress.imported,
+                      })
+                  : t("notice.legacyFailedBody")}
+              </p>
               <div className="modal-actions">
                 <button
                   type="button"
                   className="primary-button"
-                  onClick={() => setNotice(false)}
+                  onClick={() => setLegacyImport(null)}
                   autoFocus
                 >
-                  {t("notice.localDataAck")}
+                  {t("notice.legacyAck")}
                 </button>
               </div>
             </div>

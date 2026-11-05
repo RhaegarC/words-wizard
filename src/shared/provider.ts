@@ -1,6 +1,7 @@
 import type { Metric, Profile, Progress, SessionKind } from "./types"
 import type { MetricName } from "./metrics"
 import type { CareAction, PackIntroduction } from "./me"
+import type { LegacyImportOutcome, LegacyImportPayload } from "./legacyImport"
 
 /** A profile as created by feature 06; the API fixes the id from the token. */
 export type NewProfile = Omit<Profile, "id">
@@ -82,6 +83,12 @@ export interface ProgressProvider {
   uploadAvatar(file: File): Promise<Profile>
   /** Remove the stored photo; returns the profile with no key. */
   removeAvatar(): Promise<Profile>
+  /**
+   * Merge Mission 1 device data into this identity's rows (feature 27).
+   * Idempotent; the response replaces the snapshot and carries the summary
+   * and the merged profile.
+   */
+  importLegacyProgress(payload: LegacyImportPayload): Promise<LegacyImportOutcome>
   getDevice(key: string): Promise<unknown>
   setDevice(key: string, value: unknown): Promise<void>
 }

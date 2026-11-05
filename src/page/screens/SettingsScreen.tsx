@@ -3,6 +3,7 @@ import { avatarInitials, avatarUrl } from "../avatar"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
 import { Icon } from "../components/Icon"
+import { LegacyImportCard } from "../components/LegacyImportCard"
 import { SettingsDiagnostics } from "../components/SettingsDiagnostics"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { getAvatarSet, getContentMeta, getTopic } from "../content"
@@ -469,6 +470,8 @@ export function SettingsScreen({
             </p>
           ) : null}
         </article>
+
+        <LegacyImportCard />
 
         <article className="settings-card" aria-labelledby="settings-account">
           <header>
