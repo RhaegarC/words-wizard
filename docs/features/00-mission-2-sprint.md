@@ -126,7 +126,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
 | 26 | [User profile, email & role sync](archive/26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
-| 27 | [Legacy device data import](27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
+| 27 | [Legacy device data import](archive/27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
 | 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
