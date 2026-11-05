@@ -1,7 +1,7 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
 > Status: **Planned — scope only. Details are intentionally unfilled.**
-> Depends on: Mission 2 (features 21–26) complete and deployed.
+> Depends on: Mission 2 (features 21–27) complete and deployed.
 > Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. Where this
 > file and a later Mission 3 feature doc disagree, the feature doc wins once its design is locked.
 
@@ -99,15 +99,15 @@ To be resolved in a design session before any feature is specced.
 
 ## Feature table
 
-No Mission 3 feature is specced yet. Mission 2 ends at feature 26 (user profile), so Mission 3
-claims **27 onwards**; a number stays reserved until a file exists.
+No Mission 3 feature is specced yet. Mission 2 ends at feature 27 (legacy device data import), so
+Mission 3 claims **28 onwards**; a number stays reserved until a file exists.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 27 | Admin portal foundation | Not specced | 25, 26 |
-| 28 | Vocabulary admin | Not specced | 27 |
-| 29 | Artwork pipeline | Not specced | 27 |
-| 30 | Review and release workflow | Not specced | 28, 29 |
+| 28 | Admin portal foundation | Not specced | 25, 26 |
+| 29 | Vocabulary admin | Not specced | 28 |
+| 30 | Artwork pipeline | Not specced | 28 |
+| 31 | Review and release workflow | Not specced | 29, 30 |
 
 ## Out of scope
 

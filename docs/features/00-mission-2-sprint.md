@@ -124,6 +124,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
 | 26 | [User profile, email & role sync](archive/26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
+| 27 | [Legacy device data import](27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Specced — design locked; not implemented (docs only) | 23, 24, 26 |
 | 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
@@ -138,6 +139,7 @@ Phase 0  restructure (chore PR)
               │     └─► 24  client: MSAL, loader, API provider, outbox, Dexie removal
               │           └─► 25  domains, Workers Builds, CI, PRD v0.3, operations
               │                 └─► 26  email + role sync, avatar upload to R2, top-right chip
+              │                       └─► 27  legacy device data import (specced, not implemented)
               └─► 17  author remaining words/art as content migrations (parallel)
 ```
 
@@ -171,6 +173,10 @@ Phase 0  restructure (chore PR)
   remote test database, never production.
 - **No branch preview environments.** Pages previews stay off; `delete-preview.yml` is the one
   workflow allowed account credentials, and only to delete preview deployments after a merge.
+- **Feature 27 changes the Mission 1 deletion rule.** Until it lands, boot still deletes
+  `WordsWizardDB` with the feature 24 notice. Feature 27 removes that deletion, imports the data
+  into the signed-in account, and deletes only after success or discard; the DoD line about
+  deleting Dexie data at boot is superseded when it ships.
 - **Feature 17 must pass the final gate before release.** Mission 2 is functional with the current
   empty D1 vocabulary, but it is not the product until the D1 content set is complete and
   validated.
@@ -180,9 +186,9 @@ Phase 0  restructure (chore PR)
 ## Out of scope
 
 Guest mode, offline practice or cached content fallback, multiple profiles per identity, profile
-switcher UI, parent/teacher dashboards, content CMS or admin UI, import, account self-deletion,
-push notifications, badges/achievements, recorded audio, speech recognition, branch preview
-environments, and any analytics beyond the existing per-user counters. Deletion is an operator
-procedure, not a product feature. Role-based authorization and every gated route are deferred to
-[Mission 3](00-mission-3-sprint.md); feature 26 stores the role but enforces nothing with it. The
-admin portal is deferred there too.
+switcher UI, parent/teacher dashboards, content CMS or admin UI, facilitator content/JSON import,
+account self-deletion, push notifications, badges/achievements, recorded audio, speech recognition,
+branch preview environments, and any analytics beyond the existing per-user counters. Deletion is
+an operator procedure, not a product feature. Role-based authorization and every gated route are
+deferred to [Mission 3](00-mission-3-sprint.md); feature 26 stores the role but enforces nothing
+with it. The admin portal is deferred there too.
