@@ -1,6 +1,6 @@
 # Bug 03 — Saving a finished session fails for a real Entra oid
 
-> Severity: Normal · Status: In review — PR [#78](https://github.com/RhaegarC/words-wizard/pull/78)
+> Severity: Normal · Status: Fixed — PR [#78](https://github.com/RhaegarC/words-wizard/pull/78) merged
 > Reported: 2026-11-05 · Feature: 24 (client online integration) and 23 (user-data API)
 
 ## Summary
@@ -10,7 +10,7 @@ After a practice session ends, the commit to `POST /v1/me/sessions` is refused w
 D1. The client payload is well formed; the server rejects it because the session id is longer than
 its validation allows.
 
-Reported payload: [`docs/develop/payload.json`](../develop/payload.json) (a local debugging
+Reported payload: [`docs/develop/payload.json`](../../develop/payload.json) (a local debugging
 artefact, deliberately not committed).
 
 ## Environment
