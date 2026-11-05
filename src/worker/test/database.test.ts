@@ -1,11 +1,5 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process"
-import {
-  copyFileSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs"
+import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -618,114 +612,6 @@ VALUES ('${oid}', 'Hero', 'alex', NULL, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, N
     expect(result.status).toBe(0)
     expect(output(result)).toMatch(/No migrations to apply/i)
   })
-  it(
-    "backfills an existing profile when 0003 is applied",
-    () => {
-      // A scratch database stopped before 0003. The shared run's database is
-      // already at head and cannot be returned to an earlier migration.
-      const drizzleDir = join(srcRoot, "worker", "drizzle")
-      const scratch = mkdtempSync(join(tmpdir(), "words-wizard-upgrade-"))
-      const migrations = join(scratch, "drizzle")
-      const persist = join(scratch, "state")
-      mkdirSync(migrations, { recursive: true })
-      for (const name of [
-        "0000_content_schema.sql",
-        "0001_seed_avatars.sql",
-        "0002_user_schema.sql",
-      ]) {
-        copyFileSync(join(drizzleDir, name), join(migrations, name))
-      }
-      const configPath = join(scratch, "wrangler.jsonc")
-      writeFileSync(
-        configPath,
-        JSON.stringify({
-          name: "words-wizard-upgrade-test",
-          main: join(srcRoot, "worker", "index.ts"),
-          compatibility_date: "2025-01-01",
-          d1_databases: [
-            {
-              binding: "DB",
-              database_name: "words-wizard-upgrade",
-              database_id: "00000000-0000-0000-0000-000000000000",
-              migrations_dir: "drizzle",
-            },
-          ],
-        }),
-      )
-      const run = (args: readonly string[]): SpawnSyncReturns<string> =>
-        spawnSync(
-          process.execPath,
-          [
-            wranglerBin,
-            ...args,
-            "--local",
-            "--persist-to",
-            persist,
-            "--config",
-            configPath,
-          ],
-          {
-            cwd: srcRoot,
-            env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
-            encoding: "utf8",
-          },
-        )
-      const apply = () => run(["d1", "migrations", "apply", "DB"])
-      const scratchQuery = <T>(sql: string): T[] => {
-        const result = run(["d1", "execute", "DB", "--command", sql, "--json"])
-        if (result.status !== 0) {
-          throw new Error(`d1 execute failed\n${output(result)}`)
-        }
-        const json = (result.stdout ?? "").slice(result.stdout.indexOf("["))
-        return (JSON.parse(json) as Array<{ results: T[] }>)[0]?.results ?? []
-      }
-      try {
-        expect(apply().status).toBe(0)
-        const seeded = run([
-          "d1",
-          "execute",
-          "DB",
-          "--command",
-          `${userInsert("legacy-user")} ${profileInsert("legacy-user", { xp: 42, locale: "zh" })}`,
-        ])
-        expect(seeded.status).toBe(0)
-        copyFileSync(
-          join(drizzleDir, "0003_user_profile.sql"),
-          join(migrations, "0003_user_profile.sql"),
-        )
-        expect(apply().status).toBe(0)
-        expect(
-          scratchQuery<{
-            character_name: string
-            avatar: string
-            xp: number
-            locale: string
-            role: string
-            user_avatar_key: string | null
-          }>(
-            "SELECT character_name, avatar, xp, locale, role, user_avatar_key FROM profiles WHERE user_id = 'legacy-user'",
-          ),
-        ).toEqual([
-          {
-            character_name: "Hero",
-            avatar: "alex",
-            xp: 42,
-            locale: "zh",
-            role: "user",
-            user_avatar_key: null,
-          },
-        ])
-        expect(
-          scratchQuery<{ email: string | null }>(
-            "SELECT email FROM users WHERE oid = 'legacy-user'",
-          ),
-        ).toEqual([{ email: null }])
-      } finally {
-        rmSync(scratch, { recursive: true, force: true })
-      }
-    },
-    TIMEOUT,
-  )
 })
 
 describe("packs and pack_words", () => {

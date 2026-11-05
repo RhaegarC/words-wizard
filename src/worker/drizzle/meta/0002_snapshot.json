@@ -666,6 +666,21 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
+        "user_avatar_key": {
+          "name": "user_avatar_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -703,6 +718,10 @@
         "profiles_locale": {
           "name": "profiles_locale",
           "value": "\"profiles\".\"locale\" IN ('en', 'zh')"
+        },
+        "profiles_role": {
+          "name": "profiles_role",
+          "value": "\"profiles\".\"role\" IN ('user', 'teacher', 'admin')"
         }
       }
     },
@@ -1088,6 +1107,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },

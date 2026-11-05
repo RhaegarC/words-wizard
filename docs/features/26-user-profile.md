@@ -34,16 +34,28 @@ Mission 3 portal will trust are already consistent.
 
 ## Data model
 
-Migration `worker/drizzle/0003_user_profile.sql`, generated from `worker/db/schema.ts`.
+The columns live in the original DDL, `worker/drizzle/0002_user_schema.sql`, generated from
+`worker/db/schema.ts`. There is no separate migration: the user schema has never been applied to a
+cloud database, so folding the columns into the `CREATE TABLE` statements is the honest record of
+the schema rather than an `ALTER TABLE` that no deployed database will ever run.
 
 ```sql
 -- users: identity-level, token-derived
-ALTER TABLE users ADD COLUMN email TEXT;
+CREATE TABLE users (
+  oid          TEXT PRIMARY KEY NOT NULL,
+  created_at   INTEGER NOT NULL,
+  last_seen_at INTEGER NOT NULL,
+  email        TEXT
+);
 
 -- profiles: one row per user (user_id is the primary key)
-ALTER TABLE profiles ADD COLUMN role TEXT NOT NULL DEFAULT 'user'
-  CHECK (role IN ('user', 'teacher', 'admin'));
-ALTER TABLE profiles ADD COLUMN user_avatar_key TEXT;
+CREATE TABLE profiles (
+  ...,
+  locale          TEXT NOT NULL,
+  role            TEXT NOT NULL DEFAULT 'user',
+  user_avatar_key TEXT,
+  CONSTRAINT profiles_role CHECK (role IN ('user', 'teacher', 'admin'))
+);
 ```
 
 Rules:
@@ -51,14 +63,11 @@ Rules:
 - `users.email` is nullable. A token that carries neither `email` nor `preferred_username` stores
   nothing, and an existing value is never cleared by a later token without one. No unique index:
   Entra identities are unique, email aliases are not.
-- `profiles.role` is `NOT NULL` with a check constraint. Existing rows receive `user`; the database
-  refuses any other value.
+- `profiles.role` is `NOT NULL` with a check constraint. A row inserted without a role receives
+  `user`; the database refuses any other value.
 - `profiles.user_avatar_key` is nullable. It is an R2 object key, never a public URL.
 - `profiles.avatar` (buddy id) is unchanged, as are `avatars`, `avatar_stages`, and
   `characterName`.
-- If `drizzle-kit` generates a table rebuild for the check constraint, the migration must copy all
-  profile rows and preserve the `users` foreign key. The database tier asserts row count and values
-  survive.
 
 ## Token mapping and synchronisation
 
@@ -252,14 +261,13 @@ errors (size/type), and the profile-save error.
 
 ### Schema and migrations
 
-- [x] `0003_user_profile.sql` adds `users.email`, `profiles.role`, and
+- [x] `0002_user_schema.sql` declares `users.email`, `profiles.role`, and
       `profiles.user_avatar_key`; the migration set applies to a fresh local D1 and re-applies as a
       no-op.
-- [x] Existing profiles have `role = 'user'`, `user_avatar_key = NULL`; existing users have
-      `email = NULL`.
+- [x] A profile inserted without a role has `role = 'user'` and `user_avatar_key = NULL`; a user
+      inserted without an email has `email = NULL`.
 - [x] The check constraint refuses `role` outside `('user','teacher','admin')`.
-- [x] `profiles.avatar`, `characterName`, and the buddy tables are unchanged; a profile row
-      survives with all its values after the migration.
+- [x] `profiles.avatar`, `characterName`, and the buddy tables are unchanged.
 
 ### Token sync
 
@@ -319,7 +327,7 @@ errors (size/type), and the profile-save error.
 |---|---|
 | Unit | role precedence (`admin > teacher > user`), absent/unknown → `user`; email preference and blank handling; image magic-byte sniffing; key shape and URL composition; name validation reuse. |
 | Model | `Profiles` and `Users` declare the new columns, default, and check constraint; generated SQL is the expected shape. |
-| Database | migration applies and is a no-op on re-apply; default fills `user`; invalid role is refused; email/role/key round-trip in a fresh scope; sync writes only on change; profile row survives. |
+| Database | migration applies and is a no-op on re-apply; default fills `user`; invalid role is refused; email/role/key round-trip in a fresh scope; sync writes only on change. |
 | Host | real Worker via `wrangler dev`: `/v1/me` shape; anonymous avatar upload `401`; upload/remove/read against local R2; `404` unknown key; CORS `DELETE`; missing binding fails fast. |
 | Client | Settings photo flow and save-then-home; top-right chip photo/initials; sidebar entry unchanged; no role/email rendering. |
 
@@ -328,8 +336,8 @@ tiers use local D1. No fake bucket or repository double is introduced.
 
 ## Tasks (ordered)
 
-1. **Schema (RED → GREEN).** Add the Drizzle definitions and generate `0003`; write model and
-   database tests first: columns, default, check refusal, migration re-apply, row survival.
+1. **Schema (RED → GREEN).** Add the Drizzle definitions and fold them into the `0002` DDL; write
+   model and database tests first: columns, default, check refusal, migration re-apply.
 2. **Principal.** Extend `Principal` and the verifier with `email` and `role`; unit-test the
    mapping and fallbacks.
 3. **Sync.** Extend `ensureUser` and `createProfile`; database tests for write-only-on-change and

@@ -46,9 +46,12 @@ CREATE TABLE `profiles` (
 	`last_streak_date` text,
 	`last_monthly_review_at` integer,
 	`locale` text NOT NULL,
+	`role` text DEFAULT 'user' NOT NULL,
+	`user_avatar_key` text,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`oid`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`current_topic_id`) REFERENCES `topics`(`id`) ON UPDATE no action ON DELETE no action,
-	CONSTRAINT "profiles_locale" CHECK("profiles"."locale" IN ('en', 'zh'))
+	CONSTRAINT "profiles_locale" CHECK("profiles"."locale" IN ('en', 'zh')),
+	CONSTRAINT "profiles_role" CHECK("profiles"."role" IN ('user', 'teacher', 'admin'))
 );
 --> statement-breakpoint
 CREATE TABLE `progress` (
@@ -95,5 +98,6 @@ CREATE TABLE `sessions` (
 CREATE TABLE `users` (
 	`oid` text PRIMARY KEY NOT NULL,
 	`created_at` integer NOT NULL,
-	`last_seen_at` integer NOT NULL
+	`last_seen_at` integer NOT NULL,
+	`email` text
 );

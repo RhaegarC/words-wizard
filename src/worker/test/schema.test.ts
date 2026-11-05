@@ -338,6 +338,19 @@ describe("committed user migration", () => {
       /FOREIGN KEY \(\`user_id\`,\`session_id\`\) REFERENCES \`sessions\`\(\`user_id\`,\`id\`\)/,
     )
   })
+
+  it("writes the identity columns and the role check into the DDL", () => {
+    expect(schema).toMatch(/CREATE TABLE `users` \([^)]*`email` text/s)
+    expect(schema).toMatch(
+      /CREATE TABLE `profiles` \([^)]*`role` text DEFAULT 'user' NOT NULL/s,
+    )
+    expect(schema).toMatch(
+      /CREATE TABLE `profiles` \([^)]*`user_avatar_key` text/s,
+    )
+    expect(schema).toContain(
+      `CONSTRAINT "profiles_role" CHECK("profiles"."role" IN ('user', 'teacher', 'admin'))`,
+    )
+  })
 })
 
 describe("committed migrations", () => {
@@ -375,20 +388,6 @@ describe("committed migrations", () => {
     expect(schema).toContain(
       `CONSTRAINT "pack_words_position" CHECK("pack_words"."position" >= 1)`,
     )
-  })
-
-  it("adds the identity columns in a committed migration", () => {
-    const migration = readFileSync(
-      join(drizzleDir, "0003_user_profile.sql"),
-      "utf8",
-    )
-    expect(migration).toMatch(/ALTER TABLE `users` ADD `email` text/i)
-    expect(migration).toMatch(/ALTER TABLE `profiles` ADD `role` text/i)
-    expect(migration).toMatch(
-      /ALTER TABLE `profiles` ADD `user_avatar_key` text/i,
-    )
-    expect(migration).toContain("profiles_role")
-    expect(migration).toMatch(/DEFAULT 'user'/)
   })
 
   it("has a migration file for every journal entry", () => {
