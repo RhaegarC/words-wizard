@@ -107,13 +107,17 @@ describe("content model", () => {
 
   it("constrains content_meta to one row in a known dataset", () => {
     expect(
-      getTableConfig(contentMeta).checks.map((check) => check.name).sort(),
+      getTableConfig(contentMeta)
+        .checks.map((check) => check.name)
+        .sort(),
     ).toEqual(["content_meta_dataset", "content_meta_id"])
   })
 
   it("constrains a word's level and its JSON columns", () => {
     expect(
-      getTableConfig(words).checks.map((check) => check.name).sort(),
+      getTableConfig(words)
+        .checks.map((check) => check.name)
+        .sort(),
     ).toEqual(["words_examples_json", "words_level", "words_tags_json"])
   })
 
@@ -142,8 +146,8 @@ describe("content model", () => {
 
   it("points every foreign key at a content table", () => {
     const targets = (table: Parameters<typeof getTableConfig>[0]) =>
-      getTableConfig(table).foreignKeys.map((key) =>
-        getTableConfig(key.reference().foreignTable).name,
+      getTableConfig(table).foreignKeys.map(
+        (key) => getTableConfig(key.reference().foreignTable).name,
       )
 
     expect(targets(packs)).toEqual(["topics"])
@@ -173,8 +177,13 @@ describe("user model", () => {
     const config = getTableConfig(table)
     const declared = config.primaryKeys[0]?.columns.map((column) => column.name)
 
-    return declared ?? config.columns.filter((column) => column.primary).map(
-      (column) => column.name,
+    return (
+      declared ??
+      config.columns
+        .filter((column) => column.primary)
+        .map(
+          (column) => column.name,
+        )
     )
   }
 
@@ -217,13 +226,35 @@ describe("user model", () => {
     expect(primaryKey(metricEvents)).toEqual(["user_id", "event_id"])
   })
 
-  it("constrains the locale, progress status and strength, and session kind", () => {
+  it("stores the token-derived email on the user row", () => {
+    expect(columnNames(users)).toEqual([
+      "oid",
+      "created_at",
+      "last_seen_at",
+      "email",
+    ])
+    expect(users.email.notNull).toBe(false)
+  })
+
+  it("stores the role and the uploaded avatar key on the profile", () => {
+    expect(columnNames(profiles)).toContain("role")
+    expect(columnNames(profiles)).toContain("user_avatar_key")
+    expect(profiles.role.notNull).toBe(true)
+    expect(profiles.role.default).toBe("user")
+    expect(profiles.userAvatarKey.notNull).toBe(false)
+  })
+
+  it("constrains the locale, role, progress status and strength, and session kind", () => {
     expect(
-      getTableConfig(profiles).checks.map((check) => check.name),
-    ).toEqual(["profiles_locale"])
+      getTableConfig(profiles)
+        .checks.map((check) => check.name)
+        .sort(),
+    ).toEqual(["profiles_locale", "profiles_role"])
 
     expect(
-      getTableConfig(progress).checks.map((check) => check.name).sort(),
+      getTableConfig(progress)
+        .checks.map((check) => check.name)
+        .sort(),
     ).toEqual(["progress_status", "progress_strength"])
 
     expect(getTableConfig(sessions).checks.map((check) => check.name)).toEqual([
@@ -336,12 +367,28 @@ describe("committed migrations", () => {
     expect(schema).toContain(
       `CONSTRAINT "words_level" CHECK("words"."level" IN (1, 2, 3))`,
     )
-    expect(schema.match(/CONSTRAINT "words_.*_json" CHECK\(json_valid/g)).toHaveLength(
+    expect(
+      schema.match(/CONSTRAINT "words_.*_json" CHECK\(json_valid/g),
+    ).toHaveLength(
       2,
     )
     expect(schema).toContain(
       `CONSTRAINT "pack_words_position" CHECK("pack_words"."position" >= 1)`,
     )
+  })
+
+  it("adds the identity columns in a committed migration", () => {
+    const migration = readFileSync(
+      join(drizzleDir, "0003_user_profile.sql"),
+      "utf8",
+    )
+    expect(migration).toMatch(/ALTER TABLE `users` ADD `email` text/i)
+    expect(migration).toMatch(/ALTER TABLE `profiles` ADD `role` text/i)
+    expect(migration).toMatch(
+      /ALTER TABLE `profiles` ADD `user_avatar_key` text/i,
+    )
+    expect(migration).toContain("profiles_role")
+    expect(migration).toMatch(/DEFAULT 'user'/)
   })
 
   it("has a migration file for every journal entry", () => {

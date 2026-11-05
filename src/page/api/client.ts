@@ -7,31 +7,39 @@
  * a bug" without inspecting a `Response`.
  */
 
-export type FetchLike = (
-  input: string,
-  init?: RequestInit,
-) => Promise<Response>
+export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>
 
 export interface ApiClientOptions {
   /** The Worker origin; a trailing slash is ignored. */
   readonly baseUrl: string
   /** Throws when there is no account or a redirect is under way. */
-  readonly getToken: (options?: {
-    forceRefresh?: boolean
-  }) => Promise<string>
+  readonly getToken: (options?: { forceRefresh?: boolean }) => Promise<string>
   /** Called after a refreshed token is refused too; returns to sign-in. */
   readonly onUnauthorized: () => void | Promise<void>
   readonly fetchFn?: FetchLike
 }
 
 export interface ApiRequestOptions {
-  readonly method?: "GET" | "POST" | "PATCH"
+  readonly method?: "GET" | "POST" | "PATCH" | "DELETE"
   readonly body?: unknown
+  readonly signal?: AbortSignal
+}
+
+export interface ApiFormRequestOptions {
   readonly signal?: AbortSignal
 }
 
 export interface ApiClient {
   request<T>(path: string, options?: ApiRequestOptions): Promise<T>
+  /**
+   * A multipart upload. The browser owns the boundary and the `Content-Type`,
+   * so this path sets no `Content-Type` of its own.
+   */
+  requestMultipart<T>(
+    path: string,
+    form: FormData,
+    options?: ApiFormRequestOptions,
+  ): Promise<T>
 }
 
 export class ApiError extends Error {
@@ -90,39 +98,72 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     }
   }
 
+  const sendForm = async (
+    path: string,
+    form: FormData,
+    token: string,
+    signal: AbortSignal | undefined,
+  ): Promise<Response> => {
+    try {
+      return await fetchFn(`${baseUrl}${path}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+        signal,
+      })
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error
+      }
+      throw new ApiError("network", 0, "The API could not be reached.")
+    }
+  }
+
+  /**
+   * One request, with the single refresh-and-retry a 401 earns. Both the JSON
+   * and multipart paths share it so they cannot drift.
+   */
+  const run = async <T>(
+    sendOnce: (token: string) => Promise<Response>,
+  ): Promise<T> => {
+    let response = await sendOnce(await options.getToken())
+    if (response.status === 401) {
+      // One silent refresh, one retry. A second refusal is the end of the
+      // browser session, not a token that needs another minute.
+      response = await sendOnce(await options.getToken({ forceRefresh: true }))
+
+      if (response.status === 401) {
+        await options.onUnauthorized()
+        throw new ApiError("unauthorized", 401, "Authentication required.")
+      }
+    }
+
+    if (!response.ok) {
+      throw await toApiError(response)
+    }
+
+    if (response.status === 204) {
+      return undefined as T
+    }
+
+    const text = await response.text()
+
+    return (text === "" ? undefined : JSON.parse(text)) as T
+  }
+
   return {
-    async request<T>(
+    request<T>(
       path: string,
       requestOptions: ApiRequestOptions = {},
     ): Promise<T> {
-      let response = await send(path, requestOptions, await options.getToken())
-
-      if (response.status === 401) {
-        // One silent refresh, one retry. A second refusal is the end of the
-        // browser session, not a token that needs another minute.
-        response = await send(
-          path,
-          requestOptions,
-          await options.getToken({ forceRefresh: true }),
-        )
-
-        if (response.status === 401) {
-          await options.onUnauthorized()
-          throw new ApiError("unauthorized", 401, "Authentication required.")
-        }
-      }
-
-      if (!response.ok) {
-        throw await toApiError(response)
-      }
-
-      if (response.status === 204) {
-        return undefined as T
-      }
-
-      const text = await response.text()
-
-      return (text === "" ? undefined : JSON.parse(text)) as T
+      return run((token) => send(path, requestOptions, token))
+    },
+    requestMultipart<T>(
+      path: string,
+      form: FormData,
+      formOptions: ApiFormRequestOptions = {},
+    ): Promise<T> {
+      return run((token) => sendForm(path, form, token, formOptions.signal))
     },
   }
 }

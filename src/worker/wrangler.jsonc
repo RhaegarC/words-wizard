@@ -25,6 +25,14 @@
       "migrations_dir": "drizzle"
     }
   ],
+  // User-uploaded avatars. The bucket is created by the operator; the public
+  // custom domain is configured separately (docs/operations.md).
+  "r2_buckets": [
+    {
+      "binding": "AVATARS",
+      "bucket_name": "words-wizard-avatars"
+    }
+  ],
   // Activated when the operator first deploys the Worker.
   "routes": [{ "pattern": "wordsapi.nioh.uk", "custom_domain": true }]
 }

@@ -252,65 +252,65 @@ errors (size/type), and the profile-save error.
 
 ### Schema and migrations
 
-- [ ] `0003_user_profile.sql` adds `users.email`, `profiles.role`, and
+- [x] `0003_user_profile.sql` adds `users.email`, `profiles.role`, and
       `profiles.user_avatar_key`; the migration set applies to a fresh local D1 and re-applies as a
       no-op.
-- [ ] Existing profiles have `role = 'user'`, `user_avatar_key = NULL`; existing users have
+- [x] Existing profiles have `role = 'user'`, `user_avatar_key = NULL`; existing users have
       `email = NULL`.
-- [ ] The check constraint refuses `role` outside `('user','teacher','admin')`.
-- [ ] `profiles.avatar`, `characterName`, and the buddy tables are unchanged; a profile row
+- [x] The check constraint refuses `role` outside `('user','teacher','admin')`.
+- [x] `profiles.avatar`, `characterName`, and the buddy tables are unchanged; a profile row
       survives with all its values after the migration.
 
 ### Token sync
 
-- [ ] A token with `roles: ["admin"]` stores `admin`; `["teacher","user"]` stores `teacher`;
+- [x] A token with `roles: ["admin"]` stores `admin`; `["teacher","user"]` stores `teacher`;
       `["user"]` stores `user`; absent or malformed stores `user`.
-- [ ] `email` is preferred over `preferred_username`; a blank value stores nothing; a later token
+- [x] `email` is preferred over `preferred_username`; a blank value stores nothing; a later token
       without either does not clear an existing email.
-- [ ] Sync happens on `GET /v1/me` and on every mutating `/v1/me*` route, writing only on change.
-- [ ] `POST /v1/me/profile` creates the row with the principal's role.
-- [ ] No request body can set `email`, `role`, or `user_avatar_key`; an unknown field is a `422`.
+- [x] Sync happens on `GET /v1/me` and on every mutating `/v1/me*` route, writing only on change.
+- [x] `POST /v1/me/profile` creates the row with the principal's role.
+- [x] No request body can set `email`, `role`, or `user_avatar_key`; an unknown field is a `422`.
 
 ### API
 
-- [ ] `GET /v1/me` returns top-level `email`, `profile.role`, and `profile.userAvatarKey`; the
+- [x] `GET /v1/me` returns top-level `email`, `profile.role`, and `profile.userAvatarKey`; the
       existing fields are unchanged.
-- [ ] `POST /v1/me/avatar` rejects anonymously with `401` before reading the body or touching R2;
+- [x] `POST /v1/me/avatar` rejects anonymously with `401` before reading the body or touching R2;
       rejects a missing profile with `404`; rejects over 2 MiB, a missing file, or a non-JPEG/PNG/
       WebP payload with `422`.
-- [ ] The stored object key is `avatars/<oid>/<uuid>.<ext>`; the row is updated; the previous
+- [x] The stored object key is `avatars/<oid>/<uuid>.<ext>`; the row is updated; the previous
       object is deleted best-effort; a failed row update removes the new object best-effort.
-- [ ] `DELETE /v1/me/avatar` clears the key and deletes the object; a second call still returns
+- [x] `DELETE /v1/me/avatar` clears the key and deletes the object; a second call still returns
       `204`.
-- [ ] `GET /v1/avatars/*` serves the object publicly with its content type and immutable cache
+- [x] `GET /v1/avatars/*` serves the object publicly with its content type and immutable cache
       headers, and answers `404` for an unknown key.
-- [ ] CORS advertises `DELETE`; the route table distinguishes `405` on `/v1/me/avatar`.
-- [ ] A missing `AVATARS` binding fails the request with `config_missing` before any write.
+- [x] CORS advertises `DELETE`; the route table distinguishes `405` on `/v1/me/avatar`.
+- [x] A missing `AVATARS` binding fails the request with `config_missing` before any write.
 
 ### Client
 
-- [ ] The top-right chip shows the uploaded photo, or an initials tile when none exists, plus the
+- [x] The top-right chip shows the uploaded photo, or an initials tile when none exists, plus the
       display name. It is not clickable.
-- [ ] The sidebar mini-profile still opens Settings.
-- [ ] Settings can choose, preview, upload, and remove a photo; no client-side downscale.
-- [ ] Saving display name and/or photo returns to `#/home`; a failed save stays on Settings with
+- [x] The sidebar mini-profile still opens Settings.
+- [x] Settings can choose, preview, upload, and remove a photo; no client-side downscale.
+- [x] Saving display name and/or photo returns to `#/home`; a failed save stays on Settings with
       an error.
-- [ ] The buddy portrait and buddy picker are unchanged everywhere.
-- [ ] Email and role are not displayed anywhere.
-- [ ] The 2 MiB limit and JPEG/PNG/WebP restriction are visible as error messages in both locales.
+- [x] The buddy portrait and buddy picker are unchanged everywhere.
+- [x] Email and role are not displayed anywhere.
+- [x] The 2 MiB limit and JPEG/PNG/WebP restriction are visible as error messages in both locales.
 
 ### Documentation
 
-- [ ] `docs/PRD.md` §8.3 records `email`, `role`, and `user_avatar_key`; the decision-log row that
+- [x] `docs/PRD.md` §8.3 records `email`, `role`, and `user_avatar_key`; the decision-log row that
       says email and display name are not stored is amended.
-- [ ] `docs/privacy.md` and `page/public/privacy.html` state that email is now stored.
-- [ ] `docs/operations.md` records the R2 bucket, custom domain, binding, and the app-role
+- [x] `docs/privacy.md` and `page/public/privacy.html` state that email is now stored.
+- [x] `docs/operations.md` records the R2 bucket, custom domain, binding, and the app-role
       prerequisite.
-- [ ] `docs/develop/login.md` records the `roles` claim mapping and the `email` →
+- [x] `docs/develop/login.md` records the `roles` claim mapping and the `email` →
       `preferred_username` fallback.
-- [ ] `docs/develop/page.md` and `docs/develop/worker.md` record `VITE_AVATAR_BASE_URL`, the R2
+- [x] `docs/develop/page.md` and `docs/develop/worker.md` record `VITE_AVATAR_BASE_URL`, the R2
       binding, and local avatar serving.
-- [ ] Mission 2's feature table adds 26; Mission 3 renumbers to 27+ (admin portal 27, vocabulary
+- [x] Mission 2's feature table adds 26; Mission 3 renumbers to 27+ (admin portal 27, vocabulary
       admin 28, artwork 29, review/release 30).
 
 ## Tests by tier

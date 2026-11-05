@@ -27,6 +27,8 @@ Set these in **Settings → Environment variables → Production** for the build
 - `VITE_ENTRA_TENANT_ID` — the Entra tenant id
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
+- `VITE_AVATAR_BASE_URL` — optional; `https://avatars.nioh.uk`. Unset means
+  `<VITE_API_BASE_URL>/v1/avatars`.
 
 They are public configuration; there is no client secret. The matching Worker vars and the D1
 database are in [worker.md](worker.md); the full topology is in [operations.md](../operations.md).
@@ -38,8 +40,8 @@ deployment, and `src/page/test/scripts/deployment-config.test.ts` asserts it.
 
 ### Configure
 
-The SPA reads four build-time variables from `src/.env`. Copy the example and fill it in with the
-Entra SPA registration:
+The SPA reads four required build-time variables from `src/.env`, plus one optional avatar
+variable. Copy the example and fill it in with the Entra SPA registration:
 
 ```bash
 cd src
@@ -53,6 +55,7 @@ pnpm install
 | `VITE_ENTRA_TENANT_ID` | the Entra tenant id |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
+| `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
 
 `VITE_API_BASE_URL` points at the local Worker, never at production. The Entra registration must
 list `http://localhost:8443/` as a redirect URI in addition to `https://words.nioh.uk/`, or
@@ -98,6 +101,39 @@ including how to re-apply migrations and reset the local database, is in
   site data for `http://localhost:8443` once.
 - `pnpm typecheck` covers the page, test, and worker projects; `pnpm test` runs the whole suite.
   Neither starts either dev server.
+
+## Profile, avatar, and role
+
+`GET /v1/me` carries `email`, `profile.role`, and `profile.userAvatarKey`. The page shows the
+name and photo; role and email are server-owned and are never rendered.
+
+**Top-right chip.** `AppShell` renders a display-only name chip inside `<main>`: the stored photo
+when `userAvatarKey` is set, otherwise the display name's first code point. `src/page/avatar.ts`
+owns both helpers — `avatarUrl(baseUrl, key)` returns `null` for a missing or malformed key, so a
+bad value degrades to initials instead of a broken image, and `avatarInitials(name)` handles
+CJK and empty names. The chip is not a link; the sidebar mini-profile remains the entry to
+Settings.
+
+**Settings photo.** The photo field accepts JPEG, PNG, or WebP. The browser preview comes from
+`URL.createObjectURL` and is revoked when the file changes or the screen unmounts. Choosing a
+new file replaces the pending preview; **Remove** marks the stored photo for deletion. Neither
+action calls the API on its own.
+
+**Save order.** A single save runs photo first, then name:
+
+1. `uploadAvatar(file)` (multipart `POST /v1/me/avatar`) or `removeAvatar()`
+   (`DELETE /v1/me/avatar`) when the photo changed;
+2. `updateProfile(profile.id, patch)` for the display name;
+3. `onProfileUpdated(...)` and `navigate("#/home")`.
+
+If the photo step fails, the name is not sent and the screen stays put. If the name step fails
+after a successful photo step, the photo change is already stored, so the message says the photo
+saved and the name did not (`settings.photoSavedNameFailed`) rather than asking for the photo
+again. A refused upload (for example a type or size rejected by the Worker) leaves the stored
+profile untouched.
+
+Multipart requests deliberately omit `Content-Type`: the browser sets the boundary. The API
+client's one `401` refresh-retry applies to them like any other request.
 
 ## Deploy
 

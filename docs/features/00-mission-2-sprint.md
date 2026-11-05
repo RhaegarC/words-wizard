@@ -1,7 +1,7 @@
 # Mission 2 — Sprint Goal: "Your buddy follows you"
 
-> Status: **In progress — features 21–24 are merged; feature 25 is in review; feature 26's
-> design is locked; production provisioning and deployment remain with the operator.**
+> Status: **In progress — features 21–24 are merged; feature 25 is in review; feature 26 is
+> implemented and in review; production provisioning and deployment remain with the operator.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
 > disagree, the Mission 2 doc wins.
 > Baseline: Mission 1 (features 01–20) is shipped on `develop`; feature 17 content production
@@ -38,6 +38,8 @@ Browser (PWA, words.nioh.uk)
   ├─ GET  /v1/content ────────> Worker (wordsapi.nioh.uk) ──> D1 content tables
   ├─ GET  /v1/me ─────────────> Worker (Bearer JWT) ────────> D1 user tables
   ├─ POST /v1/me/sessions ────> Worker (one idempotent D1 batch)
+  ├─ POST/DELETE /v1/me/avatar > Worker ──> R2 (uploaded photo)
+  ├─ GET /v1/avatars/* ───────> Worker ──> R2, or the bucket domain directly
   └─ static shell, locales, art ──> Cloudflare Pages
 ```
 
@@ -72,6 +74,9 @@ Browser (PWA, words.nioh.uk)
 - [x] Local Dexie data is deleted once on first load of the new version, with a one-time notice.
 - [x] A signed-in child can re-customise the buddy, change topic and locale, export their data, and
       read a short bilingual privacy note. There is no delete or reset control.
+- [x] A signed-in identity syncs its email and app role from the token on every authenticated
+      request, and can upload, replace, or remove a profile photo stored in R2; the page shows the
+      photo or initials with the display name in a top-right chip.
 - [ ] `wordsapi.nioh.uk/health` answers; `words.nioh.uk` serves the app; CORS rejects an unlisted
       origin; a real Entra token is accepted and a forged one is rejected.
 - [ ] The Worker and page deploy from Workers Builds / Pages Git integration with no Cloudflare
@@ -118,7 +123,7 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 23 | [User profile, progress & session commit](archive/23-user-data-api.md) | Done | 21, 22 |
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
 | 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
-| 26 | [User profile, email & role sync](26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Not started — design locked | 23, 24, 25 |
+| 26 | [User profile, email & role sync](26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | In progress — implementation, tests, and docs; PR open | 23, 24, 25 |
 | 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.

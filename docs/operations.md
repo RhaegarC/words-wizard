@@ -11,8 +11,12 @@ and your shell.
 **Verification:** the local commands in this document were run on 2026-10-30
 (`pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm check:dist`,
 `pnpm worker:dev` with `GET /health` returning `{"ok":true,"contentVersion":"0.3.0"}`,
-and `wrangler d1 migrations apply --local`). The custom domains, production D1
-database, Workers Builds connection, Entra sign-in, and production
+and `wrangler d1 migrations apply --local`). Feature 26 re-ran `pnpm typecheck`,
+`pnpm test`, `pnpm build`, and `pnpm check:dist` on 2026-11-05; the host tier
+boots the real Worker in `wrangler dev` with a local D1 and a local R2 under a
+temporary `--persist-to` directory, and covers avatar upload, replacement,
+removal, and public serving. The custom domains, production D1 database, R2
+bucket, Workers Builds connection, Entra sign-in and app roles, and production
 `pnpm check:deploy` are configured by the operator and were not run from the
 repository.
 
@@ -24,6 +28,7 @@ repository.
 | API | `https://wordsapi.nioh.uk` — Cloudflare Worker |
 | Production D1 | `words-wizard`, binding `DB` |
 | Test D1 | `words-wizard-test`, used only by the gated remote tier |
+| Avatars | Cloudflare R2 `words-wizard-avatars`, binding `AVATARS`, public read at `https://avatars.nioh.uk` |
 | Auth | Microsoft Entra ID, SPA redirect + PKCE, no client secret |
 | Deploy | Cloudflare Git integration for both Pages and Workers Builds |
 | CI | GitHub Actions: checks on PRs, gated remote D1 run, no deploy |
@@ -45,8 +50,18 @@ repository.
 5. Put the tenant and client ids into the Worker vars and the Pages build
    environment. There is **no client secret**: the browser app is public and
    uses authorization code + PKCE.
+6. Define the **app roles** `user`, `teacher`, and `admin` in the application
+   manifest (`appRoles`, one entry each, `allowedMemberTypes` `User`), and
+   assign the role to the account through **Enterprise applications →
+   Users and groups**. The Worker maps the token's `roles` claim to the stored
+   profile role (`admin` beats `teacher`, which beats `user`); a token without
+   the claim — or with an unassigned role — stores `user`. The role authorises
+   nothing in the current release; the teacher/admin portal is planned.
+   To change a role, update the assignment in Entra. The next request carrying
+   a fresh token syncs it; the old token keeps its old role until it expires
+   (MSAL caches tokens for up to an hour).
 
-**All five steps are load-bearing.** A registration that signs users in but
+**All six steps are load-bearing.** A registration that signs users in but
 exposes no API on the configured Application ID URI produces a valid redirect
 and then fails the silent token request with `invalid_scope`; the page shows
 the generic retry screen because the failure happens before any API call. That
@@ -56,12 +71,16 @@ client. Verify the registration with:
 
 ```bash
 az ad app show --id <client-id> \
-  --query '{uris:identifierUris, scopes:api.oauth2PermissionScopes, version:api.requestedAccessTokenVersion, spa:spa.redirectUris}'
+  --query '{uris:identifierUris, scopes:api.oauth2PermissionScopes, version:api.requestedAccessTokenVersion, spa:spa.redirectUris, roles:appRoles}'
 ```
 
 `identifierUris` must contain `api://<client-id>`, the scope list must contain
-`access_as_user` with `isEnabled: true`, `version` must be `2`, and both
-redirect URIs must be present.
+`access_as_user` with `isEnabled: true`, `version` must be `2`, both redirect
+URIs must be present, and `roles` must contain `user`, `teacher`, and `admin`.
+
+The `roles` claim is only emitted for an app role that is defined **and
+assigned**. A sign-in with no assignment is valid and stores role `user`, so a
+missing assignment shows up as "everything is a user", not as a login failure.
 
 The Worker validates the access token against the tenant's JWKS endpoint:
 
@@ -116,6 +135,48 @@ production `CLOUDFLARE_API_TOKEN` in their shell must not be able to make
 `pnpm test` migrate or write production. The remote tier skips visibly when the
 three variables are absent.
 
+## R2 and avatars
+
+User photos live in an R2 bucket, not in D1 or the repository. The Worker
+writes through the `AVATARS` binding and serves `GET /v1/avatars/*` from the
+same bucket; a custom domain makes that route public read-only.
+
+Create the bucket and attach its public domain:
+
+```bash
+cd src
+pnpm exec wrangler r2 bucket create words-wizard-avatars
+pnpm exec wrangler r2 bucket domain add words-wizard-avatars \
+  --domain avatars.nioh.uk --zone-id <zone-id>
+```
+
+`--zone-id` is the Cloudflare zone that owns `nioh.uk`; copy it from the
+dashboard's zone **Overview** page.
+
+`src/worker/wrangler.jsonc` declares the binding (committed as configuration,
+not a secret):
+
+```jsonc
+"r2_buckets": [
+  { "binding": "AVATARS", "bucket_name": "words-wizard-avatars" }
+]
+```
+
+The page reads avatars from `VITE_AVATAR_BASE_URL` when it is set; otherwise it
+builds the URL as `<VITE_API_BASE_URL>/v1/avatars`. Point that variable at
+`https://avatars.nioh.uk` to bypass the Worker and let R2 serve the object
+directly. Both addresses return the same bytes with
+`Cache-Control: public, max-age=31536000, immutable`; object keys include a
+random UUID, so a replaced photo gets a new URL and never needs revalidation.
+
+Objects are written under `avatars/<oid>/<uuid>.<png|jpg|webp>`. An avatar
+route whose `AVATARS` binding is missing fails with `config_missing` naming
+`AVATARS`, and the public route checks the key shape before reading R2, so
+`GET /v1/avatars/../…` or an arbitrary key answers `404`.
+
+Local development and the host tier get an emulated bucket from
+`wrangler dev --persist-to <dir>`; no credentials or real bucket are needed.
+
 ## Workers Builds
 
 Connect `RhaegarC/words-wizard` to the Worker:
@@ -156,6 +217,8 @@ Set these production environment variables:
 - `VITE_ENTRA_TENANT_ID`
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
+- `VITE_AVATAR_BASE_URL` — optional; `https://avatars.nioh.uk`. Leave it unset
+  to serve avatars through the Worker at `<VITE_API_BASE_URL>/v1/avatars`.
 
 Attach the custom domain `words.nioh.uk`. TLS is automatic. Previews stay off:
 a preview URL would publish the dev dataset and its service worker.
@@ -221,12 +284,13 @@ procedure, run against production only with explicit approval.
 
 1. Confirm the request belongs to the account holder. The only user key is the
    Entra `oid`; never accept an email address or display name as the key.
-2. Read the rows first:
+2. Read the rows first. Capture `user_avatar_key` before deleting anything;
+   the R2 object is outside D1 and is not covered by the cascade:
 
    ```bash
    cd src
    pnpm exec wrangler d1 execute DB --remote --config worker/wrangler.jsonc \
-     --command "SELECT oid, created_at, last_seen_at FROM users WHERE oid = '<oid>';"
+     --command "SELECT u.oid, u.created_at, u.last_seen_at, p.user_avatar_key FROM users u LEFT JOIN profiles p ON p.user_id = u.oid WHERE u.oid = '<oid>';"
    ```
 
 3. Delete the user row. Every user-owned table declares
@@ -237,19 +301,32 @@ procedure, run against production only with explicit approval.
      --command "DELETE FROM users WHERE oid = '<oid>';"
    ```
 
-4. Confirm no orphan rows remain:
+4. Delete the recorded photo object, if there is one:
+
+   ```bash
+   pnpm exec wrangler r2 object delete \
+     words-wizard-avatars/<user_avatar_key> --remote
+   ```
+
+   Only keys under `avatars/<oid>/` belong to this account. If the key is empty
+   or the object was already replaced, list the account's prefix and delete any
+   object still under it. Never delete a key taken from client input.
+
+5. Confirm no orphan rows remain:
 
    ```bash
    pnpm exec wrangler d1 execute DB --remote --config worker/wrangler.jsonc \
      --command "PRAGMA foreign_key_check;"
    ```
 
-5. Record the date, the `oid`, the operator, and the approval in the operations
-   log. Do not record the child's name or any other personal data in the log.
+6. Record the date, the `oid`, the operator, and the approval in the operations
+   log. Do not record the child's name, email address, photo key, or any other
+   personal data in the log.
 
 The cascade covers `profiles`, `progress`, `pack_introductions`, `metrics`,
 `sessions`, `session_metrics`, and `metric_events`. Content tables are not
-user-owned and are not touched.
+user-owned and are not touched. R2 has no foreign key to D1, which is why step 4
+is a separate manual action.
 
 ## Secrets
 

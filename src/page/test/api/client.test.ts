@@ -9,10 +9,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   })
 }
 
-function requestOf(
-  fetchFn: ReturnType<typeof vi.fn>,
-  call = 0,
-): RequestInit {
+function requestOf(fetchFn: ReturnType<typeof vi.fn>, call = 0): RequestInit {
   return fetchFn.mock.calls[call]?.[1] as RequestInit
 }
 
@@ -58,13 +55,84 @@ describe("createApiClient", () => {
     })
   })
 
-  it("surfaces the error envelope as an ApiError", async () => {
-    const fetchFn = vi.fn().mockResolvedValue(
-      jsonResponse(
-        { error: { code: "validation_failed", message: "Bad body." } },
-        422,
-      ),
+  it("sends a multipart form without setting a content type", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(jsonResponse({ key: "a.png" }))
+    const client = createApiClient({
+      baseUrl: "https://api.example.test",
+      getToken: async () => "token-1",
+      onUnauthorized: () => {},
+      fetchFn,
+    })
+    const form = new FormData()
+    form.append(
+      "file",
+      new File([new Uint8Array([0x89, 0x50])], "me.png", {
+        type: "image/png",
+      }),
     )
+    await expect(
+      client.requestMultipart("/v1/me/avatar", form),
+    ).resolves.toEqual({
+      key: "a.png",
+    })
+    expect(pathOf(fetchFn)).toBe("https://api.example.test/v1/me/avatar")
+    expect(requestOf(fetchFn).method).toBe("POST")
+    expect(requestOf(fetchFn).body).toBe(form)
+    expect(requestOf(fetchFn).headers).toEqual({
+      Authorization: "Bearer token-1",
+    })
+  })
+  it("sends DELETE and resolves undefined for a 204", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }))
+    const client = createApiClient({
+      baseUrl: "https://api.example.test",
+      getToken: async () => "token-1",
+      onUnauthorized: () => {},
+      fetchFn,
+    })
+    await expect(
+      client.request("/v1/me/avatar", { method: "DELETE" }),
+    ).resolves.toBeUndefined()
+    expect(requestOf(fetchFn).method).toBe("DELETE")
+    expect(requestOf(fetchFn).body).toBeUndefined()
+    expect(requestOf(fetchFn).headers).toEqual({
+      Authorization: "Bearer token-1",
+    })
+  })
+  it("refreshes once after a 401 on a form request", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({ error: { code: "unauthorized", message: "No." } }, 401),
+      )
+      .mockResolvedValueOnce(jsonResponse({ key: "a.png" }))
+    const getToken = vi
+      .fn()
+      .mockResolvedValueOnce("stale")
+      .mockResolvedValueOnce("fresh")
+    const client = createApiClient({
+      baseUrl: "https://api.example.test",
+      getToken,
+      onUnauthorized: () => {},
+      fetchFn,
+    })
+    await client.requestMultipart("/v1/me/avatar", new FormData())
+    expect(fetchFn).toHaveBeenCalledTimes(2)
+    expect(requestOf(fetchFn, 1).headers).toEqual({
+      Authorization: "Bearer fresh",
+    })
+  })
+  it("surfaces the error envelope as an ApiError", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(
+          { error: { code: "validation_failed", message: "Bad body." } },
+          422,
+        ),
+      )
     const client = createApiClient({
       baseUrl: "https://api.example.test",
       getToken: async () => "token-1",
@@ -100,9 +168,14 @@ describe("createApiClient", () => {
   })
 
   it.each([500, 503])("marks a %i response retryable", async (status) => {
-    const fetchFn = vi.fn().mockResolvedValue(
-      jsonResponse({ error: { code: "internal", message: "Internal." } }, status),
-    )
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(
+          { error: { code: "internal", message: "Internal." } },
+          status,
+        ),
+      )
     const client = createApiClient({
       baseUrl: "https://api.example.test",
       getToken: async () => "token-1",

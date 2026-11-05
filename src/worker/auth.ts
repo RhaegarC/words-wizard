@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from "hono"
 import { createRemoteJWKSet, jwtVerify } from "jose"
 import type { JWTVerifyGetKey } from "jose"
 
+import type { Role } from "../shared/types"
 import type { WorkerConfig } from "./config"
 import type { AppEnv, Principal } from "./context"
 import { UnauthorizedError } from "./errors"
@@ -48,10 +49,31 @@ export function createTokenVerifier(
       throw new UnauthorizedError()
     }
 
-    return { oid: payload.oid }
+    return {
+      oid: payload.oid,
+      email: emailClaim(payload),
+      role: roleClaim(payload.roles),
+    }
   }
 }
 
+/**
+ * Entra emits either claim depending on the account and flow. An address is
+ * stored, never cleared: a later token without one leaves the stored value.
+ */
+function emailClaim(payload: Record<string, unknown>): string | null {
+  return usableText(payload.email) ?? usableText(payload.preferred_username)
+}
+function usableText(value: unknown): string | null {
+  return typeof value === "string" && value.trim() !== "" ? value.trim() : null
+}
+/** `admin` outranks `teacher`, which outranks the default `user`. */
+function roleClaim(roles: unknown): Role {
+  if (!Array.isArray(roles)) return "user"
+  if (roles.includes("admin")) return "admin"
+  if (roles.includes("teacher")) return "teacher"
+  return "user"
+}
 function hasAccessScope(scp: unknown): boolean {
   return (
     typeof scp === "string" &&
