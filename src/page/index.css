@@ -1005,8 +1005,16 @@ a:focus-visible,
 /* Display-only identity chip: the sidebar mini-profile is the Settings entry. */
 .shell-topbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 14px;
+}
+
+/* The sidebar carries the brand on wide screens; the top bar carries it once
+   the sidebar is hidden. */
+.shell-topbar .brand {
+  display: none;
 }
 
 .user-chip {
@@ -3375,6 +3383,19 @@ img.buddy-stage {
 
   .sidebar {
     display: none;
+  }
+
+  .shell-topbar .brand {
+    display: flex;
+  }
+
+  .shell-topbar .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .shell-topbar .brand-name {
+    font-size: 19px;
   }
 
   .content {
