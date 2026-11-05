@@ -3,8 +3,9 @@ import type { MiddlewareHandler } from "hono"
 
 import { createTokenVerifier } from "./auth"
 import type { TokenVerifier } from "./auth"
+import { AVATAR_CACHE_CONTROL, isAvatarKey } from "./avatar"
 import type { WorkerConfig } from "./config"
-import { readConfig, requireDb } from "./config"
+import { readConfig, requireAvatars, requireDb } from "./config"
 import {
   contentEtag,
   ifNoneMatchMatches,
@@ -28,6 +29,7 @@ export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/v1/me/sessions": ["POST"],
   "/v1/me/metrics": ["POST"],
   "/v1/me/care": ["POST"],
+  "/v1/me/avatar": ["POST", "DELETE"],
 }
 
 /**
@@ -92,6 +94,21 @@ export function createApp(options: AppOptions = {}): Hono<AppEnv> {
     return c.json(bundle)
   })
 
+  // Public: an `<img>` cannot send a Bearer token. The path after the prefix
+  // is the full R2 key, and only keys the upload route could have written are
+  // read, so `..` and another prefix are refused before R2 is touched.
+  app.get("/v1/avatars/*", async (c) => {
+    const key = c.req.path.slice("/v1/avatars/".length)
+    if (!isAvatarKey(key)) return c.notFound()
+    const object = await requireAvatars(c.env).get(key)
+    if (object === null) return c.notFound()
+    c.header(
+      "Content-Type",
+      object.httpMetadata?.contentType ?? "application/octet-stream",
+    )
+    c.header("Cache-Control", AVATAR_CACHE_CONTROL)
+    return c.body(object.body)
+  })
   // Authenticated user data. Registered after the config and CORS middleware,
   // so a missing var fails before a token is even looked at.
   registerMeRoutes(app, {

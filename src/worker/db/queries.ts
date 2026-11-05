@@ -15,7 +15,7 @@ import type {
   ServerProfileCommit,
   ServerProgressCommit,
 } from "../../shared/sessionPayload"
-import type { ProgressStatus } from "../../shared/types"
+import type { ProgressStatus, Role } from "../../shared/types"
 
 import {
   CareUnavailableError,
@@ -24,10 +24,7 @@ import {
   UnknownWordError,
 } from "../errors"
 
-import type {
-  D1Database,
-  D1PreparedStatement,
-} from "./d1"
+import type { D1Database, D1PreparedStatement } from "./d1"
 
 /**
  * The user-data read and write paths (feature 23).
@@ -42,6 +39,13 @@ export interface UserRow {
   oid: string
   created_at: number
   last_seen_at: number
+  email: string | null
+}
+
+/** What the verified token says about the caller, never what a body says. */
+export interface Identity {
+  readonly email: string | null
+  readonly role: Role
 }
 
 export interface ProfileRow {
@@ -62,6 +66,8 @@ export interface ProfileRow {
   last_streak_date: string | null
   last_monthly_review_at: number | null
   locale: string
+  role: string
+  user_avatar_key: string | null
 }
 
 export interface ProgressRow {
@@ -111,7 +117,14 @@ export function toServerProfile(row: ProfileRow): ServerProfile {
     lastStreakDate: row.last_streak_date,
     lastMonthlyReviewAt: row.last_monthly_review_at,
     locale: row.locale === "zh" ? "zh" : "en",
+    role: toRole(row.role),
+    userAvatarKey: row.user_avatar_key,
   }
+}
+
+/** The column is constrained; an unexpected value still degrades to `user`. */
+function toRole(value: string): Role {
+  return value === "admin" || value === "teacher" ? value : "user"
 }
 
 export function toServerProgress(row: ProgressRow): ServerProgress {
@@ -144,12 +157,28 @@ const UPSERT_USER = `INSERT INTO users (oid, created_at, last_seen_at)
 VALUES (?, ?, ?)
 ON CONFLICT(oid) DO UPDATE SET last_seen_at = excluded.last_seen_at`
 
+/**
+ * The token is authoritative for the role, and an absent email never erases a
+ * stored one: `COALESCE` keeps the older address when the new token has none.
+ */
+const SYNC_IDENTITY = `INSERT INTO users (oid, created_at, last_seen_at, email)
+VALUES (?, ?, ?, ?)
+ON CONFLICT(oid) DO UPDATE SET
+  last_seen_at = excluded.last_seen_at,
+  email = COALESCE(excluded.email, users.email)`
+
+/** No row means no profile yet, which is also the correct no-op. */
+const SYNC_ROLE = `UPDATE profiles SET role = ?
+WHERE user_id = ? AND role <> ?`
+
 const INSERT_PROFILE = `INSERT OR IGNORE INTO profiles (
   user_id, character_name, avatar, current_topic_id, xp, created_at,
   last_practice_at, last_wake_at, frozen_days, care_tokens,
   sessions_since_last_token, completed_sessions, streak_count, best_streak,
-  last_streak_date, last_monthly_review_at, locale
-) VALUES (?, ?, ?, ?, 0, ?, ?, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, ?)`
+  last_streak_date, last_monthly_review_at, locale, role
+) VALUES (?, ?, ?, ?, 0, ?, ?, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, ?, ?)`
+
+const SET_AVATAR_KEY = `UPDATE profiles SET user_avatar_key = ? WHERE user_id = ?`
 
 const UPSERT_PROGRESS = `INSERT INTO progress (
   user_id, word_id, status, strength, next_review_at, correct_count,
@@ -194,13 +223,21 @@ SET care_tokens = ?, sessions_since_last_token = ?, last_wake_at = ?,
     frozen_days = ?, streak_count = ?, best_streak = ?, last_streak_date = ?
 WHERE user_id = ? AND changes() = 1`
 
-/** Every authenticated request records the identity before reading its data. */
+/**
+ * Every authenticated request records the identity before reading its data.
+ * The email and role come from the verified token; both syncs are conditional
+ * so an unchanged identity costs one statement that matches no row.
+ */
 export async function ensureUser(
   db: D1Database,
   oid: string,
+  identity: Identity,
   now: number,
 ): Promise<void> {
-  await db.prepare(UPSERT_USER).bind(oid, now, now).run()
+  await db.batch([
+    db.prepare(SYNC_IDENTITY).bind(oid, now, now, identity.email),
+    db.prepare(SYNC_ROLE).bind(identity.role, oid, identity.role),
+  ])
 }
 
 export async function readProfile(
@@ -212,15 +249,29 @@ export async function readProfile(
       `SELECT user_id, character_name, avatar, current_topic_id, xp, created_at,
               last_practice_at, last_wake_at, frozen_days, care_tokens,
               sessions_since_last_token, completed_sessions, streak_count,
-              best_streak, last_streak_date, last_monthly_review_at, locale
+              best_streak, last_streak_date, last_monthly_review_at, locale,
+              role, user_avatar_key
          FROM profiles WHERE user_id = ?`,
     )
     .bind(oid)
     .first<ProfileRow>()
 }
 
+export async function readUser(
+  db: D1Database,
+  oid: string,
+): Promise<UserRow | null> {
+  return db
+    .prepare(
+      "SELECT oid, created_at, last_seen_at, email FROM users WHERE oid = ?",
+    )
+    .bind(oid)
+    .first<UserRow>()
+}
+
 export async function readMe(db: D1Database, oid: string) {
-  const [profile, progress, metrics, introductions] = await Promise.all([
+  const [user, profile, progress, metrics, introductions] = await Promise.all([
+    readUser(db, oid),
     readProfile(db, oid),
     db
       .prepare(
@@ -248,6 +299,7 @@ export async function readMe(db: D1Database, oid: string) {
   ])
 
   return {
+    email: user?.email ?? null,
     profile: profile === null ? null : toServerProfile(profile),
     progress: progress.results.map(toServerProgress),
     metrics: metrics.results.map(toServerMetric),
@@ -297,6 +349,7 @@ export async function createProfile(
     avatar: string
     currentTopicId: string | null
     locale: string
+    role: Role
   },
   now: number,
 ): Promise<CreateProfileResult> {
@@ -310,6 +363,7 @@ export async function createProfile(
       now,
       now,
       input.locale,
+      input.role,
     )
     .run()
 
@@ -374,6 +428,25 @@ function nullable(row: ProfileRow | null): ServerProfile | null {
   return row === null ? null : toServerProfile(row)
 }
 
+/** False when the identity has no profile row to point at the object. */
+export async function setUserAvatar(
+  db: D1Database,
+  oid: string,
+  key: string,
+): Promise<boolean> {
+  const result = await db.prepare(SET_AVATAR_KEY).bind(key, oid).run()
+  return (result.meta?.changes ?? 0) > 0
+}
+
+/** Idempotent: clearing an already-empty key still answers true. */
+export async function clearUserAvatar(
+  db: D1Database,
+  oid: string,
+): Promise<boolean> {
+  const result = await db.prepare(SET_AVATAR_KEY).bind(null, oid).run()
+  return (result.meta?.changes ?? 0) > 0
+}
+
 /** Any progress word id absent from `words`, or empty when every id exists. */
 async function missingWords(
   db: D1Database,
@@ -409,7 +482,9 @@ async function missingPairs(
     )
     .bind(...packIds, ...wordIds)
     .all<{ pack_id: string; word_id: string }>()
-  const found = new Set(rows.results.map((row) => `${row.pack_id}\u0000${row.word_id}`))
+  const found = new Set(
+    rows.results.map((row) => `${row.pack_id}\u0000${row.word_id}`),
+  )
 
   return introductions.filter(
     (row) => !found.has(`${row.packId}\u0000${row.wordId}`),
@@ -482,7 +557,14 @@ export async function commitSession(
   const profile = await readProfile(db, oid)
   if (profile === null) throw new ProfileNotFoundError()
 
-  if ((await missingWords(db, payload.progress.map((row) => row.wordId))).length > 0) {
+  if (
+    (
+      await missingWords(
+        db,
+        payload.progress.map((row) => row.wordId),
+      )
+    ).length > 0
+  ) {
     throw new UnknownWordError()
   }
   if ((await missingPairs(db, payload.introductions)).length > 0) {
@@ -621,7 +703,9 @@ export async function applyCare(
   }
 
   statements.push(
-    db.prepare(INSERT_EVENT).bind(oid, eventId, CARE_EVENT_NAMES[action], 1, now),
+    db
+      .prepare(INSERT_EVENT)
+      .bind(oid, eventId, CARE_EVENT_NAMES[action], 1, now),
     db
       .prepare(UPDATE_CARE_PROFILE)
       .bind(

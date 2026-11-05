@@ -54,6 +54,7 @@ function config(clientId = "client-1"): AuthConfig {
     clientId,
     tenantId: "tenant-1",
     apiBaseUrl: "https://api.example.test",
+    avatarBaseUrl: "https://api.example.test/v1/avatars",
     authority: "https://login.example.test/tenant-1",
     redirectUri: "https://app.example.test/",
     postLogoutRedirectUri: "https://app.example.test/",

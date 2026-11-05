@@ -80,6 +80,7 @@ pnpm install
 | `VITE_ENTRA_TENANT_ID` | the Entra tenant id |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
+| `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
 
 `.env` is gitignored. The Worker reads its own vars from
 `src/worker/wrangler.jsonc`; replace the `REPLACE_WITH_*` placeholders with the same tenant
@@ -187,7 +188,7 @@ Pages project settings:
 - **Root directory:** `src` (the package manifest lives there)
 - **Build command:** `pnpm build`
 - **Build output directory:** `dist`
-- **Environment:** Node 22 and pnpm 10, plus the four `VITE_*` variables below
+- **Environment:** Node 22 and pnpm 10, plus the four required `VITE_*` variables below (and the optional `VITE_AVATAR_BASE_URL`)
 - **Preview deployments:** off — a preview URL would publish before a release is reviewed
 
 Workers Builds settings:
@@ -198,8 +199,9 @@ Workers Builds settings:
 - **Preview builds:** off
 
 The Pages build needs `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`,
-`VITE_ENTRA_SCOPE`, and `VITE_API_BASE_URL` in its environment; they are public
-configuration. The Worker reads its vars from `src/worker/wrangler.jsonc`, and the D1
+`VITE_ENTRA_SCOPE`, and `VITE_API_BASE_URL` in its environment; it optionally
+takes `VITE_AVATAR_BASE_URL` to read photos from the R2 domain instead of the
+Worker. They are public configuration. The Worker reads its vars from `src/worker/wrangler.jsonc`, and the D1
 database id goes in `d1_databases[0].database_id`.
 
 Pull requests to `develop` run `.github/workflows/ci.yml`: frozen pnpm install,

@@ -40,19 +40,93 @@ describe("createTokenVerifier", () => {
   it("accepts a valid token and returns the oid principal", async () => {
     await expect(verify(await mintToken(key))).resolves.toEqual({
       oid: "user-a",
+      email: null,
+      role: "user",
     })
   })
 
   it("accepts additional scopes alongside access_as_user", async () => {
     const token = await mintToken(key, { scp: "other_scope access_as_user" })
 
-    await expect(verify(token)).resolves.toEqual({ oid: "user-a" })
+    await expect(verify(token)).resolves.toEqual({
+      oid: "user-a",
+      email: null,
+      role: "user",
+    })
+  })
+  describe("identity claims", () => {
+    it("prefers the email claim over preferred_username", async () => {
+      await expect(
+        verify(
+          await mintToken(key, {
+            email: "mia@example.com",
+            preferred_username: "upn@example.com",
+          }),
+        ),
+      ).resolves.toMatchObject({ email: "mia@example.com" })
+    })
+    it("falls back to preferred_username when email is absent or blank", async () => {
+      await expect(
+        verify(await mintToken(key, { preferred_username: "upn@example.com" })),
+      ).resolves.toMatchObject({ email: "upn@example.com" })
+      await expect(
+        verify(
+          await mintToken(key, {
+            email: "   ",
+            preferred_username: "upn@example.com",
+          }),
+        ),
+      ).resolves.toMatchObject({ email: "upn@example.com" })
+    })
+    it("stores no email when neither claim is usable", async () => {
+      for (const claims of [
+        {},
+        { email: 42, preferred_username: null },
+        { email: "", preferred_username: "  " },
+      ]) {
+        await expect(
+          verify(await mintToken(key, claims)),
+        ).resolves.toMatchObject(
+          { email: null },
+        )
+      }
+    })
+    it("maps an admin or teacher role, admin first", async () => {
+      await expect(
+        verify(await mintToken(key, { roles: ["admin"] })),
+      ).resolves.toMatchObject({ role: "admin" })
+      await expect(
+        verify(await mintToken(key, { roles: ["teacher", "user"] })),
+      ).resolves.toMatchObject({ role: "teacher" })
+      await expect(
+        verify(await mintToken(key, { roles: ["teacher", "admin"] })),
+      ).resolves.toMatchObject({ role: "admin" })
+    })
+    it("resolves a missing, malformed, or unknown role to user", async () => {
+      for (const claims of [
+        {},
+        { roles: ["user"] },
+        { roles: ["superuser"] },
+        { roles: "admin" },
+        { roles: [42] },
+      ]) {
+        await expect(
+          verify(await mintToken(key, claims)),
+        ).resolves.toMatchObject(
+          { role: "user" },
+        )
+      }
+    })
   })
 
   it("accepts a token expired within the 60-second clock tolerance", async () => {
     const token = await mintToken(key, { exp: NOW - 30 })
 
-    await expect(verify(token)).resolves.toEqual({ oid: "user-a" })
+    await expect(verify(token)).resolves.toEqual({
+      oid: "user-a",
+      email: null,
+      role: "user",
+    })
   })
 
   describe("rejection matrix", () => {

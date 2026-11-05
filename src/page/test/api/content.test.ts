@@ -51,8 +51,13 @@ function bundle(): ContentBundle {
   }
 }
 
-function clientReturning(value: unknown): ApiClient & { request: ReturnType<typeof vi.fn> } {
-  return { request: vi.fn().mockResolvedValue(value) }
+function clientReturning(
+  value: unknown,
+): ApiClient & { request: ReturnType<typeof vi.fn> } {
+  return {
+    request: vi.fn().mockResolvedValue(value),
+    requestMultipart: vi.fn(),
+  }
 }
 
 describe("isContentBundle", () => {

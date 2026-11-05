@@ -1002,6 +1002,41 @@ a:focus-visible,
   padding: 42px 55px 55px;
 }
 
+/* Display-only identity chip: the sidebar mini-profile is the Settings entry. */
+.shell-topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-chip-photo,
+.user-chip-initials {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-chip-initials {
+  display: grid;
+  place-items: center;
+  color: var(--purple);
+  background: var(--pale-purple);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.user-chip-name {
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .mobile-nav {
   display: none;
 }
@@ -3042,6 +3077,33 @@ img.buddy-stage {
   border-radius: 11px;
   color: var(--ink);
   background: #fbfafc;
+}
+
+.setting-photo {
+  margin: 12px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-photo-preview {
+  width: 62px;
+  height: 62px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  object-fit: cover;
+  color: var(--purple);
+  background: var(--pale-purple);
+  font-size: 24px;
+  font-weight: 850;
+}
+
+.setting-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
 .settings-avatars {

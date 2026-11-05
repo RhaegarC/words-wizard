@@ -149,6 +149,8 @@ export const users = sqliteTable("users", {
   oid: text("oid").primaryKey(),
   createdAt: integer("created_at").notNull(),
   lastSeenAt: integer("last_seen_at").notNull(),
+  /** Token-derived; null when the claims carried no usable address. */
+  email: text("email"),
 })
 
 export const profiles = sqliteTable(
@@ -173,9 +175,16 @@ export const profiles = sqliteTable(
     lastStreakDate: text("last_streak_date"),
     lastMonthlyReviewAt: integer("last_monthly_review_at"),
     locale: text("locale", { enum: ["en", "zh"] }).notNull(),
+    /** Token-derived; defaults to the least-privileged role. */
+    role: text("role", { enum: ["user", "teacher", "admin"] })
+      .notNull()
+      .default("user"),
+    /** R2 key of the uploaded photo; null until one exists. */
+    userAvatarKey: text("user_avatar_key"),
   },
   (table) => [
     check("profiles_locale", sql`${table.locale} IN ('en', 'zh')`),
+    check("profiles_role", sql`${table.role} IN ('user', 'teacher', 'admin')`),
   ],
 )
 

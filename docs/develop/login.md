@@ -89,7 +89,29 @@ Every `/v1/me*` route runs `requireAuth` before its handler. `src/worker/auth.ts
 
 Any failure is a `401` before the handler runs. `/health` and `/v1/content` stay public.
 
-### 7. Sign-out
+### 7. Identity claims
+
+`src/worker/auth.ts` reduces the verified token to `{ oid, email, role }`:
+
+- **email** — the `email` claim, else `preferred_username`; a blank or non-string claim is
+  `null`. The sync never clears a stored email, so a token without the claim (some personal
+  accounts) leaves the last known address in place.
+- **role** — the `roles` claim. `admin` beats `teacher`, which beats `user`; an absent or
+  unknown claim is `user`.
+
+`ensureUser` runs on **every authenticated request** and syncs both into `users.email` and
+`profiles.role`. The token is authoritative in both directions: assigning `admin` promotes the
+profile on the next request, and removing it demotes the profile back to `user` the same way.
+
+The lag is in the token, not the database: MSAL caches the access token for up to an hour, so a
+role change in Entra does not appear until the cached token expires or is refreshed. Signing out
+and back in forces a new token. The old token still verifies, so the old role is not a security
+gap — it is the role that token was issued for.
+
+The role authorises nothing yet. It is stored for the planned teacher/admin portal and must not
+be used as a UI permission gate before that feature defines what each role may do.
+
+### 8. Sign-out
 
 `signOut` clears the progress provider, loaded content, and the pending outbox, clears the
 context account, then calls `msal.logoutRedirect` so the Entra session in that browser ends too.
@@ -197,6 +219,31 @@ Admin consent may take a short while to appear on the service principal after th
 authoritative check is whether the client can obtain a token for the scope, not the service
 principal's cached `oauth2PermissionScopes` list.
 
+### App roles (feature 26)
+
+The profile role comes from the token's `roles` claim, so the application manifest defines three
+app roles and an administrator assigns one to each account:
+
+| Value | Purpose |
+|---|---|
+| `user` | the default; every signed-in account keeps this unless promoted |
+| `teacher` | reserved for the planned teacher portal |
+| `admin` | reserved for the planned admin portal; wins if several are assigned |
+
+Add them to `appRoles` in the manifest, with `allowedMemberTypes: ["User"]`. An app role only
+reaches the token when it is **defined and assigned**; assigning a role that is not in
+`appRoles` fails, and defining one without assigning it emits no claim. A token with no `roles`
+claim is valid and stores `user`.
+
+```bash
+az ad app show --id <client-id> --query appRoles
+az ad app update --id <client-id> --set appRoles @app-roles.json
+```
+
+Assignments are made on the **Enterprise application → Users and groups** blade, not on the app
+registration. Verify a person's effective role by decoding their access token, or by calling
+`GET /v1/me` after a fresh sign-in and reading `profile.role`.
+
 ## Where to look when sign-in fails
 
 | Stage | Symptom | Check |
@@ -205,6 +252,7 @@ principal's cached `oauth2PermissionScopes` list.
 | Token request | generic screen after a valid redirect | Application ID URI, scope, admin consent, v2 token version |
 | Token cache | console `TypeError` from MSAL | account passed to `acquireTokenSilent` keeps `homeAccountId` |
 | Worker | `401` from `/v1/me` | issuer/audience/tenant vars, `scp` includes `access_as_user` |
+| Profile role | `profile.role` stays `user` after promotion | `appRoles` defined and assigned, then a fresh token (MSAL caches for an hour) |
 | API client | sign-out loop after a `401` | `EXPECTED_AUDIENCE` and `TOKEN_ISSUER` match the access token |
 
 The relevant code is `src/page/auth/` (`config.ts`, `msal.ts`, `session.ts`, `account.ts`,

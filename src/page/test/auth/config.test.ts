@@ -15,6 +15,7 @@ describe("readAuthConfig", () => {
       clientId: "client-id",
       tenantId: "tenant-id",
       apiBaseUrl: "https://api.example.test",
+      avatarBaseUrl: "https://api.example.test/v1/avatars",
       authority: "https://login.microsoftonline.com/tenant-id",
       redirectUri: "https://words.example.test/",
       postLogoutRedirectUri: "https://words.example.test/",
@@ -31,6 +32,23 @@ describe("readAuthConfig", () => {
     ).toBe("https://api.example.test")
   })
 
+  it("uses the configured avatar base and strips its trailing slash", () => {
+    expect(
+      readAuthConfig(
+        {
+          ...ENV,
+          VITE_AVATAR_BASE_URL: " https://avatars.example.test/// ",
+        },
+        "https://words.example.test",
+      ).avatarBaseUrl,
+    ).toBe("https://avatars.example.test")
+    expect(
+      readAuthConfig(
+        { ...ENV, VITE_AVATAR_BASE_URL: "  " },
+        "https://words.example.test",
+      ).avatarBaseUrl,
+    ).toBe("https://api.example.test/v1/avatars")
+  })
   it("trims surrounding whitespace", () => {
     expect(
       readAuthConfig(
@@ -52,7 +70,9 @@ describe("readAuthConfig", () => {
   ] as const)("refuses a missing %s and names it", (key) => {
     const env = { ...ENV, [key]: undefined }
 
-    expect(() => readAuthConfig(env, "https://words.example.test")).toThrowError(
+    expect(() =>
+      readAuthConfig(env, "https://words.example.test"),
+    ).toThrowError(
       AuthConfigError,
     )
 

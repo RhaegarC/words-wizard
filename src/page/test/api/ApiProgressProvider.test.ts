@@ -9,7 +9,11 @@ import {
   ApiProgressProvider,
   type ApiProgressProviderOptions,
 } from "../../api/ApiProgressProvider"
-import { ApiError, type ApiClient, type ApiRequestOptions } from "../../api/client"
+import {
+  ApiError,
+  type ApiClient,
+  type ApiRequestOptions,
+} from "../../api/client"
 import { Outbox, type StorageLike } from "../../api/outbox"
 
 const NOW = 1_760_000_000_000
@@ -48,12 +52,15 @@ function serverProfile(overrides: Partial<ServerProfile> = {}): ServerProfile {
     lastStreakDate: "2026-10-30",
     lastMonthlyReviewAt: null,
     locale: "en",
+    role: "user",
+    userAvatarKey: null,
     ...overrides,
   }
 }
 
 function me(overrides: Partial<MeResponse> = {}): MeResponse {
   return {
+    email: null,
     profile: serverProfile(),
     progress: [
       {
@@ -117,25 +124,42 @@ function commitPayload(): SessionCommitPayload {
   }
 }
 
-type Handler = (options: ApiRequestOptions) => unknown
+type Handler = (options: ApiRequestOptions & { form?: FormData }) => unknown
 
 function fakeClient(
   routes: Record<string, Handler>,
-): ApiClient & { request: ReturnType<typeof vi.fn> } {
+): ApiClient & {
+  request: ReturnType<typeof vi.fn>
+  requestMultipart: ReturnType<typeof vi.fn>
+} {
   const request = vi.fn(
     async (path: string, options: ApiRequestOptions = {}) => {
       const handler = routes[`${options.method ?? "GET"} ${path}`]
 
       if (handler === undefined) {
-        throw new Error(`unexpected request: ${options.method ?? "GET"} ${path}`)
+        throw new Error(
+          `unexpected request: ${options.method ?? "GET"} ${path}`,
+        )
       }
 
       return handler(options)
     },
   )
+  const requestMultipart = vi.fn(async (path: string, form: FormData) => {
+    const handler = routes[`POST ${path}`]
+    if (handler === undefined) {
+      throw new Error(`unexpected form request: POST ${path}`)
+    }
+    return handler({ method: "POST", form })
+  })
 
-  return { request: request as unknown as ApiClient["request"] } as ApiClient & {
+  return {
+    request: request as unknown as ApiClient["request"],
+    requestMultipart:
+      requestMultipart as unknown as ApiClient["requestMultipart"],
+  } as unknown as ApiClient & {
     request: ReturnType<typeof vi.fn>
+    requestMultipart: ReturnType<typeof vi.fn>
   }
 }
 
@@ -197,7 +221,9 @@ describe("ApiProgressProvider", () => {
       },
       "GET /v1/me": () =>
         created
-          ? me({ profile: serverProfile({ characterName: "Leo", avatar: "cody" }) })
+          ? me({
+              profile: serverProfile({ characterName: "Leo", avatar: "cody" }),
+            })
           : me({ profile: null }),
     })
 
@@ -321,9 +347,7 @@ describe("ApiProgressProvider", () => {
     await expect(provider.commitSession(commitPayload())).resolves.toBe(
       "queued",
     )
-    expect(outbox.all()).toEqual([
-      { payload: commitPayload(), queuedAt: NOW },
-    ])
+    expect(outbox.all()).toEqual([{ payload: commitPayload(), queuedAt: NOW }])
   })
 
   it("refuses an invalid payload before any request", async () => {
@@ -352,9 +376,11 @@ describe("ApiProgressProvider", () => {
 
     await provider.getProfile()
 
-    await expect(provider.commitSession(commitPayload())).rejects.toMatchObject({
-      status: 422,
-    })
+    await expect(provider.commitSession(commitPayload())).rejects.toMatchObject(
+      {
+        status: 422,
+      },
+    )
     expect(outbox.all()).toEqual([])
   })
 
@@ -377,6 +403,69 @@ describe("ApiProgressProvider", () => {
     })
   })
 
+  it("uploads an avatar as multipart and replaces the snapshot profile", async () => {
+    const { client, provider } = makeProvider({
+      "GET /v1/me": () => me(),
+      "POST /v1/me/avatar": (options) => {
+        expect(options.form?.get("file")).toBeInstanceOf(File)
+        return { key: "avatars/oid-1/new.png" }
+      },
+    })
+    await provider.getProfile()
+    const file = new File(
+      [new Uint8Array([0x89, 0x50, 0x4e, 0x47])],
+      "me.png",
+      {
+        type: "image/png",
+      },
+    )
+    const profile = await provider.uploadAvatar(file)
+    expect(profile).toMatchObject({
+      id: "oid-1",
+      userAvatarKey: "avatars/oid-1/new.png",
+    })
+    expect(client.requestMultipart).toHaveBeenCalledTimes(1)
+    expect(client.requestMultipart.mock.calls[0]?.[0]).toBe("/v1/me/avatar")
+    await expect(provider.getProfile()).resolves.toMatchObject({
+      userAvatarKey: "avatars/oid-1/new.png",
+    })
+  })
+  it("removes the avatar with DELETE and clears the key in place", async () => {
+    const { client, provider } = makeProvider({
+      "GET /v1/me": () =>
+        me({
+          profile: serverProfile({ userAvatarKey: "avatars/oid-1/old.png" }),
+        }),
+      "DELETE /v1/me/avatar": () => undefined,
+    })
+    await provider.getProfile()
+    const profile = await provider.removeAvatar()
+    expect(client.request).toHaveBeenCalledWith("/v1/me/avatar", {
+      method: "DELETE",
+    })
+    expect(profile).toMatchObject({ id: "oid-1", userAvatarKey: null })
+    await expect(provider.getProfile()).resolves.toMatchObject({
+      userAvatarKey: null,
+    })
+  })
+  it("keeps the snapshot untouched when an upload is refused", async () => {
+    const { provider } = makeProvider({
+      "GET /v1/me": () =>
+        me({
+          profile: serverProfile({ userAvatarKey: "avatars/oid-1/old.png" }),
+        }),
+      "POST /v1/me/avatar": () => {
+        throw new ApiError("validation_failed", 422, "Unsupported image.")
+      },
+    })
+    await provider.getProfile()
+    await expect(
+      provider.uploadAvatar(new File([new Uint8Array([0])], "bad.gif")),
+    ).rejects.toMatchObject({ status: 422 })
+    await expect(provider.getProfile()).resolves.toMatchObject({
+      userAvatarKey: "avatars/oid-1/old.png",
+    })
+  })
   it("writes a metric event with a generated id", async () => {
     const { client, provider } = makeProvider({
       "GET /v1/me": () => me(),
@@ -402,10 +491,7 @@ describe("ApiProgressProvider", () => {
 
   it("keeps device flags in local storage and never sends them", async () => {
     const storage = memoryStorage()
-    const { client, provider } = makeProvider(
-      {},
-      { storage },
-    )
+    const { client, provider } = makeProvider({}, { storage })
 
     await provider.setDevice(DEVICE_KEYS.lastBootAt, NOW)
 

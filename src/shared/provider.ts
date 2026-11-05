@@ -78,6 +78,10 @@ export interface ProgressProvider {
   getMetrics(profileId: string): Promise<Metric[]>
   /** The server applies the same pure Care rules as the page. */
   applyCare(action: CareAction): Promise<Profile>
+  /** Store a photo and return the profile carrying its new key. */
+  uploadAvatar(file: File): Promise<Profile>
+  /** Remove the stored photo; returns the profile with no key. */
+  removeAvatar(): Promise<Profile>
   getDevice(key: string): Promise<unknown>
   setDevice(key: string, value: unknown): Promise<void>
 }

@@ -11,9 +11,10 @@ export const AUTH_ENV_KEYS = [
   "VITE_ENTRA_TENANT_ID",
   "VITE_ENTRA_SCOPE",
   "VITE_API_BASE_URL",
+  "VITE_AVATAR_BASE_URL",
 ] as const
 
-export type AuthEnvKey = (typeof AUTH_ENV_KEYS)[number]
+export type AuthEnvKey = typeof AUTH_ENV_KEYS[number]
 
 export type AuthEnv = Partial<Record<AuthEnvKey, string | undefined>>
 
@@ -21,6 +22,8 @@ export interface AuthConfig {
   readonly clientId: string
   readonly tenantId: string
   readonly apiBaseUrl: string
+  /** Where stored avatar keys are served from. */
+  readonly avatarBaseUrl: string
   readonly authority: string
   readonly redirectUri: string
   readonly postLogoutRedirectUri: string
@@ -54,10 +57,16 @@ export function readAuthConfig(
   const apiBaseUrl = value("VITE_API_BASE_URL").replace(/\/+$/, "")
   const redirectUri = `${origin.replace(/\/+$/, "")}/`
 
+  // Optional: production sets the bucket's public domain; local leaves it
+  // unset and reads the same objects through the Worker's public route.
+  const avatarBaseUrl =
+    env.VITE_AVATAR_BASE_URL?.trim().replace(/\/+$/, "") ||
+    `${apiBaseUrl}/v1/avatars`
   return {
     clientId,
     tenantId,
     apiBaseUrl,
+    avatarBaseUrl,
     authority: `https://login.microsoftonline.com/${tenantId}`,
     redirectUri,
     postLogoutRedirectUri: redirectUri,

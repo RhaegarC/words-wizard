@@ -57,9 +57,7 @@ export class ApiProgressProvider implements ProgressProvider {
 
     this.snapshot = response
 
-    return response.profile === null
-      ? null
-      : mapProfile(response.profile, oid)
+    return response.profile === null ? null : mapProfile(response.profile, oid)
   }
 
   async getProfile(): Promise<Profile | null> {
@@ -71,19 +69,16 @@ export class ApiProgressProvider implements ProgressProvider {
 
   async createProfile(profile: NewProfile): Promise<Profile> {
     const oid = this.requireIdentity()
-    const created = await this.client.request<ServerProfile>(
-      "/v1/me/profile",
-      {
-        method: "POST",
-        body: {
-          characterName: profile.characterName,
-          avatar: profile.avatar,
-          currentTopicId: profile.currentTopicId,
-          locale: profile.locale,
-          now: this.now(),
-        },
+    const created = await this.client.request<ServerProfile>("/v1/me/profile", {
+      method: "POST",
+      body: {
+        characterName: profile.characterName,
+        avatar: profile.avatar,
+        currentTopicId: profile.currentTopicId,
+        locale: profile.locale,
+        now: this.now(),
       },
-    )
+    })
 
     // The server may have returned the existing profile rather than a new
     // one; refreshing is what makes the snapshot authoritative either way.
@@ -103,10 +98,10 @@ export class ApiProgressProvider implements ProgressProvider {
       return
     }
 
-    const updated = await this.client.request<ServerProfile>(
-      "/v1/me/profile",
-      { method: "PATCH", body },
-    )
+    const updated = await this.client.request<ServerProfile>("/v1/me/profile", {
+      method: "PATCH",
+      body,
+    })
 
     if (this.snapshot !== null) {
       this.snapshot = { ...this.snapshot, profile: updated }
@@ -158,9 +153,7 @@ export class ApiProgressProvider implements ProgressProvider {
     }))
   }
 
-  async commitSession(
-    payload: SessionCommitPayload,
-  ): Promise<CommitOutcome> {
+  async commitSession(payload: SessionCommitPayload): Promise<CommitOutcome> {
     const issues = validateSessionPayload(payload)
 
     if (issues.length > 0) {
@@ -189,10 +182,10 @@ export class ApiProgressProvider implements ProgressProvider {
   async sendCommit(payload: SessionCommitPayload): Promise<MeResponse> {
     this.requireIdentity()
 
-    const response = await this.client.request<MeResponse>(
-      "/v1/me/sessions",
-      { method: "POST", body: toServerPayload(payload) },
-    )
+    const response = await this.client.request<MeResponse>("/v1/me/sessions", {
+      method: "POST",
+      body: toServerPayload(payload),
+    })
 
     this.snapshot = response
 
@@ -236,6 +229,40 @@ export class ApiProgressProvider implements ProgressProvider {
     }
 
     return mapProfile(response.profile, oid)
+  }
+
+  async uploadAvatar(file: File): Promise<Profile> {
+    const oid = this.requireIdentity()
+    const form = new FormData()
+    form.append("file", file)
+    const { key } = await this.client.requestMultipart<{ key: string }>(
+      "/v1/me/avatar",
+      form,
+    )
+    return this.withAvatarKey(key, oid)
+  }
+
+  async removeAvatar(): Promise<Profile> {
+    const oid = this.requireIdentity()
+    await this.client.request<void>("/v1/me/avatar", { method: "DELETE" })
+    return this.withAvatarKey(null, oid)
+  }
+
+  /**
+   * The route answers with the key alone; the rest of the profile is already
+   * in the snapshot, so the change is applied there without a second fetch.
+   */
+  private async withAvatarKey(
+    key: string | null,
+    oid: string,
+  ): Promise<Profile> {
+    const snapshot = await this.ensureSnapshot()
+    if (snapshot.profile === null) {
+      throw new Error("No profile exists for this identity")
+    }
+    const profile = { ...snapshot.profile, userAvatarKey: key }
+    this.snapshot = { ...snapshot, profile }
+    return mapProfile(profile, oid)
   }
 
   async getDevice(key: string): Promise<unknown> {
@@ -288,8 +315,10 @@ export class ApiProgressProvider implements ProgressProvider {
 
       const parsed: unknown = JSON.parse(raw)
 
-      return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
-        ? (parsed as Record<string, unknown>)
+      return typeof parsed === "object" &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
         : {}
     } catch {
       return {}
@@ -357,7 +386,9 @@ function toServerPayload(
       streakCount: required("streakCount"),
       bestStreak: required("bestStreak"),
       lastStreakDate: patch.lastStreakDate ?? null,
-      ...(patch.lastWakeAt === undefined ? {} : { lastWakeAt: patch.lastWakeAt }),
+      ...(patch.lastWakeAt === undefined
+        ? {}
+        : { lastWakeAt: patch.lastWakeAt }),
       ...(patch.lastMonthlyReviewAt === undefined
         ? {}
         : { lastMonthlyReviewAt: patch.lastMonthlyReviewAt }),
@@ -373,7 +404,10 @@ function toServerPayload(
 
 /** A unique marker the server uses to apply a metric event once. */
 function eventId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID()
   }
 

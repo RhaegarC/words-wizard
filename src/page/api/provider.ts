@@ -42,6 +42,8 @@ export const progressProvider: ProgressProvider = {
     requireProvider().incrementMetric(profileId, name, delta),
   getMetrics: (profileId) => requireProvider().getMetrics(profileId),
   applyCare: (action) => requireProvider().applyCare(action),
+  uploadAvatar: (file) => requireProvider().uploadAvatar(file),
+  removeAvatar: () => requireProvider().removeAvatar(),
   getDevice: (key) => requireProvider().getDevice(key),
   setDevice: (key, value) => requireProvider().setDevice(key, value),
 }

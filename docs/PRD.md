@@ -612,6 +612,20 @@ declares `ON DELETE cascade` to `users(oid)`. `profiles` has one row per user;
 `progress` has one row per `(user_id, word_id)`; `pack_introductions` has one row per
 `(user_id, pack_id, word_id)` and drives pack unlock.
 
+**Identity facts** are copied from the verified access token on every authenticated
+request and are never writable from a request body:
+
+- `users.email` is nullable. It is the `email` claim, else `preferred_username`; a
+  token with neither stores nothing, and a later token without one never clears a
+  stored address.
+- `profiles.role` is `user`, `teacher`, or `admin`, default `user`, with a database
+  check constraint. The token's `roles` claim maps `admin > teacher > user`; an
+  absent, malformed, or unknown claim means `user`. The token is authoritative, so a
+  removed role downgrades on the next fresh token.
+- `profiles.user_avatar_key` is a nullable R2 object key shaped
+  `avatars/<oid>/<uuid>.<ext>`. The photo is the user's own upload, distinct from the
+  buddy id in `profiles.avatar`.
+
 **Profile facts** (v0.2 fields, keyed by `users.oid`):
 
 ```ts
@@ -634,6 +648,8 @@ Profile {
   lastStreakDate: string | null
   lastMonthlyReviewAt: number | null
   locale: 'en' | 'zh'
+  role: 'user' | 'teacher' | 'admin'  // token-derived; default 'user'
+  userAvatarKey: string | null        // R2 key; null until a photo is uploaded
 }
 ```
 
@@ -659,7 +675,10 @@ the counters shown in Settings. The API computes them; the client does not write
 `oid` of its own.
 
 The Settings screen edits `Profile.locale`, `Profile.characterName`, and
-`Profile.avatar`. Install-prompt dismissal is per-session UI state and is not persisted.
+`Profile.avatar`, and can upload or remove the photo behind
+`Profile.userAvatarKey` (JPEG/PNG/WebP, 2 MiB, stored in R2). `role` and `email` are
+server-owned and are not displayed. Install-prompt dismissal is per-session UI state
+and is not persisted.
 
 **Browser state (not progress):** `localStorage` holds the Entra session, the unsent
 session outbox, and device flags such as `installed`, `speechAvailable`, and
@@ -909,7 +928,7 @@ export const config = {
 | 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
 | 17 | Daily word limit | One five-word set introduced per local day **per pack**; after it commits, the same five can be practised again until midnight, but no new words from that pack. A pack larger than five continues on later days. Feature 20; per-pack scope in decision 18. |
 | 18 | Vocabulary model (Mission 2, 2026-10-29) | Four D1 tables (`topics`, `packs`, `words`, `pack_words`); one row per headword; a word may belong to packs of several topics and is introduced anew per pack; sequential pack unlock when the previous pack is fully introduced; soft delete via `archivedAt`; no fixed counts; `image` is a URL (R2 later) with `emoji` fallback. Replaces the bundled JSON and 20-slot shape. |
-| 19 | Identity (Mission 2, 2026-10-29) | Microsoft Entra ID SPA registration with authorization code + PKCE and no client secret. The `oid` is the only user key; email, display name, and photo are not stored. |
+| 19 | Identity (Mission 2, 2026-10-29; amended 2026-11-05) | Microsoft Entra ID SPA registration with authorization code + PKCE and no client secret. The `oid` is the only user key. The token-derived email and app role are now stored (`users.email`, `profiles.role`), and a user-uploaded photo is stored in R2 behind `profiles.user_avatar_key`; the Entra display name is still not stored. Role authorises nothing until Mission 3. |
 | 20 | Online-only (Mission 2, 2026-10-30) | No offline practice, cached content fallback, or guest profile. A failed API call shows retry. Installation remains a prompt, not a durability gate. |
 | 21 | API (Mission 2, 2026-10-29) | Hono Worker; bearer token validated against the tenant JWKS; CORS allowlist; versioned content with `ETag`; idempotent session commit; one D1 batch per commit. |
 | 22 | Deployment (Mission 2, 2026-10-30) | Cloudflare Git integration for Pages and Workers Builds. The Worker deploy applies migrations first. CI checks but never deploys, and the remote D1 job uses only `WORDS_TEST_*` credentials. |

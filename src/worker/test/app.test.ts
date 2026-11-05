@@ -61,6 +61,8 @@ describe("user routes", () => {
     ["POST", "/v1/me/sessions"],
     ["POST", "/v1/me/metrics"],
     ["POST", "/v1/me/care"],
+    ["POST", "/v1/me/avatar"],
+    ["DELETE", "/v1/me/avatar"],
   ]
 
   it("answers 401 before touching the database when no token is sent", async () => {
@@ -75,7 +77,11 @@ describe("user routes", () => {
 
   it("answers 405 to a known user path with an unaccepted method", async () => {
     const authenticated = createApp({
-      verifierFor: () => async () => ({ oid: "user-a" }),
+      verifierFor: () => async () => ({
+        oid: "user-a",
+        email: null,
+        role: "user",
+      }),
     })
     const response = await authenticated.request(
       "/v1/me/profile",

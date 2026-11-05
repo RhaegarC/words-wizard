@@ -25,6 +25,12 @@ export type PracticeMode = typeof PRACTICE_MODES[number]
 
 export type Locale = "en" | "zh"
 
+/**
+ * The entitlement a token's `roles` claim maps onto, most privileged first.
+ * Feature 26 stores and displays nothing by it; Mission 3 enforces it.
+ */
+export const ROLES = ["admin", "teacher", "user"] as const
+export type Role = typeof ROLES[number]
 export type WordLevel = 1 | 2 | 3
 
 export interface WordExample {
@@ -96,6 +102,10 @@ export interface Profile {
   lastStreakDate: string | null
   lastMonthlyReviewAt: number | null
   locale: Locale
+  /** Token-derived; stored for Mission 3, not displayed in Mission 2. */
+  role?: Role
+  /** R2 object key of the uploaded photo; null or absent when there is none. */
+  userAvatarKey?: string | null
 }
 
 export type ProgressStatus = "new" | "learning" | "mastered"

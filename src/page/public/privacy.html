@@ -50,8 +50,16 @@
     <ul>
       <li>
         Your Microsoft Entra object id (<code>oid</code>), so your progress
-        follows you to another device. We do not store your email address,
-        display name, or photo.
+        follows you to another device. We do not store your display name.
+      </li>
+      <li>
+        The email address carried by your sign-in token, and the app role the
+        token carries (<code>user</code>, <code>teacher</code>, or
+        <code>admin</code>). The role does not unlock anything in the app yet.
+      </li>
+      <li>
+        A profile photo, only if you choose to upload one. It is stored in a
+        Cloudflare R2 bucket and can be removed in Settings at any time.
       </li>
       <li>
         Your chosen buddy name and avatar, your topic, locale, XP, streak, Care
@@ -71,8 +79,12 @@
     <h2>Where it lives</h2>
     <ul>
       <li>
-        <strong>Cloudflare D1</strong> stores the <code>oid</code> and the
-        per-user rows. Cloudflare also serves the app and the API.
+        <strong>Cloudflare D1</strong> stores the <code>oid</code>, email
+        address, role, and the per-user rows.
+      </li>
+      <li>
+        <strong>Cloudflare R2</strong> stores an uploaded profile photo, if there
+        is one. Cloudflare also serves the app and the API.
       </li>
       <li>
         <strong>Microsoft</strong> handles sign-in. The app never sees your
@@ -86,7 +98,7 @@
 
     <h2>What we do not do</h2>
     <ul>
-      <li>We do not read your email, contacts, or files.</li>
+      <li>We do not read your contacts, files, or mailbox.</li>
       <li>We do not run analytics, advertising, or third-party tracking.</li>
       <li>We do not sell or share your data.</li>
       <li>We do not keep a copy after a verified deletion request.</li>
@@ -103,9 +115,10 @@
     <p>
       There is no delete button in the app. A parent or account holder can ask
       for deletion through the repository issue tracker. The operator confirms
-      the request, deletes the account's row in Cloudflare D1, and checks that no
-      related rows remain. This removes the profile, progress, sessions, and
-      counters; the learning content is not personal data.
+      the request, deletes the account's row in Cloudflare D1, removes the stored
+      profile photo from R2, and checks that no related rows remain. This removes
+      the profile, photo, progress, sessions, and counters; the learning content
+      is not personal data.
     </p>
     <p>
       Contact:
@@ -124,8 +137,10 @@
     <h2>我们保存的内容</h2>
     <ul>
       <li>
-        Microsoft Entra 对象 ID（<code>oid</code>），用于在不同设备间同步学习进度。我们不会保存你的电子邮件地址、显示名称或照片。
+        Microsoft Entra 对象 ID（<code>oid</code>），用于在不同设备间同步学习进度。我们不会保存你的显示名称。
       </li>
+      <li>登录令牌携带的电子邮件地址，以及令牌携带的应用角色（<code>user</code>、<code>teacher</code> 或 <code>admin</code>）。该角色目前不会解锁任何功能。</li>
+      <li>只有当你选择上传时才会保存的头像照片。照片保存在 Cloudflare R2 存储桶中，可以随时在设置页移除。</li>
       <li>你选择的伙伴名字和头像、当前主题、语言、经验值、连续练习天数、关怀令牌状态，以及练习进度。</li>
       <li>练习记录，以及设置页显示的计数器，例如完成的练习次数、学会和掌握的单词数。</li>
       <li>浏览器中的少量设备标记，例如是否已安装应用、是否支持朗读。这些不会发送到 API。</li>
@@ -133,7 +148,8 @@
 
     <h2>保存在哪里</h2>
     <ul>
-      <li><strong>Cloudflare D1</strong> 保存 <code>oid</code> 和每位用户的记录。Cloudflare 也提供应用和 API。</li>
+      <li><strong>Cloudflare D1</strong> 保存 <code>oid</code>、电子邮件地址、角色和每位用户的记录。</li>
+      <li><strong>Cloudflare R2</strong> 保存上传的头像照片（如果有）。Cloudflare 也提供应用和 API。</li>
       <li><strong>Microsoft</strong> 负责登录。应用不会看到你的密码。</li>
       <li>浏览器保存 Entra 登录状态、尚未发送的练习和设备标记。退出登录会清除这三项。</li>
     </ul>
@@ -153,7 +169,7 @@
 
     <h2>删除</h2>
     <p>
-      应用里没有删除按钮。家长或账户持有人可以通过仓库的问题页面提出删除请求。运维人员会确认请求，删除 Cloudflare D1 中该账户的记录，并检查没有相关记录残留。这会删除个人档案、进度、练习记录和计数器；学习内容本身不是个人数据。
+      应用里没有删除按钮。家长或账户持有人可以通过仓库的问题页面提出删除请求。运维人员会确认请求，删除 Cloudflare D1 中该账户的记录，从 R2 移除保存的头像照片，并检查没有相关记录残留。这会删除个人档案、照片、进度、练习记录和计数器；学习内容本身不是个人数据。
     </p>
     <p>
       联系方式：

@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
+import { avatarInitials, avatarUrl } from "../avatar"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
 import { Icon } from "../components/Icon"
@@ -15,10 +16,7 @@ import {
   EXPORT_SCHEMA_VERSION,
   exportFileName,
 } from "@shared/export"
-import {
-  buildRecustomizePatch,
-  type RecustomizeError,
-} from "@/domain/settings"
+import { buildRecustomizePatch, type RecustomizeError } from "@/domain/settings"
 import type { Device, Profile } from "@shared/types"
 import { downloadJson } from "../download"
 import { useLocale } from "../i18n/LocaleProvider"
@@ -33,7 +31,7 @@ const ERROR_KEYS: Record<RecustomizeError, MessageKey> = {
   avatar: "create.error.avatar",
 }
 
-type SaveError = RecustomizeError | "save"
+type SaveError = RecustomizeError | "save" | "photo" | "name-after-photo"
 type LocaleChoice = { id: Locale; label: string }
 
 const LOCALE_CHOICES: readonly LocaleChoice[] = [
@@ -60,6 +58,9 @@ export function SettingsScreen({
   const [name, setName] = useState(profile.characterName)
   const [avatarId, setAvatarId] = useState(profile.avatar)
   const [saveError, setSaveError] = useState<SaveError | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [removePhoto, setRemovePhoto] = useState(false)
   const [saving, setSaving] = useState(false)
   const [localeFailed, setLocaleFailed] = useState(false)
   const [localeSaving, setLocaleSaving] = useState(false)
@@ -78,6 +79,43 @@ export function SettingsScreen({
       : locale === "zh"
         ? topic.titleZh
         : topic.title
+
+  // A chosen file previews from the browser; otherwise the stored key is
+  // shown unless the child asked to remove it.
+  const storedPhoto =
+    auth.config === null
+      ? null
+      : avatarUrl(auth.config.avatarBaseUrl, profile.userAvatarKey)
+  const photo = photoPreview ?? (removePhoto ? null : storedPhoto)
+  const hasStoredPhoto =
+    profile.userAvatarKey !== null && profile.userAvatarKey !== undefined
+
+  useEffect(() => {
+    if (photoFile === null) {
+      return
+    }
+    const url = URL.createObjectURL(photoFile)
+    setPhotoPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [photoFile])
+
+  const choosePhoto = (file: File | null) => {
+    setSaveError(null)
+    if (file === null) {
+      setPhotoFile(null)
+      setPhotoPreview(null)
+      return
+    }
+    setRemovePhoto(false)
+    setPhotoFile(file)
+  }
+
+  const requestRemovePhoto = () => {
+    setSaveError(null)
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setRemovePhoto(true)
+  }
 
   const chooseLocale = (next: Locale) => {
     if (next === locale || localeSaving) {
@@ -108,7 +146,10 @@ export function SettingsScreen({
       return
     }
 
-    const result = buildRecustomizePatch({ characterName: name, avatar: avatarId })
+    const result = buildRecustomizePatch({
+      characterName: name,
+      avatar: avatarId,
+    })
 
     if (!result.ok) {
       setSaveError(result.reason)
@@ -118,15 +159,48 @@ export function SettingsScreen({
     setSaveError(null)
     setSaving(true)
 
-    void progressProvider
-      .updateProfile(profile.id, result.patch)
+    const wantsPhoto = photoFile !== null || (removePhoto && hasStoredPhoto)
+    let stage: "photo" | "name" = wantsPhoto ? "photo" : "name"
+    let photoSaved = false
+    let latest = profile
+    const savePhoto = (): Promise<Profile | null> => {
+      if (photoFile !== null) {
+        return progressProvider.uploadAvatar(photoFile)
+      }
+      if (removePhoto && hasStoredPhoto) {
+        return progressProvider.removeAvatar()
+      }
+      return Promise.resolve(null)
+    }
+    void savePhoto()
+      .then((updated) => {
+        if (updated === null) {
+          return
+        }
+        photoSaved = true
+        latest = { ...latest, ...updated }
+        onProfileUpdated(latest)
+        setPhotoFile(null)
+        setRemovePhoto(false)
+      })
       .then(() => {
-        onProfileUpdated({ ...profile, ...result.patch })
+        stage = "name"
+        return progressProvider.updateProfile(profile.id, result.patch)
+      })
+      .then(() => {
+        latest = { ...latest, ...result.patch }
+        onProfileUpdated(latest)
         navigate({ id: "home" })
       })
       .catch((reason: unknown) => {
-        console.error("[settings] Could not save the buddy", reason)
-        setSaveError("save")
+        console.error("[settings] Could not save the profile", reason)
+        setSaveError(
+          stage === "photo"
+            ? "photo"
+            : photoSaved
+              ? "name-after-photo"
+              : "save",
+        )
       })
       .finally(() => setSaving(false))
   }
@@ -243,6 +317,41 @@ export function SettingsScreen({
             </div>
           </header>
 
+          <div className="setting-photo">
+            {photo !== null ? (
+              <img className="setting-photo-preview" src={photo} alt="" />
+            ) : (
+              <span className="setting-photo-preview" aria-hidden="true">
+                {avatarInitials(name)}
+              </span>
+            )}
+            <div className="setting-photo-actions">
+              <label className="button secondary">
+                {photo !== null
+                  ? t("settings.changePhoto")
+                  : t("settings.choosePhoto")}
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(event) => {
+                    choosePhoto(event.target.files?.[0] ?? null)
+                    event.target.value = ""
+                  }}
+                />
+              </label>
+              {photo !== null ? (
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={requestRemovePhoto}
+                >
+                  {t("settings.removePhoto")}
+                </button>
+              ) : null}
+            </div>
+          </div>
+          <p className="field-hint">{t("settings.photoHint")}</p>
           <label className="setting-input" htmlFor="settings-name">
             <span>{t("create.nameLabel")}</span>
             <input
@@ -254,9 +363,9 @@ export function SettingsScreen({
               autoCapitalize="words"
               enterKeyHint="done"
               aria-invalid={
-                saveError !== null &&
-                saveError !== "avatar" &&
-                saveError !== "save"
+                saveError === "empty" ||
+                saveError === "too-long" ||
+                saveError === "invalid-character"
               }
               aria-describedby={
                 saveError !== null
@@ -301,9 +410,13 @@ export function SettingsScreen({
 
           {saveError !== null ? (
             <p id="settings-save-error" className="form-error" role="alert">
-              {saveError === "save"
-                ? t("settings.saveError")
-                : t(ERROR_KEYS[saveError])}
+              {saveError === "photo"
+                ? t("settings.photoError")
+                : saveError === "name-after-photo"
+                  ? t("settings.photoSavedNameFailed")
+                  : saveError === "save"
+                    ? t("settings.saveError")
+                    : t(ERROR_KEYS[saveError])}
             </p>
           ) : null}
 
@@ -437,9 +550,7 @@ export function SettingsScreen({
               {t("auth.signOutTitle")}
             </h2>
             <p className="modal-body">
-              {pendingCommit
-                ? t("auth.signOutPending")
-                : t("auth.signOutBody")}
+              {pendingCommit ? t("auth.signOutPending") : t("auth.signOutBody")}
             </p>
             <div className="modal-actions">
               <button

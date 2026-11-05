@@ -16,7 +16,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest"
  */
 
 const srcRoot = fileURLToPath(new URL("../..", import.meta.url))
-const wranglerBin = join(srcRoot, "node_modules", "wrangler", "bin", "wrangler.js")
+const wranglerBin = join(
+  srcRoot,
+  "node_modules",
+  "wrangler",
+  "bin",
+  "wrangler.js",
+)
 const workerConfig = join(srcRoot, "worker", "wrangler.jsonc")
 
 const TIMEOUT = 60_000
@@ -315,14 +321,20 @@ function userInsert(oid: string): string {
 
 function profileInsert(
   oid: string,
-  overrides: Partial<{ locale: string; xp: number; currentTopicId: string | null }> = {},
+  overrides: Partial<{
+    locale: string
+    xp: number
+    currentTopicId: string | null
+  }> = {},
 ): string {
   const locale = overrides.locale ?? "en"
   const xp = overrides.xp ?? 0
   const topic = overrides.currentTopicId ?? null
 
   return `INSERT INTO profiles (user_id, character_name, avatar, current_topic_id, xp, created_at, last_practice_at, last_wake_at, frozen_days, care_tokens, sessions_since_last_token, completed_sessions, streak_count, best_streak, last_streak_date, last_monthly_review_at, locale)
-VALUES ('${oid}', 'Hero', 'alex', ${topic === null ? "NULL" : `'${topic}'`}, ${xp}, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, '${locale}');`
+VALUES ('${oid}', 'Hero', 'alex', ${
+    topic === null ? "NULL" : `'${topic}'`
+  }, ${xp}, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, '${locale}');`
 }
 
 function progressInsert(
@@ -529,6 +541,77 @@ describe("user tables", () => {
     },
     TIMEOUT,
   )
+})
+describe("identity columns", () => {
+  interface ColumnInfo {
+    name: string
+    type: string
+    notnull: number
+    dflt_value: string | null
+  }
+  function columns(table: string): ColumnInfo[] {
+    return query<ColumnInfo>(`PRAGMA table_info(${table})`)
+  }
+  it(
+    "adds a nullable email to users",
+    () => {
+      const email = columns("users").find((column) => column.name === "email")
+      expect(email).toMatchObject({ type: "TEXT", notnull: 0 })
+      expect(email?.dflt_value).toBeNull()
+    },
+    TIMEOUT,
+  )
+  it(
+    "defaults a new profile to the user role with no avatar key",
+    () => {
+      execute(userInsert("db-user-identity"))
+      execute(profileInsert("db-user-identity"))
+      const row = query<{
+        role: string
+        user_avatar_key: string | null
+      }>(
+        "SELECT role, user_avatar_key FROM profiles WHERE user_id = 'db-user-identity'",
+      )[0]
+      expect(row).toEqual({ role: "user", user_avatar_key: null })
+    },
+    TIMEOUT,
+  )
+  it(
+    "refuses a role outside the three allowed values",
+    () => {
+      execute(userInsert("db-user-bad-role"))
+      expectRefused(
+        `INSERT INTO profiles (user_id, character_name, avatar, current_topic_id, xp, created_at, last_practice_at, last_wake_at, frozen_days, care_tokens, sessions_since_last_token, completed_sessions, streak_count, best_streak, last_streak_date, last_monthly_review_at, locale, role)
+VALUES ('db-user-bad-role', 'Hero', 'alex', NULL, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, 'en', 'owner');`,
+        "SELECT COUNT(*) AS present FROM profiles WHERE user_id = 'db-user-bad-role'",
+      )
+    },
+    TIMEOUT,
+  )
+  it(
+    "accepts each of the three roles",
+    () => {
+      for (const [index, role] of ["user", "teacher", "admin"].entries()) {
+        const oid = `db-user-role-${index}`
+        execute(userInsert(oid))
+        execute(
+          `INSERT INTO profiles (user_id, character_name, avatar, current_topic_id, xp, created_at, last_practice_at, last_wake_at, frozen_days, care_tokens, sessions_since_last_token, completed_sessions, streak_count, best_streak, last_streak_date, last_monthly_review_at, locale, role)
+VALUES ('${oid}', 'Hero', 'alex', NULL, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, 'en', '${role}');`,
+        )
+        expect(
+          query<{ role: string }>(
+            `SELECT role FROM profiles WHERE user_id = '${oid}'`,
+          )[0]?.role,
+        ).toBe(role)
+      }
+    },
+    TIMEOUT,
+  )
+  it("re-applies the whole set as a no-op", () => {
+    const result = migrate()
+    expect(result.status).toBe(0)
+    expect(output(result)).toMatch(/No migrations to apply/i)
+  })
 })
 
 describe("packs and pack_words", () => {

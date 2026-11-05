@@ -20,7 +20,8 @@ placeholders with the same tenant and client the page uses, or local sign-in can
 | `ALLOWED_ORIGINS` | must include `http://localhost:8443` |
 
 The `d1_databases[0].database_id` placeholder does not matter locally: `--local` never contacts a
-remote database, and the id is only used before a deploy. There is no local secret, so no
+remote database, and the id is only used before a deploy. The `r2_buckets` binding `AVATARS` is
+emulated the same way: uploads land in the local persistence directory and need no credentials. There is no local secret, so no
 `.dev.vars` file is needed. To try an override without editing the file, pass it on the command
 line:
 
@@ -57,6 +58,33 @@ pnpm worker:dev    # http://localhost:8787
 ```
 
 `pnpm worker:deploy` targets production — do not run it to test a local change.
+
+### Avatars
+
+Three routes touch R2. All of them require authentication except the public reader:
+
+| Route | Behaviour |
+|---|---|
+| `POST /v1/me/avatar` | multipart `file`, ≤2 MiB, JPEG/PNG/WebP by magic bytes; stores `avatars/<oid>/<uuid>.<ext>`, replaces and deletes the previous object, returns `{ key }` |
+| `DELETE /v1/me/avatar` | idempotent `204`; clears the stored key and deletes the object |
+| `GET /v1/avatars/*` | public, no auth; serves the object with `Cache-Control: public, max-age=31536000, immutable` |
+
+`src/worker/avatar.ts` owns the constants and pure checks: `detectImageType` reads the file's
+signature rather than trusting `Content-Type`, `avatarKey` builds the storage path, and
+`isAvatarKey` rejects anything outside `avatars/<one-segment>/<one-segment>.<ext>`. The public
+route validates the key **before** calling R2, so a traversal attempt or an arbitrary key is a
+`404` and never a bucket read.
+
+`src/worker/r2.ts` declares the minimal structural interface (`get`, `put`, `delete`) so the
+Worker does not depend on `@cloudflare/workers-types`. `requireAvatars(env)` in `config.ts`
+throws `ConfigError("AVATARS")` — the same `config_missing` 500 as a missing `DB` — if the
+binding is absent.
+
+The object is written **before** the profile row is updated. If the row update fails, the new
+object is deleted again, so a failed request leaves neither a stale key nor an orphan.
+
+Local uploads and the public reader work against the emulated bucket; `pnpm test` uses its own
+temporary persistence directory.
 
 ### Debug
 
@@ -106,7 +134,17 @@ pnpm worker:dev    # http://localhost:8787
    value is a placeholder, and a deploy against it fails.
 3. Replace the `REPLACE_WITH_*` Entra values in the same file. The tenant id, API audience
    (`EXPECTED_AUDIENCE`), issuer, and JWKS URL are the values in [operations.md](../operations.md).
-4. Confirm `nioh.uk` is an active zone in the account: the `routes` entry attaches
+4. Create the avatar bucket and attach its public domain. The `AVATARS` binding already names the
+   bucket; the domain is optional if the page reads avatars through the Worker:
+
+   ```bash
+   pnpm exec wrangler r2 bucket create words-wizard-avatars
+   pnpm exec wrangler r2 bucket domain add words-wizard-avatars \
+     --domain avatars.nioh.uk --zone-id <zone-id>
+   ```
+
+   [operations.md → R2 and avatars](../operations.md#r2-and-avatars) records the full procedure.
+5. Confirm `nioh.uk` is an active zone in the account: the `routes` entry attaches
    `wordsapi.nioh.uk` at deploy time.
 
 Optionally create `words-wizard-test` the same way for the gated remote test tier. Its id is read

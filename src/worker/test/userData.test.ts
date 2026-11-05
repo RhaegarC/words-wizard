@@ -93,6 +93,42 @@ function token(oid: string): Promise<string> {
   return cached
 }
 
+/** A token with identity claims, minted fresh so a later call can differ. */
+function identityToken(
+  oid: string,
+  claims: Record<string, unknown>,
+): Promise<string> {
+  return mintToken(key, { oid, ...claims })
+}
+const PNG = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+])
+async function uploadAvatar(
+  tokenValue: string,
+  bytes: Uint8Array = PNG,
+  options: { name?: string; type?: string; field?: string } = {},
+): Promise<Response> {
+  const form = new FormData()
+  form.set(
+    options.field ?? "file",
+    new File([new Uint8Array(bytes)], options.name ?? "avatar.png", {
+      type: options.type ?? "image/png",
+    }),
+  )
+  return fetch(`${worker.baseUrl}/v1/me/avatar`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tokenValue}` },
+    body: form,
+  })
+}
+function profileAvatarKey(oid: string): string | null {
+  return (
+    worker.query<{ user_avatar_key: string | null }>(
+      `SELECT user_avatar_key FROM profiles WHERE user_id = '${oid}'`,
+    )[0]?.user_avatar_key ?? null
+  )
+}
 interface Call {
   readonly token?: string
   readonly method?: string
@@ -156,17 +192,19 @@ async function createProfile(
   return json<MeResponse["profile"]>(response)
 }
 
-function commitPayload(overrides: {
-  sessionId?: string
-  words?: string[]
-  introductions?: Array<{
-    packId: string
-    wordId: string
-    introducedAt?: number
-  }>
-  profile?: Record<string, unknown>
-  metrics?: Record<string, number>
-} = {}) {
+function commitPayload(
+  overrides: {
+    sessionId?: string
+    words?: string[]
+    introductions?: Array<{
+      packId: string
+      wordId: string
+      introducedAt?: number
+    }>
+    profile?: Record<string, unknown>
+    metrics?: Record<string, number>
+  } = {},
+) {
   const now = NOW
   const words = overrides.words ?? ["u-w1"]
 
@@ -208,7 +246,8 @@ function commitPayload(overrides: {
     introductions: (
       overrides.introductions ??
       words.map((wordId) => ({ packId: "u-p1", wordId, introducedAt: now }))
-    ).map((row) => ({ ...row, introducedAt: row.introducedAt ?? now })),
+    )
+      .map((row) => ({ ...row, introducedAt: row.introducedAt ?? now })),
     metrics: overrides.metrics ?? { [METRIC_NAMES.sessionCompleted]: 1 },
   }
 }
@@ -243,12 +282,14 @@ describe("authorization", () => {
       ["POST", "/v1/me/sessions"],
       ["POST", "/v1/me/metrics"],
       ["POST", "/v1/me/care"],
+      ["POST", "/v1/me/avatar"],
+      ["DELETE", "/v1/me/avatar"],
     ]
 
     for (const [method, path] of routes) {
       const response = await call(path, {
         method,
-        body: method === "GET" ? undefined : {},
+        body: method === "GET" || method === "DELETE" ? undefined : {},
       })
       const body = await json<{ error: { code: string } }>(response)
 
@@ -265,6 +306,7 @@ describe("authorization", () => {
     expect(response.status).toBe(200)
     expect(response.headers.get("cache-control")).toBe("no-store")
     expect(body).toEqual({
+      email: null,
       profile: null,
       progress: [],
       metrics: [],
@@ -509,8 +551,15 @@ describe("session commit", () => {
       me.metrics.find((metric) => metric.name === METRIC_NAMES.xpEarned)?.value,
     ).toBe(7)
 
-    expect(count("sessions", "user_id = 'user-session' AND id = 'session-first'")).toBe(1)
-    expect(count("session_metrics", "user_id = 'user-session' AND session_id = 'session-first'")).toBe(2)
+    expect(
+      count("sessions", "user_id = 'user-session' AND id = 'session-first'"),
+    ).toBe(1)
+    expect(
+      count(
+        "session_metrics",
+        "user_id = 'user-session' AND session_id = 'session-first'",
+      ),
+    ).toBe(2)
   })
 
   it("replays the identical payload without counting anything twice", async () => {
@@ -550,7 +599,10 @@ describe("session commit", () => {
     const response = await call("/v1/me/sessions", {
       token: await token(oid),
       method: "POST",
-      body: commitPayload({ sessionId: "session-unknown-word", words: ["u-missing"] }),
+      body: commitPayload({
+        sessionId: "session-unknown-word",
+        words: ["u-missing"],
+      }),
     })
 
     expect(response.status).toBe(422)
@@ -581,7 +633,10 @@ describe("session commit", () => {
 
     const text = await response.clone().text()
     expect(response.status, text).toBe(422)
-    expect(await json<{ error: { code: string } }>(response), text).toMatchObject({
+    expect(
+      await json<{ error: { code: string } }>(response),
+      text,
+    ).toMatchObject({
       error: { code: "unknown_pack_word" },
     })
     expect(
@@ -657,7 +712,10 @@ describe("session commit", () => {
 
     expect(response.status).toBe(200)
     expect(
-      count("sessions", "user_id = 'user-session-owner' AND id = 'session-owner'"),
+      count(
+        "sessions",
+        "user_id = 'user-session-owner' AND id = 'session-owner'",
+      ),
     ).toBe(1)
     expect(
       count("sessions", "user_id = 'user-victim'"),
@@ -735,7 +793,10 @@ describe("metric writes", () => {
       body,
     })
     expect(first.status).toBe(200)
-    expect(await json(first)).toMatchObject({ name: METRIC_NAMES.collectionOpened, value: 2 })
+    expect(await json(first)).toMatchObject({
+      name: METRIC_NAMES.collectionOpened,
+      value: 2,
+    })
 
     const replay = await call("/v1/me/metrics", {
       token: await token(oid),
@@ -950,5 +1011,203 @@ describe("request guards", () => {
     expect(await json<{ error: { code: string } }>(response)).toMatchObject({
       error: { code: "invalid_json" },
     })
+  })
+})
+describe("token identity sync", () => {
+  async function readMeWith(tokenValue: string): Promise<MeResponse> {
+    return json<MeResponse>(
+      await call("/v1/me", { token: tokenValue }),
+    )
+  }
+  it("creates the profile with the token's role and stores its email", async () => {
+    const oid = "user-claims"
+    const first = await identityToken(oid, {
+      email: "mia@example.com",
+      preferred_username: "upn@example.com",
+      roles: ["teacher"],
+    })
+    const created = await call("/v1/me/profile", {
+      token: first,
+      method: "POST",
+      body: {
+        characterName: "Mia",
+        avatar: "alex",
+        locale: "en",
+        now: Date.now(),
+      },
+    })
+    expect((await json<MeResponse["profile"]>(created))?.role).toBe("teacher")
+    const body = await readMeWith(first)
+    expect(body.email).toBe("mia@example.com")
+    expect(body.profile?.role).toBe("teacher")
+  })
+  it("falls back to preferred_username and never clears a stored email", async () => {
+    const oid = "user-claims-upn"
+    await readMeWith(
+      await identityToken(oid, { preferred_username: "upn@example.com" }),
+    )
+    await createProfile(oid)
+    expect((await readMeWith(await token(oid))).email).toBe("upn@example.com")
+    await readMeWith(
+      await identityToken(oid, {
+        email: "new@example.com",
+        roles: ["admin"],
+      }),
+    )
+    const body = await readMeWith(await token(oid))
+    expect(body.email).toBe("new@example.com")
+    expect(body.profile?.role).toBe("user")
+  })
+  it("takes the token as authoritative when the role changes", async () => {
+    const oid = "user-claims-role"
+    await createProfile(oid)
+    // The response to the token that changed the role carries the new value;
+    // the stored row is read directly because a later token overwrites it.
+    const storedRole = (): string | null =>
+      worker.query<{ role: string }>(
+        `SELECT role FROM profiles WHERE user_id = '${oid}'`,
+      )[0]?.role ?? null
+    expect(
+      (await readMeWith(await identityToken(oid, { roles: ["admin"] }))).profile
+        ?.role,
+    ).toBe("admin")
+    expect(storedRole()).toBe("admin")
+    await readMeWith(await identityToken(oid, { roles: ["teacher"] }))
+    expect(storedRole()).toBe("teacher")
+    // A token without a recognised role is authoritative too: back to user.
+    await readMeWith(await token(oid))
+    expect(storedRole()).toBe("user")
+  })
+  it("refuses email, role, and the avatar key in a profile body", async () => {
+    const oid = "user-claims-body"
+    for (const [method, body] of [
+      [
+        "POST",
+        { characterName: "A", avatar: "alex", locale: "en", now: Date.now() },
+      ],
+      ["PATCH", {}],
+    ] as const) {
+      for (const field of ["email", "role", "userAvatarKey"]) {
+        const response = await call("/v1/me/profile", {
+          token: await token(oid),
+          method,
+          body:
+            method === "POST"
+              ? { ...body, [field]: field === "role" ? "admin" : "x" }
+              : { [field]: field === "role" ? "admin" : "x" },
+        })
+        expect(response.status, `${method} ${field}`).toBe(422)
+      }
+    }
+    expect(
+      worker.query<{ n: number }>(
+        "SELECT COUNT(*) AS n FROM profiles WHERE user_id = 'user-claims-body'",
+      )[0]?.n,
+    ).toBe(0)
+  })
+})
+describe("avatar storage", () => {
+  it("stores, serves, replaces, and removes the user's photo", async () => {
+    const oid = "user-avatar"
+    const tokenValue = await token(oid)
+    await createProfile(oid)
+    const first = await uploadAvatar(tokenValue)
+    expect(first.status).toBe(200)
+    const firstKey = (await json<{ key: string }>(first)).key
+    expect(firstKey).toMatch(/^avatars\/user-avatar\/[0-9a-f-]+\.png$/)
+    expect(profileAvatarKey(oid)).toBe(firstKey)
+    const served = await fetch(
+      `${worker.baseUrl}/v1/avatars/${firstKey}`,
+    )
+    expect(served.status).toBe(200)
+    expect(served.headers.get("content-type")).toBe("image/png")
+    expect(served.headers.get("cache-control")).toBe(
+      "public, max-age=31536000, immutable",
+    )
+    expect(new Uint8Array(await served.arrayBuffer())).toEqual(PNG)
+    const second = await uploadAvatar(tokenValue)
+    const secondKey = (await json<{ key: string }>(second)).key
+    expect(secondKey).not.toBe(firstKey)
+    expect(profileAvatarKey(oid)).toBe(secondKey)
+    expect(
+      (await fetch(`${worker.baseUrl}/v1/avatars/${firstKey}`)).status,
+    ).toBe(404)
+    const removed = await call("/v1/me/avatar", {
+      token: tokenValue,
+      method: "DELETE",
+    })
+    expect(removed.status).toBe(204)
+    expect(profileAvatarKey(oid)).toBeNull()
+    expect(
+      (await fetch(`${worker.baseUrl}/v1/avatars/${secondKey}`)).status,
+    ).toBe(404)
+    // Removal is idempotent.
+    expect(
+      (
+        await call("/v1/me/avatar", {
+          token: tokenValue,
+          method: "DELETE",
+        })
+      ).status,
+    ).toBe(204)
+  })
+  it("detects the type from the bytes rather than the declared one", async () => {
+    const oid = "user-avatar-type"
+    await createProfile(oid)
+    const response = await uploadAvatar(await token(oid), PNG, {
+      name: "photo.txt",
+      type: "text/plain",
+    })
+    expect(response.status).toBe(200)
+    expect((await json<{ key: string }>(response)).key).toMatch(/\.png$/)
+  })
+  it("refuses an oversize, wrong, or missing file before storing it", async () => {
+    const oid = "user-avatar-bad"
+    await createProfile(oid)
+    const big = new Uint8Array(2 * 1024 * 1024 + 1)
+    big.set(PNG)
+    const cases: Array<[Promise<Response>, string]> = [
+      [uploadAvatar(await token(oid), big), "oversize"],
+      [
+        uploadAvatar(await token(oid), new TextEncoder().encode("not image")),
+        "wrong type",
+      ],
+      [
+        uploadAvatar(await token(oid), PNG, { field: "other" }),
+        "missing file field",
+      ],
+    ]
+    for (const [pending, label] of cases) {
+      const response = await pending
+      expect(response.status, label).toBe(422)
+      expect(
+        (await json<{ error: { code: string } }>(response)).error.code,
+        label,
+      ).toBe("validation_failed")
+    }
+    expect(profileAvatarKey(oid)).toBeNull()
+  })
+  it("answers 404 when the identity has no profile", async () => {
+    const response = await uploadAvatar(await token("user-avatar-noprofile"))
+    expect(response.status).toBe(404)
+    expect(
+      (await json<{ error: { code: string } }>(response)).error.code,
+    ).toBe("profile_not_found")
+  })
+  it("answers 404 for an unknown or malformed public key", async () => {
+    for (const key of [
+      "avatars/nobody/missing.png",
+      "avatars/nobody/missing.gif",
+      "art/avatars/nobody/missing.png",
+      "avatars/../secret.png",
+    ]) {
+      const response = await fetch(
+        `${worker.baseUrl}/v1/avatars/${encodeURI(key)}`,
+      )
+      expect(response.status, key).toBe(404)
+      expect(
+        (await json<{ error: { code: string } }>(response)).error.code,
+      ).toBe("not_found")
+    }
   })
 })

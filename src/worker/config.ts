@@ -1,6 +1,7 @@
 import type { D1Database } from "./db/d1"
 import { ConfigError } from "./errors"
 
+import type { R2Bucket } from "./r2"
 export { ConfigError }
 
 /** The bindings wrangler provides: non-secret vars plus the D1 database. */
@@ -11,6 +12,7 @@ export interface WorkerEnv {
   EXPECTED_TENANT?: string | undefined
   ALLOWED_ORIGINS?: string | undefined
   DB?: D1Database | undefined
+  AVATARS?: R2Bucket | undefined
 }
 
 /** Validated configuration; handlers never read `WorkerEnv` directly. */
@@ -82,6 +84,11 @@ export function requireDb(env: WorkerEnv): D1Database {
   return env.DB
 }
 
+/** The R2 binding for uploaded avatars; same missing-binding failure as D1. */
+export function requireAvatars(env: WorkerEnv): R2Bucket {
+  if (env.AVATARS === undefined) throw new ConfigError("AVATARS")
+  return env.AVATARS
+}
 function parseOrigins(value: string): string[] {
   const origins = value
     .split(",")

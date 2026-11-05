@@ -1,4 +1,4 @@
-import type { Locale, ProgressStatus } from "./types"
+import type { Locale, ProgressStatus, Role } from "./types"
 
 /**
  * The wire shapes `/v1/me` returns (feature 23).
@@ -28,6 +28,10 @@ export interface ServerProfile {
   lastStreakDate: string | null
   lastMonthlyReviewAt: number | null
   locale: Locale
+  /** From the token's `roles` claim; `user` when none is recognised. */
+  role: Role
+  /** R2 key of the uploaded photo; null until one is uploaded. */
+  userAvatarKey: string | null
 }
 
 export interface ServerProgress {
@@ -57,6 +61,8 @@ export interface PackIntroduction {
 
 /** `GET /v1/me`; `introductions` is `[]` until the first committed session. */
 export interface MeResponse {
+  /** Token-derived; null when the claims carried no usable address. */
+  email: string | null
   profile: ServerProfile | null
   progress: ServerProgress[]
   metrics: ServerMetric[]
@@ -65,7 +71,7 @@ export interface MeResponse {
 
 export const CARE_ACTIONS = ["freeze", "quickWake"] as const
 
-export type CareAction = (typeof CARE_ACTIONS)[number]
+export type CareAction = typeof CARE_ACTIONS[number]
 
 /**
  * `metric_events.name` for a care action. These are idempotency markers, not
