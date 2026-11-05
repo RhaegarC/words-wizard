@@ -169,7 +169,12 @@ export type ServerSessionIssue =
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const MAX_COMMIT_ROWS = 40
-const MAX_SESSION_ID_LENGTH = 64
+/**
+ * The client composes `<profileId>:<kind>:<localDate>:<startedAt>`; with an
+ * Entra oid that is already 67 characters for a daily session and 69 for a
+ * monthly one, so the bound has to clear a GUID plus its separators.
+ */
+const MAX_SESSION_ID_LENGTH = 128
 const MAX_SESSION_XP = 10_000
 const SESSION_KINDS: readonly SessionKind[] = ["daily", "monthly"]
 const PROGRESS_STATUSES: readonly ProgressStatus[] = [
