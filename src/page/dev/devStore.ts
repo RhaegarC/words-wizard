@@ -1,7 +1,7 @@
 import { getAvatarSet } from "../content"
 import { Outbox, OUTBOX_KEY } from "../api/outbox"
 import { DEVICE_STORAGE_KEY } from "../api/ApiProgressProvider"
-import { LOCAL_DATA_DISCARDED_KEY } from "../db/localData"
+import { deleteLegacyDatabase } from "../db/localData"
 import { buildNewProfile } from "../domain/firstRun"
 import type { ProgressProvider } from "@shared/provider"
 
@@ -40,5 +40,7 @@ export async function resetLocalData(): Promise<void> {
   new Outbox(window.localStorage).clear()
   window.localStorage.removeItem(OUTBOX_KEY)
   window.localStorage.removeItem(DEVICE_STORAGE_KEY)
-  window.localStorage.removeItem(LOCAL_DATA_DISCARDED_KEY)
+  // The Mission 1 database is no longer deleted at boot; the dev reset clears
+  // it so a seeded profile can be replayed from scratch.
+  await deleteLegacyDatabase()
 }

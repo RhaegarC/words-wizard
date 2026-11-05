@@ -11,7 +11,8 @@
 > **Mission 2 supersedes the offline-first, no-backend posture of v0.2.** The app is
 > online-only, signs in with Microsoft Entra ID, and stores content and learner data in
 > Cloudflare D1 behind a Worker API. Mission 1's Dexie/IndexedDB schema and offline
-> practice are historical; they are not part of the current product.
+> practice are historical; the app reads that database once to import a device's old
+> progress (feature 27), and it is not part of the current runtime otherwise.
 
 ---
 
@@ -80,8 +81,9 @@ switcher; two siblings need two accounts.
 2. Themes are kid-chosen vocabulary topics drawn from real-world categories (the starter
    word list's categories), never game IP. The topic count is open.
 3. Storage: Cloudflare D1 behind the Worker API. The browser keeps only the Entra
-   session, an outbox for an unsent session, and device flags; there is no IndexedDB
-   progress store.
+   session, an outbox for an unsent session, and device flags. Mission 1's IndexedDB
+   database is read once to import legacy progress and then deleted; it is never a
+   live progress store.
 4. PWA + Add to Home Screen is the primary delivery model. Installation is a strong,
    repeated prompt, not a hard gate. The app is online-required either way.
 5. The character is created whenever no character exists, before any practice.
@@ -596,7 +598,10 @@ the API returns and commits finished sessions back to it. See the
 - localStorage holds only the Entra session, the pending-session outbox, and device
   flags (install status, speech availability, last boot). The locale lives on the
   profile.
-- **Do not** use IndexedDB, Dexie, SQLite, or WA-SQLite for progress.
+- **Do not** use IndexedDB, Dexie, SQLite, or WA-SQLite for live progress. The only
+  IndexedDB access is the one-time Mission 1 import (feature 27), which reads
+  `WordsWizardDB`, posts it to `POST /v1/me/import`, and deletes the database only
+  after a successful import or an explicit discard.
 - Every authenticated request carries the Entra access token. The Worker derives the
   `oid` from the validated token and never trusts a client-supplied user id.
 
@@ -674,6 +679,22 @@ Progress {
 the counters shown in Settings. The API computes them; the client does not write an
 `oid` of its own.
 
+**Legacy import** (feature 27) merges Mission 1 IndexedDB rows into these tables and is
+never additive:
+
+- **Progress** — the row with the higher status rank (`new < learning < mastered`) wins;
+  equal rank breaks on higher `strength`, then earlier `nextReviewAt`, then the cloud
+  row. The winner is written whole, and `masteryXpAwarded` is `incoming OR cloud`.
+- **Profile counters** — `xp`, session and streak counters, care tokens, and frozen days
+  take the larger value; `lastPracticeAt`, `lastWakeAt`, and `lastMonthlyReviewAt` take
+  the later timestamp; `lastStreakDate` takes the lexicographically later date. Identity
+  fields (`name`, `characterName`, `avatar`, `currentTopicId`, `locale`, `createdAt`,
+  `role`, `userAvatarKey`) are never imported.
+- **Metrics** — `value` takes the larger of the two.
+
+The same payload can therefore be replayed without changing a row. Unknown word ids and
+metric names are skipped and counted, not failed.
+
 The Settings screen edits `Profile.locale`, `Profile.characterName`, and
 `Profile.avatar`, and can upload or remove the photo behind
 `Profile.userAvatarKey` (JPEG/PNG/WebP, 2 MiB, stored in R2). `role` and `email` are
@@ -705,6 +726,11 @@ After sign-in, the app calls `GET /v1/me`.
   cleared when it is applied or when the user signs out.
 - A browser kill or cleared storage loses only the session in progress and the outbox;
   it does not lose committed progress.
+- **Mission 1 upgrade:** on the first boot of the new version after sign-in, the app reads
+  the legacy `WordsWizardDB` and imports it automatically, then deletes it. A failed
+  import leaves the database untouched and retries on the next boot; Settings carries a
+  fallback card with Retry and Discard. Nothing is deleted before a successful import or
+  an explicit discard.
 - The install prompt remains a strong onboarding step, but installation is not a
   durability requirement: the profile follows the Entra account.
 - Clock tampering and timezone changes are accepted: the client computes local day

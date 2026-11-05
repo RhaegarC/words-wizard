@@ -498,4 +498,84 @@ describe("ApiProgressProvider", () => {
     await expect(provider.getDevice(DEVICE_KEYS.lastBootAt)).resolves.toBe(NOW)
     expect(client.request).not.toHaveBeenCalled()
   })
+
+  it("imports legacy data, replacing the snapshot from the response", async () => {
+    const imported = me({
+      profile: serverProfile({ xp: 500, completedSessions: 20 }),
+      progress: [],
+      metrics: [],
+      introductions: [],
+    })
+    const { client, provider } = makeProvider({
+      "POST /v1/me/import": () => ({
+        progress: { imported: 12, skipped: 2 },
+        metrics: { imported: 3, skipped: 1 },
+        profileUpdated: true,
+        me: imported,
+      }),
+    })
+    const payload = {
+      profile: {
+        xp: 500,
+        lastPracticeAt: NOW,
+        lastWakeAt: null,
+        frozenDays: 0,
+        careTokens: 1,
+        sessionsSinceLastToken: 2,
+        completedSessions: 20,
+        streakCount: 4,
+        bestStreak: 5,
+        lastStreakDate: "2026-10-30",
+        lastMonthlyReviewAt: null,
+      },
+      progress: [],
+      metrics: [],
+    }
+
+    const outcome = await provider.importLegacyProgress(payload)
+
+    expect(client.request).toHaveBeenCalledWith("/v1/me/import", {
+      method: "POST",
+      body: payload,
+    })
+    expect(outcome).toEqual({
+      progress: { imported: 12, skipped: 2 },
+      metrics: { imported: 3, skipped: 1 },
+      profileUpdated: true,
+      profile: expect.objectContaining({ id: "oid-1", xp: 500 }),
+    })
+    await expect(provider.getProfile()).resolves.toMatchObject({ xp: 500 })
+    await expect(provider.getAllProgress("oid-1")).resolves.toEqual([])
+  })
+
+  it("propagates an import failure and keeps the existing snapshot", async () => {
+    const { provider } = makeProvider({
+      "GET /v1/me": () => me({ profile: serverProfile({ xp: 100 }) }),
+      "POST /v1/me/import": () => {
+        throw new ApiError("validation_failed", 422, "Bad payload.")
+      },
+    })
+
+    await provider.getProfile()
+    await expect(
+      provider.importLegacyProgress({
+        profile: {
+          xp: 1,
+          lastPracticeAt: NOW,
+          lastWakeAt: null,
+          frozenDays: 0,
+          careTokens: 0,
+          sessionsSinceLastToken: 0,
+          completedSessions: 0,
+          streakCount: 0,
+          bestStreak: 0,
+          lastStreakDate: null,
+          lastMonthlyReviewAt: null,
+        },
+        progress: [],
+        metrics: [],
+      }),
+    ).rejects.toMatchObject({ status: 422 })
+    await expect(provider.getProfile()).resolves.toMatchObject({ xp: 100 })
+  })
 })

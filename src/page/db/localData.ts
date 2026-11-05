@@ -1,19 +1,33 @@
 /**
- * Mission 1 stored progress in IndexedDB. Mission 2 replaced that store with
- * D1, and no migration is attempted: there are no production users, and a
- * partial import would be worse than a clear reset.
+ * Mission 1 stored the child's profile, progress, and counters in
+ * `WordsWizardDB` (IndexedDB). Feature 27 reads that store once and imports it
+ * into the signed-in account; it is deleted only after a successful import or
+ * an explicit discard.
  *
- * The database is deleted once, guarded by a `localStorage` flag, and the app
- * shows a notice that the old local progress is not carried over.
+ * The reader is raw IndexedDB, not Dexie: Dexie is no longer a dependency, and
+ * a missing database must be reported without being created. Opening with no
+ * version is what makes an absent database an upgrade request, which this
+ * module aborts rather than allowing the browser to create an empty store.
  */
 
-export const LOCAL_DATA_DISCARDED_KEY = "words-wizard.localDataDiscarded"
 export const LEGACY_DATABASE_NAME = "WordsWizardDB"
 
-export interface StorageLike {
-  getItem(key: string): string | null
-  setItem(key: string, value: string): void
-}
+/** The Mission 1 v1 store set; anything else is not this product's data. */
+const LEGACY_STORES = ["profiles", "progress", "metrics"] as const
+
+export type LegacyRecord = Record<string, unknown>
+
+export type LegacyReadResult =
+  | { readonly status: "absent" }
+  | { readonly status: "unreadable" }
+  | {
+      readonly status: "ready"
+      readonly profiles: LegacyRecord[]
+      readonly progress: LegacyRecord[]
+      readonly metrics: LegacyRecord[]
+    }
+
+export type LegacyDeleteResult = "deleted" | "blocked" | "unavailable"
 
 export interface IndexedDbFactoryLike {
   deleteDatabase(name: string): {
@@ -23,49 +37,136 @@ export interface IndexedDbFactoryLike {
   }
 }
 
-/**
- * Delete the Mission 1 database if it has not been discarded before. Returns
- * true only when the deletion ran, so the caller can show the notice once.
- */
-export async function discardLegacyLocalData(
-  storage: StorageLike = window.localStorage,
-  factory: IndexedDbFactoryLike | undefined =
-    typeof indexedDB === "undefined"
-      ? undefined
-      : (indexedDB as unknown as IndexedDbFactoryLike),
-): Promise<boolean> {
+function defaultFactory(): IDBFactory | undefined {
+  return typeof indexedDB === "undefined" ? undefined : indexedDB
+}
+
+function defaultDeleteFactory(): IndexedDbFactoryLike | undefined {
+  return typeof indexedDB === "undefined"
+    ? undefined
+    : (indexedDB as unknown as IndexedDbFactoryLike)
+}
+
+function readAll(store: IDBObjectStore): Promise<LegacyRecord[]> {
+  return new Promise((resolve, reject) => {
+    const request = store.getAll()
+
+    request.onsuccess = () =>
+      resolve((request.result as LegacyRecord[] | undefined) ?? [])
+    request.onerror = () => reject(request.error ?? new Error("read failed"))
+  })
+}
+
+async function readStores(
+  db: IDBDatabase,
+  settle: (result: LegacyReadResult) => void,
+): Promise<void> {
   try {
-    if (storage.getItem(LOCAL_DATA_DISCARDED_KEY) === "1") {
-      return false
+    const missing = LEGACY_STORES.some(
+      (name) => !db.objectStoreNames.contains(name),
+    )
+
+    if (missing) {
+      settle({ status: "unreadable" })
+      return
     }
-  } catch {
-    return false
-  }
 
-  // Mark before the deletion so a crash mid-delete is not a notice on every
-  // boot; there is nothing to preserve either way.
-  try {
-    storage.setItem(LOCAL_DATA_DISCARDED_KEY, "1")
-  } catch {
-    return false
-  }
+    // One transaction over all three stores keeps the three reads consistent
+    // with each other: a concurrent write cannot land between them.
+    const transaction = db.transaction([...LEGACY_STORES], "readonly")
+    const [profiles, progress, metrics] = await Promise.all([
+      readAll(transaction.objectStore("profiles")),
+      readAll(transaction.objectStore("progress")),
+      readAll(transaction.objectStore("metrics")),
+    ])
 
+    settle({ status: "ready", profiles, progress, metrics })
+  } catch {
+    settle({ status: "unreadable" })
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Read the Mission 1 database without creating it.
+ *
+ * `onupgradeneeded` fires when the database does not exist; the version-change
+ * transaction is aborted and the result is `absent`. A database with the wrong
+ * stores (for example the Figma prototype's `profiles`-only one) is
+ * `unreadable`, not empty.
+ */
+export function readLegacyLocalData(
+  factory: IDBFactory | undefined = defaultFactory(),
+): Promise<LegacyReadResult> {
   if (factory === undefined) {
-    return false
+    return Promise.resolve({ status: "absent" })
   }
 
-  return new Promise<boolean>((resolve) => {
+  return new Promise<LegacyReadResult>((resolve) => {
+    let settled = false
+
+    const settle = (result: LegacyReadResult) => {
+      if (settled) return
+      settled = true
+      resolve(result)
+    }
+
+    let request: IDBOpenDBRequest
+
+    try {
+      request = factory.open(LEGACY_DATABASE_NAME)
+    } catch {
+      settle({ status: "unreadable" })
+      return
+    }
+
+    request.onupgradeneeded = () => {
+      // Do not let the browser create an empty `WordsWizardDB`.
+      try {
+        request.transaction?.abort()
+      } catch {
+        // Already aborted or not abortable; the result is absent either way.
+      }
+
+      settle({ status: "absent" })
+    }
+    request.onerror = () => settle({ status: "unreadable" })
+    request.onblocked = () => settle({ status: "unreadable" })
+    request.onsuccess = () => {
+      const db = request.result
+      // Another tab may ask for a version change; release the connection so its
+      // discard is not blocked forever.
+      db.onversionchange = () => db.close()
+      void readStores(db, settle)
+    }
+  })
+}
+
+/**
+ * Delete the legacy database. `blocked` means another tab still holds it open:
+ * the import has already succeeded, and the card tells the child to close the
+ * other tab and retry.
+ */
+export function deleteLegacyDatabase(
+  factory: IndexedDbFactoryLike | undefined = defaultDeleteFactory(),
+): Promise<LegacyDeleteResult> {
+  if (factory === undefined) {
+    return Promise.resolve("unavailable")
+  }
+
+  return new Promise<LegacyDeleteResult>((resolve) => {
     let request: ReturnType<IndexedDbFactoryLike["deleteDatabase"]>
 
     try {
       request = factory.deleteDatabase(LEGACY_DATABASE_NAME)
     } catch {
-      resolve(false)
+      resolve("unavailable")
       return
     }
 
-    request.onsuccess = () => resolve(true)
-    request.onerror = () => resolve(false)
-    request.onblocked = () => resolve(false)
+    request.onsuccess = () => resolve("deleted")
+    request.onerror = () => resolve("unavailable")
+    request.onblocked = () => resolve("blocked")
   })
 }

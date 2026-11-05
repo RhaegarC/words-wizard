@@ -5,6 +5,7 @@ import { Brand } from "../components/Brand"
 import { Icon } from "../components/Icon"
 import { getAvatarSet } from "../content"
 import { progressProvider } from "../api/provider"
+import { autoImportLegacy } from "../db/legacyImport"
 import {
   buildNewProfile,
   validateAvatarId,
@@ -87,7 +88,15 @@ export function CreateScreen({
 
     void progressProvider
       .createProfile(draft)
-      .then(onCreated)
+      .then(async (created) => {
+        // A new identity's Mission 1 import runs here, not at boot. A failed
+        // import must not turn a successful save into a save error, so the
+        // helper's outcome is the only thing consulted.
+        const imported = await autoImportLegacy(progressProvider)
+        onCreated(
+          imported.status === "imported" ? imported.summary.profile : created,
+        )
+      })
       .catch((reason: unknown) => {
         console.error("[create] Could not save the profile", reason)
         setError("save")

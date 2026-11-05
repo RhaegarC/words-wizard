@@ -94,11 +94,12 @@ including how to re-apply migrations and reset the local database, is in
   A CORS error means the Worker's `ALLOWED_ORIGINS` does not list `http://localhost:8443`; a `401`
   means the token is missing or rejected — see the auth checks in [worker.md](worker.md#debug).
 - `#/__routes` is a dev-only route table. It seeds a server profile through the same provider the
-  app uses and clears local state (the unsent outbox and device flags), but it cannot reset the D1
-  profile. Use the `wrangler d1 execute` commands in [worker.md](worker.md#debug) for that.
-- The Mission 1 IndexedDB database `WordsWizardDB` is deleted once on first load. If this browser
-  still holds the prototype's incompatible version-1 schema and sign-in never completes, clear
-  site data for `http://localhost:8443` once.
+  app uses and clears local state (the unsent outbox, device flags, and the legacy Mission 1
+  database), but it cannot reset the D1 profile. Use the `wrangler d1 execute` commands in [worker.md](worker.md#debug) for that.
+- The Mission 1 IndexedDB database `WordsWizardDB` is imported once on the first boot after
+  sign-in and deleted only after a successful import or an explicit discard in Settings. If this
+  browser holds the prototype's incompatible version-1 schema, the import reports it as unreadable
+  and Settings can discard it; otherwise clear site data for `http://localhost:8443` once.
 - `pnpm typecheck` covers the page, test, and worker projects; `pnpm test` runs the whole suite.
   Neither starts either dev server.
 

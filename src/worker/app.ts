@@ -29,6 +29,7 @@ export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/v1/me/sessions": ["POST"],
   "/v1/me/metrics": ["POST"],
   "/v1/me/care": ["POST"],
+  "/v1/me/import": ["POST"],
   "/v1/me/avatar": ["POST", "DELETE"],
 }
 

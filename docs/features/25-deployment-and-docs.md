@@ -163,4 +163,5 @@ credential-gated.
 - No automated Entra tenant provisioning.
 - No content CMS or admin UI.
 - No analytics, uptime monitor, or alerting beyond `check:deploy` and Worker logs.
-- No migration of Mission 1 Dexie data.
+- No migration of Mission 1 Dexie data (feature 27 later added the device import; this feature
+  only documents the delete-at-boot behaviour it replaced).

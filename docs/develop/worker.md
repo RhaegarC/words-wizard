@@ -86,6 +86,39 @@ object is deleted again, so a failed request leaves neither a stale key nor an o
 Local uploads and the public reader work against the emulated bucket; `pnpm test` uses its own
 temporary persistence directory.
 
+### Legacy import
+
+`POST /v1/me/import` merges a Mission 1 device export into the token owner's rows.
+
+| Aspect | Behaviour |
+|---|---|
+| Auth | required; rows are written for the token's `oid` only |
+| Body | `{ profile, progress, metrics }`, camelCase, **256 KiB** cap (other routes keep 64 KiB) |
+| Success | `{ progress: { imported, skipped }, metrics: { imported, skipped }, profileUpdated, me }` — `me` replaces the client snapshot in one round trip |
+| Errors | `401` anonymous; `404 profile_not_found` before character creation; `422 validation_failed` for a malformed or oversized payload, with nothing written |
+| Methods | `ROUTES` declares `POST` only, so another method is `405` with `Allow: POST` |
+
+The payload validator lives in `src/shared/legacyImport.ts` (`parseLegacyImport`). It rejects
+unknown fields, identity fields, duplicate word ids or metric names, more than 512 progress rows,
+more than 32 metric rows, and out-of-range counters/timestamps. Unknown word ids and metric names
+are **not** rejected: the merge looks them up, skips them, and counts them in `skipped`.
+
+The merge is done in SQL in `src/worker/db/queries.ts`, never read-then-write:
+
+- `progress` — one `INSERT ... ON CONFLICT(user_id, word_id) DO UPDATE`; the `CASE` keeps the row
+  with the higher status rank (`new < learning < mastered`), then higher `strength`, then earlier
+  `next_review_at`; a full tie keeps the stored row. `mastery_xp_awarded` is the OR of both.
+- `profiles` — one `UPDATE` using `MAX` for counters and non-null timestamps, a `CASE` that keeps
+  the stored value when the incoming one is `NULL` (otherwise `MAX`) for the nullable timestamps,
+  and a lexicographic `MAX` for `last_streak_date`. Identity columns are absent from the statement.
+- `metrics` — one `INSERT ... ON CONFLICT(user_id, name) DO UPDATE` with `MAX` for the value and a
+  conditional `updated_at`.
+
+Every statement is idempotent, so replaying the same payload changes nothing. Profile and metrics
+share one atomic `db.batch` (≤33 statements); progress is written in chunks of **90** statements
+because D1 caps bound parameters at 100. Progress is therefore not one atomic batch: a failed run
+leaves a valid prefix and the retry converges.
+
 ### Debug
 
 - The dev server logs each request and any stack trace to its terminal.

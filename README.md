@@ -28,7 +28,8 @@ and its toolchain is independent of the production app.
   tab.
 - **Monthly Review:** a 20-word retention check every 28 days.
 - **Online PWA:** Microsoft Entra ID sign-in, a Cloudflare Worker API, and D1 for content and
-  per-user progress. There is no offline practice and no Dexie store after Mission 2.
+  per-user progress. There is no offline practice; a device's Mission 1 IndexedDB data is
+  imported once on first boot and then deleted.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
 - **Cloudflare Pages + Worker** hosting, with hash routing.
 - **Illustrations:** word images served from R2 URLs (emoji fallback until authored) plus 8 buddy
@@ -118,14 +119,16 @@ Content integrity is checked by the database-tier tests, not by a prebuild step.
 ### Local data
 
 Mission 1 stored everything in IndexedDB under the database name `WordsWizardDB`. Mission 2
-moves content and progress to D1; feature 24 deletes the old database once on first load and shows
-a notice. The Figma prototype used the same name on the same port with an incompatible version-1
-schema (`profiles` only), so if you ran the prototype in this browser, **clear site data for
-`localhost:8443` once**. Demo records from the prototype are deliberately not migrated.
+moves content and progress to D1; feature 27 imports the old data automatically on the first boot
+after sign-in and deletes the database only after a successful import or an explicit discard in
+Settings. A failed import keeps the database and retries on the next boot. The Figma prototype
+used the same name on the same port with an incompatible version-1 schema (`profiles` only), so if
+you ran the prototype in this browser, **clear site data for `localhost:8443` once**. Demo records
+from the prototype are deliberately not migrated.
 
 The dev-only route table at `#/__routes` can seed a server profile through the same
-provider the app uses and can clear local state (the unsent outbox and device flags). It
-cannot reset or drop the D1 profile.
+provider the app uses and can clear local state (the unsent outbox, device flags, and the
+legacy Mission 1 database). It cannot reset or drop the D1 profile.
 
 Progress is held in memory for the length of a session and written once at the end. If
 that commit cannot reach the API, the finished session waits in the local outbox and is

@@ -28,3 +28,15 @@ export type MetricName = (typeof METRIC_NAMES)[keyof typeof METRIC_NAMES]
 
 export const METRIC_NAME_VALUES: readonly MetricName[] =
   Object.values(METRIC_NAMES)
+
+/**
+ * The allowlist as a predicate. The legacy import skips an unknown name and
+ * counts it rather than failing the whole import: content and counters may
+ * have been renamed or retired since Mission 1.
+ */
+export function isMetricName(value: unknown): value is MetricName {
+  return (
+    typeof value === "string" &&
+    (METRIC_NAME_VALUES as readonly string[]).includes(value)
+  )
+}

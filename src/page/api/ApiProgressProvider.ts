@@ -1,3 +1,8 @@
+import type {
+  LegacyImportOutcome,
+  LegacyImportPayload,
+  LegacyImportResponse,
+} from "@shared/legacyImport"
 import type { PackIntroduction, MeResponse, ServerProfile } from "@shared/me"
 import type { MetricName } from "@shared/metrics"
 import type {
@@ -246,6 +251,27 @@ export class ApiProgressProvider implements ProgressProvider {
     const oid = this.requireIdentity()
     await this.client.request<void>("/v1/me/avatar", { method: "DELETE" })
     return this.withAvatarKey(null, oid)
+  }
+
+  async importLegacyProgress(
+    payload: LegacyImportPayload,
+  ): Promise<LegacyImportOutcome> {
+    const oid = this.requireIdentity()
+    const response = await this.client.request<LegacyImportResponse>(
+      "/v1/me/import",
+      { method: "POST", body: payload },
+    )
+
+    // The response carries the full post-import `/v1/me`, so the snapshot is
+    // replaced in one round trip rather than read again.
+    this.snapshot = response.me
+
+    if (response.me.profile === null) {
+      throw new Error("The import response carried no profile")
+    }
+
+    const { me: _me, ...summary } = response
+    return { ...summary, profile: mapProfile(response.me.profile, oid) }
   }
 
   /**

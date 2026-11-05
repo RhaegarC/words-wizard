@@ -41,6 +41,12 @@ is not personal data.
 - The browser stores the Entra session, the outbox for an unsent session, and
   the device flags. The outbox is removed when it is applied or when the user
   signs out.
+- A browser that used the previous, offline version may still hold its old
+  database (`WordsWizardDB` in IndexedDB). On the first sign-in after upgrading,
+  the app reads it once and imports that profile and progress into the signed-in
+  account. The old database is deleted only after the import succeeds or the
+  user chooses to discard it in Settings; if the import fails it stays on the
+  device and is retried on the next visit.
 
 ## What we do not do
 

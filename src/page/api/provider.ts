@@ -44,6 +44,8 @@ export const progressProvider: ProgressProvider = {
   applyCare: (action) => requireProvider().applyCare(action),
   uploadAvatar: (file) => requireProvider().uploadAvatar(file),
   removeAvatar: () => requireProvider().removeAvatar(),
+  importLegacyProgress: (payload) =>
+    requireProvider().importLegacyProgress(payload),
   getDevice: (key) => requireProvider().getDevice(key),
   setDevice: (key, value) => requireProvider().setDevice(key, value),
 }

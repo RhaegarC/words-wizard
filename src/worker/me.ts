@@ -1,5 +1,6 @@
 import type { Context, Hono, MiddlewareHandler } from "hono"
 
+import { MAX_IMPORT_BODY_BYTES, parseLegacyImport } from "../shared/legacyImport"
 import { validateServerSessionPayload } from "../shared/sessionPayload"
 import type { ServerSessionCommitPayload } from "../shared/sessionPayload"
 
@@ -20,6 +21,7 @@ import {
   commitSession,
   createProfile,
   ensureUser,
+  importLegacyData,
   patchProfile,
   readMe,
   readProfile,
@@ -168,6 +170,21 @@ export function registerMeRoutes(
     return c.json(await writeMetric(db, oid, parsed.value, now))
   })
 
+  app.post("/v1/me/import", async (c) => {
+    // A whole Mission 1 history is larger than the other routes' bodies.
+    const parsed = parseLegacyImport(
+      await readBody(c, MAX_IMPORT_BODY_BYTES),
+    )
+    if (!parsed.ok) throw new ValidationFailedError(describe(parsed.issues))
+
+    const db = requireDb(c.env)
+    const principal = c.get("principal")
+    const now = Date.now()
+
+    await ensureUser(db, principal.oid, principal, now)
+    return c.json(await importLegacyData(db, principal.oid, parsed.value))
+  })
+
   app.post("/v1/me/care", async (c) => {
     const parsed = parseCareEvent(await readBody(c))
     if (!parsed.ok) throw new ValidationFailedError(describe(parsed.issues))
@@ -285,27 +302,35 @@ const MULTIPART_OVERHEAD = 64 * 1024
  * Read the body once, refusing a declared oversize before the text is
  * touched and the actual byte length before `JSON.parse`.
  */
-async function readBody(c: Context<AppEnv>): Promise<unknown> {
+async function readBody(
+  c: Context<AppEnv>,
+  maxBytes: number = MAX_BODY_BYTES,
+): Promise<unknown> {
   const declared = c.req.header("content-length")
 
   if (declared !== undefined) {
     const size = Number(declared)
-    if (Number.isFinite(size) && size > MAX_BODY_BYTES) {
-      throw new ValidationFailedError("Request body exceeds 64 KB.")
+    if (Number.isFinite(size) && size > maxBytes) {
+      throw new ValidationFailedError(bodyTooLarge(maxBytes))
     }
   }
 
   const text = await c.req.text()
-  const parsed = parseJsonBody(declared, text)
+  const parsed = parseJsonBody(declared, text, maxBytes)
 
   if (!parsed.ok) {
     if (parsed.issue === "body-too-large") {
-      throw new ValidationFailedError("Request body exceeds 64 KB.")
+      throw new ValidationFailedError(bodyTooLarge(maxBytes))
     }
     throw new InvalidJsonError()
   }
 
   return parsed.value
+}
+
+/** Name the applicable limit rather than a hard-coded 64 KB. */
+function bodyTooLarge(maxBytes: number): string {
+  return `Request body exceeds ${Math.round(maxBytes / 1024)} KB.`
 }
 
 function describe(issues: readonly string[]): string {
