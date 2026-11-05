@@ -4,7 +4,7 @@
 > design locked**
 > Depends on: 23 (user-data API), 24 (client online integration), 25 (deployment and domains)
 > Blocks: the Mission 3 role-gated portal.
-> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md) and [PRD](../PRD.md) §8.3.
+> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md) and [PRD](../../PRD.md) §8.3.
 
 ## Summary
 
@@ -97,7 +97,7 @@ Synchronisation rules:
 
 Entra prerequisite: the registration defines and assigns app roles `user`, `teacher`, and `admin`.
 Unassigned users get no `roles` claim and therefore `user`. See
-[login.md](../develop/login.md).
+[login.md](../../develop/login.md).
 
 ## API
 
