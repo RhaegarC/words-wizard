@@ -1,6 +1,6 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
-> Status: **In progress — feature 28 archived, 29 implemented; features 30–31 specced.**
+> Status: **In progress — features 28–29 archived; features 30–31 specced.**
 > Depends on: Mission 2 (features 21–27) repository work complete; production provisioning and the
 > content release gate are operator-owned.
 > Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. The UI shape
@@ -121,7 +121,7 @@ ship.
 | # | Sub-task | Status | Depends on |
 |---|----------|--------|------------|
 | 28 | [Admin portal foundation](archive/mission-3/28-admin-portal-foundation.md) — second Pages app, Entra sign-in reusing the existing registration, teacher/admin gate, portal shell and navigation, read-only content snapshot, local dev and CI build | Done | 25, 26 |
-| 29 | [Topics and packs](29-topics-and-packs.md) — create, edit, order, archive and restore; shared write mechanics; the Archived view | Implemented | 28 |
+| 29 | [Topics and packs](archive/mission-3/29-topics-and-packs.md) — create, edit, order, archive and restore; shared write mechanics; the Archived view | Done | 28 |
 | 30 | [Word library and pack membership](30-word-library-and-membership.md) — word create and edit (no delete or archive), searchable library, ordered pack contents | Specced | 28, 29 |
 | 31 | [Word images](31-word-images.md) — upload, replace, and remove to a dedicated bucket; public image serving; child-app cache rule | Specced | 30 |
 | 32 | Artwork review and approval — review states, sign-off, and tracked approval | Not specced — deferred | 31 |
