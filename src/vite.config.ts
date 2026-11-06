@@ -92,7 +92,20 @@ export default defineConfig({
             },
           },
           {
-            // Word images served from R2.
+            // Word pictures served by the Worker (feature 31). Each upload is a
+            // new immutable URL, so cache-first is safe.
+            urlPattern: /\/v1\/images\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "word-images",
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            // Word images served from R2 (authored rows may still point here).
             urlPattern: /^https:\/\/[^/]+\.r2\.(?:dev|cloudflarestorage\.com)\//i,
             handler: "CacheFirst",
             options: {

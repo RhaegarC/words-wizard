@@ -20,8 +20,9 @@ placeholders with the same tenant and client the page uses, or local sign-in can
 | `ALLOWED_ORIGINS` | must include `http://localhost:8443` and `http://localhost:8444` |
 
 The `d1_databases[0].database_id` placeholder does not matter locally: `--local` never contacts a
-remote database, and the id is only used before a deploy. The `r2_buckets` binding `AVATARS` is
-emulated the same way: uploads land in the local persistence directory and need no credentials. There is no local secret, so no
+remote database, and the id is only used before a deploy. The `r2_buckets` bindings `AVATARS` and
+`WORD_IMAGES` are emulated the same way: uploads land in the local persistence directory and need
+no credentials. There is no local secret, so no
 `.dev.vars` file is needed. To try an override without editing the file, pass it on the command
 line:
 
@@ -85,6 +86,34 @@ object is deleted again, so a failed request leaves neither a stale key nor an o
 
 Local uploads and the public reader work against the emulated bucket; `pnpm test` uses its own
 temporary persistence directory.
+
+### Word images
+
+Word pictures use a **separate** bucket, `words-wizard-images`, bound as `WORD_IMAGES`; the avatar
+bucket and its keys are never touched. Two staff routes and one public reader:
+
+| Route | Behaviour |
+|---|---|
+| `POST /v1/admin/words/:id/image` | multipart `file`, ≤2 MiB, JPEG/PNG/WebP by magic bytes; stores `word-images/<wordId>/<uuid>.<ext>`, sets `words.image`, deletes the previous object, bumps the content version |
+| `DELETE /v1/admin/words/:id/image` | clears `words.image`, deletes the object, bumps the version; removing an absent image is a version-neutral no-op |
+| `GET /v1/images/*` | public, no auth; validates the key shape before reading R2, serves the stored type with `Cache-Control: public, max-age=31536000, immutable` |
+
+`src/worker/wordImage.ts` owns the key shape, the URL derivation, and the size cap;
+`detectImageType` and the extension type come from `avatar.ts`, so both buckets accept the same
+three formats and trust neither the declared content type nor the filename. The upload checks
+`Content-Length` before parsing the multipart body and checks the file again afterwards; a rejected
+upload writes nothing and leaves the version alone.
+
+The stored URL is derived from the **request origin**: `<origin>/v1/images/<key>`. In production
+that is the public API host; locally it is the dev server's origin. `wrangler dev` rewrites the
+origin to the first configured custom-domain route unless it is started with
+`--infer-origin-from-routes false`, which is what the host-tier harness does — without it a stored
+image URL points at production and cannot be fetched on a developer machine.
+
+The object is written before the row update and deleted again if the batch fails; the previous
+object is deleted best-effort only after the row update succeeds, so a failed delete leaves no row
+pointing at a missing object. `requireWordImages(env)` throws `ConfigError("WORD_IMAGES")` when the
+binding is absent.
 
 ### Legacy import
 

@@ -195,6 +195,47 @@ describe("words and membership", () => {
   })
 })
 
+describe("word images", () => {
+  it("uploads the file as multipart and lets the browser set the boundary", async () => {
+    const { api, calls } = apiWith(() =>
+      jsonResponse({ contentVersion: "0.3.1", warnings: [] }),
+    )
+    const file = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], {
+      type: "image/png",
+    })
+
+    await api.uploadWordImage("w-brave", file, "0.3.0")
+
+    expect(calls[0]?.url).toBe(
+      "https://api.test/v1/admin/words/w-brave/image",
+    )
+    expect(calls[0]?.init.method).toBe("POST")
+    const headers = headersOf(calls[0]!.init)
+    expect(headers.Authorization).toBe("Bearer token-abc")
+    expect(headers["If-Match"]).toBe('"0.3.0"')
+    // A hand-set Content-Type would lose the multipart boundary.
+    expect(headers["Content-Type"]).toBeUndefined()
+
+    const body = calls[0]?.init.body as FormData
+    expect(body).toBeInstanceOf(FormData)
+    expect(body.get("file")).toBeInstanceOf(Blob)
+  })
+
+  it("removes the image with the version header", async () => {
+    const { api, calls } = apiWith(() =>
+      jsonResponse({ contentVersion: "0.3.2", warnings: [] }),
+    )
+
+    await api.removeWordImage("w-brave", "0.3.1")
+
+    expect(calls[0]?.url).toBe(
+      "https://api.test/v1/admin/words/w-brave/image",
+    )
+    expect(calls[0]?.init.method).toBe("DELETE")
+    expect(headersOf(calls[0]!.init)["If-Match"]).toBe('"0.3.1"')
+  })
+})
+
 describe("errors the screen acts on", () => {
   it("carries the conflict code from a stale version", async () => {
     const { api } = apiWith(() =>
