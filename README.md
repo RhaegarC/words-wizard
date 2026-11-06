@@ -6,8 +6,8 @@ vocabulary through short, game-like sessions with a virtual word buddy.
 **Status:** [docs/PRD.md](docs/PRD.md) is v0.3, the Mission 2 online architecture: Microsoft Entra
 ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (see
 [docs/features/archive/mission-2/00-mission-2-sprint.md](docs/features/archive/mission-2/00-mission-2-sprint.md)). Mission 3, the
-teacher/admin content portal, begins with feature 28 in
-[docs/features/00-mission-3-sprint.md](docs/features/00-mission-3-sprint.md): a second front end
+teacher/admin content portal, shipped as features 28–31, recorded in
+[docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
 under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
 and Worker API. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
