@@ -62,6 +62,48 @@ export function packIdFor(
   return `${topicId}-${number}`
 }
 
+/** `w-<slug>`, then `w-<slug>-2`, …; a non-Latin headword falls back to `w-1`. */
+export function wordIdFor(
+  text: string,
+  taken: ReadonlySet<string>,
+): string {
+  const base = slugify(text)
+
+  if (base !== "") {
+    const candidate = `w-${base}`
+    if (!taken.has(candidate)) return candidate
+
+    let suffix = 2
+    while (taken.has(`${candidate}-${suffix}`)) suffix += 1
+    return `${candidate}-${suffix}`
+  }
+
+  let number = 1
+  while (taken.has(`w-${number}`)) number += 1
+  return `w-${number}`
+}
+
+/**
+ * The headword is unique case-insensitively across every row the caller
+ * passes — active and archived — because the database index includes both.
+ * `exceptId` lets an edit keep its own headword.
+ */
+export function headwordTaken(
+  words: readonly { id: string; text: string }[],
+  text: string,
+  exceptId?: string,
+): string | null {
+  const key = text.trim().toLowerCase()
+
+  for (const word of words) {
+    if (word.id !== exceptId && word.text.trim().toLowerCase() === key) {
+      return word.id
+    }
+  }
+
+  return null
+}
+
 const VERSION = /^(\d+)\.(\d+)\.(\d+)$/
 
 /**
@@ -83,6 +125,11 @@ export type WriteIssue =
   | "invalid-id"
   | "duplicate-id"
   | "empty-patch"
+  | "invalid-examples"
+  | "invalid-level"
+  | "invalid-tags"
+  | "invalid-emoji"
+  | "list-too-long"
 
 export type ParsedWrite<T> =
   | { readonly ok: true; readonly value: T }
@@ -115,6 +162,40 @@ export interface PackOrderPayload {
   ids: string[]
 }
 
+/** The array caps bound one save's payload and one membership batch. */
+export const MAX_EXAMPLES = 8
+export const MAX_TAGS = 20
+export const MAX_MEMBERSHIP = 500
+export const MAX_EMOJI_LENGTH = 32
+
+export interface WordExamplePayload {
+  en: string
+  zh: string
+}
+
+export interface WordCreatePayload {
+  text: string
+  phonetic: string
+  partOfSpeech: string
+  meaningEn: string
+  meaningZh: string
+  definitionEn: string
+  definitionZh: string
+  examples: WordExamplePayload[]
+  level: 1 | 2 | 3
+  tags: string[]
+  emoji: string | null
+  /** Optional: places the new word at the end of this pack atomically. */
+  packId?: string
+}
+
+export type WordPatchPayload = Partial<Omit<WordCreatePayload, "packId">>
+
+/** The full ordered membership of one pack; an empty list empties it. */
+export interface MembershipPayload {
+  ids: string[]
+}
+
 const TOPIC_FIELDS = [
   "title",
   "titleZh",
@@ -125,6 +206,19 @@ const TOPIC_FIELDS = [
 
 const PACK_FIELDS = ["topicId", "title", "titleZh"] as const
 const PACK_PATCH_FIELDS = ["title", "titleZh"] as const
+
+const WORD_TEXT_FIELDS = [
+  "text",
+  "phonetic",
+  "partOfSpeech",
+  "meaningEn",
+  "meaningZh",
+  "definitionEn",
+  "definitionZh",
+] as const
+
+const WORD_FIELDS = [...WORD_TEXT_FIELDS, "examples", "level", "tags", "emoji"] as const
+const WORD_CREATE_FIELDS = [...WORD_FIELDS, "packId"] as const
 
 type TopicField = typeof TOPIC_FIELDS[number]
 
@@ -286,6 +380,174 @@ export function parsePackOrder(body: unknown): ParsedWrite<PackOrderPayload> {
 
   if (issues.length > 0) return { ok: false, issues }
   return { ok: true, value: { topicId: topicId!, ids: parsed.ids } }
+}
+
+/** One or more bilingual pairs; each needs both languages. */
+function parseExamples(raw: unknown, issues: WriteIssue[]): WordExamplePayload[] {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_EXAMPLES) {
+    issues.push("invalid-examples")
+    return []
+  }
+
+  const examples: WordExamplePayload[] = []
+
+  for (const entry of raw) {
+    if (!isRecord(entry)) {
+      issues.push("invalid-examples")
+      continue
+    }
+
+    for (const key of Object.keys(entry)) {
+      if (key !== "en" && key !== "zh") issues.push("unknown-field")
+    }
+
+    const en = typeof entry.en === "string" ? entry.en.trim() : ""
+    const zh = typeof entry.zh === "string" ? entry.zh.trim() : ""
+
+    if (en === "" || zh === "") {
+      issues.push("invalid-examples")
+      continue
+    }
+
+    examples.push({ en, zh })
+  }
+
+  return examples
+}
+
+function parseLevel(raw: unknown, issues: WriteIssue[]): 1 | 2 | 3 {
+  if (raw === 1 || raw === 2 || raw === 3) return raw
+
+  issues.push("invalid-level")
+  return 1
+}
+
+/** Trimmed, de-duplicated, and capped; an empty list is valid. */
+function parseTags(raw: unknown, issues: WriteIssue[]): string[] {
+  if (!Array.isArray(raw)) {
+    issues.push("invalid-tags")
+    return []
+  }
+
+  const tags: string[] = []
+
+  for (const entry of raw) {
+    if (typeof entry !== "string" || entry.trim() === "") {
+      issues.push("invalid-tags")
+      continue
+    }
+
+    const tag = entry.trim()
+    if (!tags.includes(tag)) tags.push(tag)
+  }
+
+  if (tags.length > MAX_TAGS) issues.push("invalid-tags")
+  return tags
+}
+
+/** Emoji is optional text: null and blank both mean "none". */
+function parseEmoji(
+  raw: unknown,
+  issues: WriteIssue[],
+): string | null {
+  if (raw === undefined || raw === null) return null
+
+  if (typeof raw !== "string") {
+    issues.push("invalid-emoji")
+    return null
+  }
+
+  const emoji = raw.trim()
+  if (emoji === "") return null
+  if (emoji.length > MAX_EMOJI_LENGTH) issues.push("invalid-emoji")
+
+  return emoji
+}
+
+function wordTextFields(
+  body: Record<string, unknown>,
+  issues: WriteIssue[],
+): Record<(typeof WORD_TEXT_FIELDS)[number], string> {
+  const values = {} as Record<(typeof WORD_TEXT_FIELDS)[number], string>
+
+  for (const field of WORD_TEXT_FIELDS) {
+    const value = stringField(body, field, issues)
+    if (value !== null) values[field] = value
+  }
+
+  return values
+}
+
+export function parseWordCreate(body: unknown): ParsedWrite<WordCreatePayload> {
+  if (!isRecord(body)) return { ok: false, issues: ["invalid-payload"] }
+
+  const issues: WriteIssue[] = []
+  addUnknownFields(body, new Set(WORD_CREATE_FIELDS), issues)
+
+  const texts = wordTextFields(body, issues)
+  const examples = parseExamples(body.examples, issues)
+  const level = parseLevel(body.level, issues)
+  const tags = parseTags(body.tags, issues)
+  const emoji = parseEmoji(body.emoji, issues)
+  const packId =
+    body.packId === undefined ? undefined : stringField(body, "packId", issues)
+
+  if (issues.length > 0) return { ok: false, issues }
+
+  return {
+    ok: true,
+    value: {
+      ...texts,
+      examples,
+      level,
+      tags,
+      emoji,
+      ...(packId === null || packId === undefined ? {} : { packId }),
+    },
+  }
+}
+
+export function parseWordPatch(body: unknown): ParsedWrite<WordPatchPayload> {
+  if (!isRecord(body)) return { ok: false, issues: ["invalid-payload"] }
+
+  if (Object.keys(body).length === 0) return { ok: false, issues: ["empty-patch"] }
+
+  const issues: WriteIssue[] = []
+  addUnknownFields(body, new Set(WORD_FIELDS), issues)
+
+  const value: WordPatchPayload = {}
+
+  for (const field of WORD_TEXT_FIELDS) {
+    if (!(field in body)) continue
+
+    const parsed = stringField(body, field, issues)
+    if (parsed !== null) value[field] = parsed
+  }
+
+  if ("examples" in body) value.examples = parseExamples(body.examples, issues)
+  if ("level" in body) value.level = parseLevel(body.level, issues)
+  if ("tags" in body) value.tags = parseTags(body.tags, issues)
+  if ("emoji" in body) value.emoji = parseEmoji(body.emoji, issues)
+
+  if (issues.length > 0) return { ok: false, issues }
+  return { ok: true, value }
+}
+
+export function parseMembership(body: unknown): ParsedWrite<MembershipPayload> {
+  if (!isRecord(body)) return { ok: false, issues: ["invalid-payload"] }
+
+  const issues: WriteIssue[] = []
+  addUnknownFields(body, new Set(["ids"]), issues)
+
+  const parsed = parseIds(body.ids)
+  issues.push(...parsed.issues)
+
+  if (Array.isArray(body.ids) && body.ids.length > MAX_MEMBERSHIP) {
+    issues.push("list-too-long")
+  }
+
+  if (issues.length > 0) return { ok: false, issues }
+  return { ok: true, value: { ids: parsed.ids } }
 }
 
 /**
