@@ -171,7 +171,7 @@ describe("documentation truth", () => {
   it("keeps Mission 1 historical and in the archive", () => {
     expect(
       existsSync(
-        new URL("docs/features/archive/00-mission-1-sprint.md", repoRoot),
+        new URL("docs/features/archive/mission-1/00-mission-1-sprint.md", repoRoot),
       ),
     ).toBe(true)
     expect(

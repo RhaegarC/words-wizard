@@ -3,7 +3,7 @@
 > Priority: Must (release blocker) · Mission 2 · **Status: Done — merged in PR #55**
 > Depends on: 21 (Worker edge, config, CORS, error envelope). Blocks: 23, 24; feature 17 continues
 > here.
-> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md).
+> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
 ## Summary
 
@@ -200,7 +200,7 @@ Notes:
 ## Non-goals
 
 - No content CMS, editor, admin API, or admin portal; the future portal is recorded in feature 17
-  and scoped in the [Mission 3 sprint](00-mission-3-sprint.md).
+  and scoped in the [Mission 3 sprint](../../00-mission-3-sprint.md).
 - No R2 upload or image processing; `image` merely holds a URL.
 - No new topics, words, or art beyond the reviewed seed; feature 17 owns authoring.
 - No user data; feature 23 owns profiles, progress, introductions, and sessions.

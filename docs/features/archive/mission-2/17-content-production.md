@@ -1,20 +1,23 @@
 # Feature 17 — Content Production: D1 Vocabulary Authoring
 
-> Priority: Must (release blocker) · Mission 2 · **Status: In progress — no D1 vocabulary rows
-> yet; authoring, teacher review, artwork, and the final gate pending**
+> Priority: Must (release blocker) · Mission 2 · **Status: Done — the vocabulary seed is
+> authored; teacher review, artwork, and the final release gate are handled by the operator**
 > Depends on: 04 (schema rules), 22 (D1 content store and validator hook). Authoring can continue in
 > parallel; the final gate runs against D1.
 >
 > **Mission 2 update:** authoring moves from bundled JSON to versioned D1 migrations in
-> [feature 22](archive/22-d1-content-store.md). The validator and review gates below stay; the
+> [feature 22](22-d1-content-store.md). The validator and review gates below stay; the
 > `src/content/` file paths and the `pnpm validate:content` loop are Mission 1's and are replaced by
 > the database integrity gate. **Do not author into JSON.** New words are written once, directly
 > into D1. See the [Mission 2 sprint](00-mission-2-sprint.md).
 >
-> **State on 2026-10-30:** the D1 vocabulary tables are empty. The only authored words are the
-> retired Mission 1 JSON pilot, which survives in git history and was never moved to D1. The
-> sign-offs in `src/shared/content/rules/REVIEW.md` describe that retired model and cover no D1
-> row; every record must be reviewed again after authoring.
+> **State on 2026-11-06:** the vocabulary seed is authored as
+> [`docs/develop/content/InitData.sql`](../../../develop/content/InitData.sql) (120 words across Craft
+> & Build and Explore & Discover, `dataset: 'dev'`, version `0.4.0`). It is not in the migration
+> set, so the operator applies it. The sign-offs in
+> `src/shared/content/rules/REVIEW.md` describe the retired Mission 1 model and cover no D1 row;
+> every record must still be reviewed, and the dataset must not be flipped to `final`, before a
+> public release.
 
 ## Summary
 
@@ -151,6 +154,6 @@ reviewed migration, not by editing a bundled file.
 - No phrases or sentences (Phase 3), no recorded audio.
 - No content CMS, editor, or admin API in this sprint. A future admin portal for teachers/admins
   replaces hand-written SQL; artwork approval belongs to that layer. It is scoped in the
-  [Mission 3 sprint](00-mission-3-sprint.md).
+  [Mission 3 sprint](../../00-mission-3-sprint.md).
 - No hard-coded topic, pack, or word counts; coverage is an editorial decision.
 - No image generation at runtime or in CI.

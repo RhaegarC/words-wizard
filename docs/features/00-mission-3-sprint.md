@@ -1,7 +1,8 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
 > Status: **Planned — scope only. Details are intentionally unfilled.**
-> Depends on: Mission 2 (features 21–27) complete and deployed.
+> Depends on: Mission 2 (features 21–27) repository work complete; production provisioning and the
+> content release gate are operator-owned.
 > Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. Where this
 > file and a later Mission 3 feature doc disagree, the feature doc wins once its design is locked.
 

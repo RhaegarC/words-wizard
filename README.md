@@ -5,7 +5,7 @@ vocabulary through short, game-like sessions with a virtual word buddy.
 
 **Status:** [docs/PRD.md](docs/PRD.md) is v0.3, the Mission 2 online architecture: Microsoft Entra
 ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (see
-[docs/features/00-mission-2-sprint.md](docs/features/00-mission-2-sprint.md)). Mission 3, the
+[docs/features/archive/mission-2/00-mission-2-sprint.md](docs/features/archive/mission-2/00-mission-2-sprint.md)). Mission 3, the
 teacher/admin content portal, is scoped but not detailed in
 [docs/features/00-mission-3-sprint.md](docs/features/00-mission-3-sprint.md). The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
@@ -56,7 +56,7 @@ Mission 2 stores the vocabulary in four D1 tables — `topics`, `packs`, `words`
 — with no fixed count of any of them. Topics are the starter word list's categories; packs are day-sized
 sub-categories, and a pack may span several days. One row represents one headword; a word may
 belong to packs of several topics and is introduced anew in each, while mastery stays at word
-level. See [feature 22](docs/features/archive/22-d1-content-store.md).
+level. See [feature 22](docs/features/archive/mission-2/22-d1-content-store.md).
 
 Content is authored AI-assisted, reviewed in full by a Chinese-speaking English teacher, and
 committed as reviewed migration SQL. The integrity gate assembles the bundle from D1 and runs
