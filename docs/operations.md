@@ -15,7 +15,10 @@ and `wrangler d1 migrations apply --local`). Feature 26 re-ran `pnpm typecheck`,
 `pnpm test`, `pnpm build`, and `pnpm check:dist` on 2026-11-05; the host tier
 boots the real Worker in `wrangler dev` with a local D1 and a local R2 under a
 temporary `--persist-to` directory, and covers avatar upload, replacement,
-removal, and public serving. Feature 28 re-ran those commands plus
+removal, and public serving. Feature 31 re-ran those commands on 2026-11-06; its
+host tier additionally covers word-image upload, replacement with the old object
+gone, removal, rejection without a write, and public serving against the second
+emulated bucket. Feature 28 re-ran those commands plus
 `pnpm build:portal` on 2026-11-06; its host tier boots the same Worker with real
 RS256 tokens and covers the admin staff boundary and snapshot. The custom
 domains, production D1 database, R2 bucket, Workers Builds connection, both
@@ -32,6 +35,7 @@ are configured by the operator and were not run from the repository.
 | Production D1 | `words-wizard`, binding `DB` |
 | Test D1 | `words-wizard-test`, used only by the gated remote tier |
 | Avatars | Cloudflare R2 `words-wizard-avatars`, binding `AVATARS`, public read at `https://avatars.nioh.uk` |
+| Word images | Cloudflare R2 `words-wizard-images`, binding `WORD_IMAGES`, read through `<api>/v1/images/...` |
 | Auth | Microsoft Entra ID, SPA redirect + PKCE, no client secret |
 | Deploy | Cloudflare Git integration for both Pages and Workers Builds |
 | CI | GitHub Actions: checks on PRs, gated remote D1 run, no deploy |
@@ -169,7 +173,8 @@ not a secret):
 
 ```jsonc
 "r2_buckets": [
-  { "binding": "AVATARS", "bucket_name": "words-wizard-avatars" }
+  { "binding": "AVATARS", "bucket_name": "words-wizard-avatars" },
+  { "binding": "WORD_IMAGES", "bucket_name": "words-wizard-images" }
 ]
 ```
 
@@ -187,6 +192,38 @@ route whose `AVATARS` binding is missing fails with `config_missing` naming
 
 Local development and the host tier get an emulated bucket from
 `wrangler dev --persist-to <dir>`; no credentials or real bucket are needed.
+
+### Word images
+
+Word pictures live in a **second** bucket, so the avatar bucket and its keys
+stay untouched. Create it and confirm the `WORD_IMAGES` binding in
+`src/worker/wrangler.jsonc`:
+
+```bash
+cd src
+pnpm exec wrangler r2 bucket create words-wizard-images
+```
+
+No custom domain is needed: the Worker serves the bucket at
+`GET /v1/images/*`, and the stored `words.image` URL is built from the request
+origin, so the public API host is correct with no separate configuration.
+Objects are written under `word-images/<wordId>/<uuid>.<png|jpg|webp>` by the
+two staff routes; the public route validates the key shape before reading R2
+and answers `404` for anything the upload route could not have written.
+Images are capped at 2 MiB and stored with
+`Cache-Control: public, max-age=31536000, immutable`; replacing one writes a
+new key, so a stale cache never serves the old picture. A missing binding
+fails the route with `config_missing` naming `WORD_IMAGES`.
+
+When running `wrangler dev` locally, pass `--infer-origin-from-routes false`
+if you upload images. Otherwise wrangler rewrites the request origin to the
+configured production route, and the stored URL points at the live host
+instead of the local server.
+
+Deleting a word's image through the portal removes both the row value and the
+object. Deleting rows by hand does **not**: R2 has no foreign key to D1, so
+inspect `words.image`, derive the key after `/v1/images/`, and remove the
+object explicitly if a manual rollback retires a picture.
 
 ## Workers Builds
 

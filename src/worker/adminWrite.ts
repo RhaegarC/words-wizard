@@ -33,7 +33,8 @@ import {
   toWord,
 } from "./content"
 import type { ContentRows, PackRow, TopicRow, WordRow } from "./content"
-import { requireDb } from "./config"
+import { detectImageType } from "./avatar"
+import { requireDb, requireWordImages } from "./config"
 import type { AppEnv } from "./context"
 import type { D1Database, D1PreparedStatement } from "./db/d1"
 import {
@@ -44,6 +45,13 @@ import {
   ValidationFailedError,
 } from "./errors"
 import { readBody } from "./requestBody"
+import {
+  MAX_WORD_IMAGE_BYTES,
+  WORD_IMAGE_CACHE_CONTROL,
+  keyFromImageUrl,
+  wordImageKey,
+  wordImageUrl,
+} from "./wordImage"
 
 /**
  * The admin write surface (feature 29).
@@ -222,6 +230,9 @@ function membershipStatements(
 
   return statements
 }
+
+/** Room for multipart boundaries and part headers around the 2 MiB file. */
+const MULTIPART_OVERHEAD = 64 * 1024
 
 function bySortOrder(
   left: { sort_order: number; id: string },
@@ -829,6 +840,148 @@ export function registerAdminWriteRoutes(app: Hono<AppEnv>): void {
     }
 
     return c.json(body)
+  })
+
+  /**
+   * Upload a word picture (feature 31). The image is stored under a fresh
+   * immutable key and the row is pointed at it; the previous object is deleted
+   * best-effort once the row update has succeeded. A failed row update deletes
+   * the object it just wrote, so nothing is left that no row references.
+   */
+  app.post("/v1/admin/words/:id/image", async (c) => {
+    const db = requireDb(c.env)
+    const bucket = requireWordImages(c.env)
+    const version = await currentVersion(c, db)
+    const rows = await readContentRows(db)
+    const existing = findWord(rows, c.req.param("id"))
+
+    if (existing.archived_at !== null) {
+      throw new ArchivedError("This word is archived and cannot be edited.")
+    }
+
+    // A multipart wrapper is larger than the file; refuse an obviously large
+    // body before parsing it, then the exact file size after.
+    const declared = c.req.header("content-length")
+    if (declared !== undefined) {
+      const size = Number(declared)
+      if (
+        Number.isFinite(size) &&
+        size > MAX_WORD_IMAGE_BYTES + MULTIPART_OVERHEAD
+      ) {
+        throw new ValidationFailedError("The image exceeds 2 MB.")
+      }
+    }
+
+    let form: Record<string, string | File>
+    try {
+      form = await c.req.parseBody()
+    } catch {
+      throw new ValidationFailedError(
+        "The request must be multipart/form-data.",
+      )
+    }
+
+    const file = form["file"]
+    if (!(file instanceof File)) {
+      throw new ValidationFailedError("Attach exactly one `file` field.")
+    }
+    if (file.size > MAX_WORD_IMAGE_BYTES) {
+      throw new ValidationFailedError("The image exceeds 2 MB.")
+    }
+
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    const detected = detectImageType(bytes)
+    if (detected === null) {
+      throw new ValidationFailedError(
+        "Only JPEG, PNG, and WebP images are accepted.",
+      )
+    }
+
+    const key = wordImageKey(existing.id, crypto.randomUUID(), detected.ext)
+    await bucket.put(key, bytes, {
+      httpMetadata: {
+        contentType: detected.mime,
+        cacheControl: WORD_IMAGE_CACHE_CONTROL,
+      },
+    })
+
+    const now = Date.now()
+    const image = wordImageUrl(new URL(c.req.url).origin, key)
+    const row: WordRow = { ...existing, image }
+    const proposed: ContentRows = {
+      ...rows,
+      words: rows.words.map((word) => (word.id === row.id ? row : word)),
+    }
+    const warnings = warningsOnly(proposed)
+    const nextVersion = bumpContentVersion(version)
+
+    try {
+      await db.batch([
+        db
+          .prepare("UPDATE words SET image = ?, updated_at = ? WHERE id = ?")
+          .bind(image, now, row.id),
+        versionStatement(db, nextVersion),
+      ])
+    } catch (caught) {
+      await bucket.delete(key).catch(() => undefined)
+      throw caught
+    }
+
+    if (existing.image !== null) {
+      const previous = keyFromImageUrl(existing.image)
+      if (previous !== null) await bucket.delete(previous).catch(() => undefined)
+    }
+
+    return c.json({
+      contentVersion: nextVersion,
+      warnings,
+      word: wordToAdmin(proposed, row),
+    } satisfies WriteResponse)
+  })
+
+  app.delete("/v1/admin/words/:id/image", async (c) => {
+    const db = requireDb(c.env)
+    const bucket = requireWordImages(c.env)
+    const version = await currentVersion(c, db)
+    const rows = await readContentRows(db)
+    const existing = findWord(rows, c.req.param("id"))
+
+    if (existing.archived_at !== null) {
+      throw new ArchivedError("This word is archived and cannot be edited.")
+    }
+
+    // The child app already falls back to the emoji; nothing to write.
+    if (existing.image === null) {
+      return c.json({
+        contentVersion: version,
+        warnings: warningsOnly(rows),
+        word: wordToAdmin(rows, existing),
+      } satisfies WriteResponse)
+    }
+
+    const row: WordRow = { ...existing, image: null }
+    const proposed: ContentRows = {
+      ...rows,
+      words: rows.words.map((word) => (word.id === row.id ? row : word)),
+    }
+    const warnings = warningsOnly(proposed)
+    const nextVersion = bumpContentVersion(version)
+
+    await db.batch([
+      db
+        .prepare("UPDATE words SET image = NULL, updated_at = ? WHERE id = ?")
+        .bind(Date.now(), row.id),
+      versionStatement(db, nextVersion),
+    ])
+
+    const key = keyFromImageUrl(existing.image)
+    if (key !== null) await bucket.delete(key).catch(() => undefined)
+
+    return c.json({
+      contentVersion: nextVersion,
+      warnings,
+      word: wordToAdmin(proposed, row),
+    } satisfies WriteResponse)
   })
 
   app.put("/v1/admin/packs/:id/membership", async (c) => {
