@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import type { MiddlewareHandler } from "hono"
 
+import { registerAdminRoutes } from "./admin"
 import { createTokenVerifier } from "./auth"
 import type { TokenVerifier } from "./auth"
 import { AVATAR_CACHE_CONTROL, isAvatarKey } from "./avatar"
@@ -31,6 +32,8 @@ export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/v1/me/care": ["POST"],
   "/v1/me/import": ["POST"],
   "/v1/me/avatar": ["POST", "DELETE"],
+  "/v1/admin/content": ["GET"],
+  "/v1/admin/access": ["GET"],
 }
 
 /**
@@ -113,6 +116,12 @@ export function createApp(options: AppOptions = {}): Hono<AppEnv> {
   // Authenticated user data. Registered after the config and CORS middleware,
   // so a missing var fails before a token is even looked at.
   registerMeRoutes(app, {
+    verifierFor: options.verifierFor ?? configVerifier,
+  })
+
+  // Staff-only content. Registered behind the same verifier factory as the
+  // user routes, so a local test key set serves both.
+  registerAdminRoutes(app, {
     verifierFor: options.verifierFor ?? configVerifier,
   })
 

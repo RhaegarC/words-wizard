@@ -8,8 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:portal": "vite --config vite.portal.config.ts",
     "extract:wordlist": "node page/scripts/extract-wordlist.mjs",
     "build": "vite build",
+    "build:portal": "vite build --config vite.portal.config.ts",
     "check:dist": "node page/scripts/check-dist.mjs",
     "check:deploy": "node page/scripts/check-deploy.mjs",
     "preview": "vite preview",
@@ -19,7 +21,7 @@
     "worker:dev": "wrangler dev --config worker/wrangler.jsonc",
     "worker:deploy": "wrangler deploy --config worker/wrangler.jsonc",
     "worker:typecheck": "tsc --noEmit -p tsconfig.worker.json",
-    "typecheck": "tsc --noEmit -p tsconfig.page.json && tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.worker.json",
+    "typecheck": "tsc --noEmit -p tsconfig.page.json && tsc --noEmit -p tsconfig.portal.json && tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.worker.json",
     "format": "oxfmt ."
   },
   "dependencies": {

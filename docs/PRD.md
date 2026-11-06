@@ -360,9 +360,10 @@ Pack {
   Editorial rules apply at `dataset = 'final'`: Cambridge allowlist, abstract/emotional coverage,
   first example containing the headword, forbidden IP terms. There are no fixed topic, pack, or
   word counts.
-- **Future:** a teacher/admin portal manages topics, packs, and words and owns artwork approval;
-  it is not part of Mission 2. It is scoped, without detail, in the
-  [Mission 3 sprint](features/00-mission-3-sprint.md).
+- **Admin portal (Mission 3):** a second front end at `admin.words.nioh.uk`, source
+  `src/portal`, lets teachers and admins manage topics, packs, and words and own artwork approval.
+  Feature 28 delivers the shell, the staff gate, and the admin read model; the vocabulary screens
+  follow. It is scoped in the [Mission 3 sprint](features/00-mission-3-sprint.md).
 
 ---
 
@@ -775,11 +776,17 @@ After sign-in, the app calls `GET /v1/me`.
 
 ### 8.9 Hosting & Deployment
 
-- **Cloudflare Pages** serves the SPA at `words.nioh.uk` from `src/dist/`. **Cloudflare
-  Workers Builds** deploys the API to `wordsapi.nioh.uk`.
-- Both are connected to the GitHub repository through Cloudflare's Git integration; a
+- **Cloudflare Pages** serves the child SPA at `words.nioh.uk` from `src/dist/` and the
+  admin portal at `admin.words.nioh.uk` from `src/dist-portal/` — two Pages projects, one per
+  app. **Cloudflare Workers Builds** deploys the API to `wordsapi.nioh.uk`; the Worker serves
+  both front ends.
+- All three are connected to the GitHub repository through Cloudflare's Git integration; a
   push to `master` builds and deploys. There is no deploy workflow and no Cloudflare
   deploy token in GitHub Actions.
+- The admin portal reuses the child app's Entra registration. Both origins are listed in the
+  Worker's `ALLOWED_ORIGINS`, and the Worker gates every `/v1/admin` route on the token's
+  `roles` claim: anonymous is `401`, a signed-in `user` is `403 forbidden`, and only `teacher`
+  or `admin` proceeds. The portal's Access Denied screen is presentation, not enforcement.
 - The Worker deploy command applies pending D1 migrations before `wrangler deploy`, so
   production cannot run ahead of its schema.
 - Hash routing means every route is a fragment (`#/home`), so `index.html` is the only
@@ -789,8 +796,8 @@ After sign-in, the app calls `GET /v1/me`.
   immutable for a year, artwork and icons for 7 days, locale JSON for 1 hour, and
   `index.html`, the service worker, and the manifest `no-cache`.
 - **CI (GitHub Actions)** runs on pull requests to `develop`: frozen install, typecheck,
-  tests, build, and dist check. A separate gated job runs the remote D1 tier when the
-  `WORDS_TEST_*` secrets exist; it never uses production credentials.
+  tests, both builds (`build` and `build:portal`), and dist check. A separate gated job runs the
+  remote D1 tier when the `WORDS_TEST_*` secrets exist; it never uses production credentials.
 - Rollback is a Cloudflare deployment rollback for either project. Database migrations
   are forward-only; fix a bad migration with a new one.
 - The `words.nioh.uk` and `wordsapi.nioh.uk` custom domains are attached in Cloudflare
@@ -954,10 +961,11 @@ export const config = {
 | 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
 | 17 | Daily word limit | One five-word set introduced per local day **per pack**; after it commits, the same five can be practised again until midnight, but no new words from that pack. A pack larger than five continues on later days. Feature 20; per-pack scope in decision 18. |
 | 18 | Vocabulary model (Mission 2, 2026-10-29) | Four D1 tables (`topics`, `packs`, `words`, `pack_words`); one row per headword; a word may belong to packs of several topics and is introduced anew per pack; sequential pack unlock when the previous pack is fully introduced; soft delete via `archivedAt`; no fixed counts; `image` is a URL (R2 later) with `emoji` fallback. Replaces the bundled JSON and 20-slot shape. |
-| 19 | Identity (Mission 2, 2026-10-29; amended 2026-11-05) | Microsoft Entra ID SPA registration with authorization code + PKCE and no client secret. The `oid` is the only user key. The token-derived email and app role are now stored (`users.email`, `profiles.role`), and a user-uploaded photo is stored in R2 behind `profiles.user_avatar_key`; the Entra display name is still not stored. Role authorises nothing until Mission 3. |
+| 19 | Identity (Mission 2, 2026-10-29; amended 2026-11-05, 2026-11-06) | Microsoft Entra ID SPA registration with authorization code + PKCE and no client secret. The `oid` is the only user key. The token-derived email and app role are now stored (`users.email`, `profiles.role`), and a user-uploaded photo is stored in R2 behind `profiles.user_avatar_key`; the Entra display name is still not stored. Role authorised nothing until Mission 3; from feature 28 it gates every `/v1/admin` route. |
 | 20 | Online-only (Mission 2, 2026-10-30) | No offline practice, cached content fallback, or guest profile. A failed API call shows retry. Installation remains a prompt, not a durability gate. |
 | 21 | API (Mission 2, 2026-10-29) | Hono Worker; bearer token validated against the tenant JWKS; CORS allowlist; versioned content with `ETag`; idempotent session commit; one D1 batch per commit. |
 | 22 | Deployment (Mission 2, 2026-10-30) | Cloudflare Git integration for Pages and Workers Builds. The Worker deploy applies migrations first. CI checks but never deploys, and the remote D1 job uses only `WORDS_TEST_*` credentials. |
+| 23 | Admin portal foundation (Mission 3, 2026-11-06) | A second Cloudflare Pages app at `admin.words.nioh.uk` (source `src/portal`, output `src/dist-portal`) reuses the child app's Entra registration. The Worker enforces `teacher`/`admin` from the verified token's `roles` claim on every `/v1/admin` route before any handler body (`401` anonymous, `403 forbidden` for a signed-in `user`); `profiles.role` is not consulted. `GET /v1/admin/content` returns a `no-store` snapshot that includes archived rows and words in no pack; `GET /v1/admin/access` returns the caller's role. |
 
 **Additional v0.3 decisions:**
 

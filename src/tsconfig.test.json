@@ -3,6 +3,7 @@
   "include": [
     "page/vite-env.d.ts",
     "page/test/**/*.test.ts",
+    "portal/test/**/*.test.ts",
     "shared/test/**/*.test.ts",
     "worker/test/**/*.test.ts"
   ]
