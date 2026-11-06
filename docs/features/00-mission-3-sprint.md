@@ -1,6 +1,6 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
-> Status: **In progress — features 28–30 archived; feature 31 implemented.**
+> Status: **In progress — features 28–31 archived; 32–33 deferred.**
 > Depends on: Mission 2 (features 21–27) repository work complete; production provisioning and the
 > content release gate are operator-owned.
 > Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. The UI shape
@@ -123,7 +123,7 @@ ship.
 | 28 | [Admin portal foundation](archive/mission-3/28-admin-portal-foundation.md) — second Pages app, Entra sign-in reusing the existing registration, teacher/admin gate, portal shell and navigation, read-only content snapshot, local dev and CI build | Done | 25, 26 |
 | 29 | [Topics and packs](archive/mission-3/29-topics-and-packs.md) — create, edit, order, archive and restore; shared write mechanics; the Archived view | Done | 28 |
 | 30 | [Word library and pack membership](archive/mission-3/30-word-library-and-membership.md) — word create and edit (no delete or archive), searchable library, ordered pack contents | Done | 28, 29 |
-| 31 | [Word images](31-word-images.md) — upload, replace, and remove to a dedicated bucket; public image serving; child-app cache rule | Implemented | 30 |
+| 31 | [Word images](archive/mission-3/31-word-images.md) — upload, replace, and remove to a dedicated bucket; public image serving; child-app cache rule | Done | 30 |
 | 32 | Artwork review and approval — review states, sign-off, and tracked approval | Not specced — deferred | 31 |
 | 33 | Release workflow — dataset `final` transition behind the validator, with a publish action | Not specced — deferred | 29–32 |
 
