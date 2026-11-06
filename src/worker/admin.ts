@@ -1,7 +1,6 @@
 import type { Hono, MiddlewareHandler } from "hono"
 
 import { readAdminSnapshot } from "./adminContent"
-import { registerAdminWriteRoutes } from "./adminWrite"
 import { requireAuth, requireRole } from "./auth"
 import type { TokenVerifier } from "./auth"
 import { requireDb } from "./config"
@@ -47,7 +46,4 @@ export function registerAdminRoutes(
   app.get("/v1/admin/content", async (c) =>
     c.json(await readAdminSnapshot(requireDb(c.env))),
   )
-
-  // Writes run behind the same no-store → auth → role chain registered above.
-  registerAdminWriteRoutes(app)
 }

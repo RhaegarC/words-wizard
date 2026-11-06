@@ -1,11 +1,11 @@
 import type { ReactNode } from "react"
 
 import type { Role } from "../../shared/types"
-import { PORTAL_SECTIONS, type PortalSection } from "../router"
+import { PORTAL_SCREENS, type PortalScreen } from "../router"
 
 import { Brand } from "./Brand"
 
-const LABELS: Record<PortalSection, string> = {
+const LABELS: Record<PortalScreen, string> = {
   topics: "Topics",
   words: "Words",
   archived: "Archived",
@@ -18,15 +18,15 @@ const LABELS: Record<PortalSection, string> = {
 export function Shell({
   email,
   role,
-  section,
+  screen,
   onNavigate,
   onSignOut,
   children,
 }: {
   email: string
   role: Role
-  section: PortalSection
-  onNavigate: (section: PortalSection) => void
+  screen: PortalScreen
+  onNavigate: (screen: PortalScreen) => void
   onSignOut: () => void
   children: ReactNode
 }) {
@@ -37,11 +37,11 @@ export function Shell({
           <Brand />
         </div>
         <nav className="mt-8 grid gap-1" aria-label="Admin sections">
-          {PORTAL_SECTIONS.map((item) => (
+          {PORTAL_SCREENS.map((item) => (
             <SidebarButton
               key={item}
-              active={section === item}
-              section={item}
+              active={screen === item}
+              screen={item}
               onClick={() => onNavigate(item)}
             />
           ))}
@@ -87,13 +87,13 @@ export function Shell({
           className="flex gap-1 border-b border-[var(--admin-line)] bg-white px-4 py-2 lg:hidden"
           aria-label="Admin sections"
         >
-          {PORTAL_SECTIONS.map((item) => (
+          {PORTAL_SCREENS.map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => onNavigate(item)}
               className={`rounded-lg px-3 py-2 text-xs font-bold ${
-                section === item
+                screen === item
                   ? "bg-[var(--admin-purple-pale)] text-[var(--admin-purple)]"
                   : "text-[var(--admin-muted)]"
               }`}
@@ -113,11 +113,11 @@ export function Shell({
 
 function SidebarButton({
   active,
-  section,
+  screen,
   onClick,
 }: {
   active: boolean
-  section: PortalSection
+  screen: PortalScreen
   onClick: () => void
 }) {
   return (
@@ -131,17 +131,17 @@ function SidebarButton({
           : "text-[var(--admin-muted)] hover:bg-[var(--admin-canvas)] hover:text-[var(--admin-ink)]"
       }`}
     >
-      <SectionIcon section={section} />
-      <span>{LABELS[section]}</span>
+      <SectionIcon screen={screen} />
+      <span>{LABELS[screen]}</span>
     </button>
   )
 }
 
-function SectionIcon({ section }: { section: PortalSection }) {
+function SectionIcon({ screen }: { screen: PortalScreen }) {
   const path =
-    section === "topics"
+    screen === "topics"
       ? "M3 4h7v7H3zM14 4h7v7h-7zM3 15h7v6H3zM14 15h7v6h-7z"
-      : section === "words"
+      : screen === "words"
         ? "M4 4.5A2.5 2.5 0 0 1 6.5 2H11v18H6.5A2.5 2.5 0 0 0 4 22ZM20 4.5A2.5 2.5 0 0 0 17.5 2H13v18h4.5A2.5 2.5 0 0 1 20 22Z"
         : "M4 8v12h16V8M3 4h18v4H3ZM9 12h6"
 
