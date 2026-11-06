@@ -34,6 +34,16 @@ export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/v1/me/avatar": ["POST", "DELETE"],
   "/v1/admin/content": ["GET"],
   "/v1/admin/access": ["GET"],
+  "/v1/admin/topics": ["POST"],
+  "/v1/admin/topics/order": ["PUT"],
+  "/v1/admin/topics/:id": ["PATCH"],
+  "/v1/admin/topics/:id/archive": ["POST"],
+  "/v1/admin/topics/:id/restore": ["POST"],
+  "/v1/admin/packs": ["POST"],
+  "/v1/admin/packs/order": ["PUT"],
+  "/v1/admin/packs/:id": ["PATCH"],
+  "/v1/admin/packs/:id/archive": ["POST"],
+  "/v1/admin/packs/:id/restore": ["POST"],
 }
 
 /**

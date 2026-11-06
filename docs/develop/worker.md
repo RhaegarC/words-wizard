@@ -136,6 +136,14 @@ The role comes from the **verified token's** `roles` claim (`admin` > `teacher` 
 |---|---|---|
 | `GET /v1/admin/access` | teacher, admin | `{ role }` for the signed-in caller |
 | `GET /v1/admin/content` | teacher, admin | one content snapshot (see below) |
+| `POST /v1/admin/topics` | teacher, admin | create a topic; the id is derived (`201`) |
+| `PATCH /v1/admin/topics/:id` | teacher, admin | edit bilingual title, icon, descriptions |
+| `POST /v1/admin/topics/:id/archive` · `/restore` | teacher, admin | flip `archived_at` |
+| `PUT /v1/admin/topics/order` | teacher, admin | renumber `sort_order` 1..N |
+| `POST /v1/admin/packs` | teacher, admin | create a pack under a topic (`201`) |
+| `PATCH /v1/admin/packs/:id` | teacher, admin | edit the bilingual title; the topic is immutable |
+| `POST /v1/admin/packs/:id/archive` · `/restore` | teacher, admin | flip `archived_at` |
+| `PUT /v1/admin/packs/order` | teacher, admin | renumber within a topic |
 
 The snapshot differs from the public `/v1/content` bundle because the portal must edit what the
 child app cannot see:
@@ -150,10 +158,38 @@ child app cannot see:
 The pure mapper is `toAdminSnapshot(rows)` in `src/worker/adminContent.ts`; it shares the row reader,
 `toWord`, and the select columns with the public bundle so the two views cannot drift.
 
+**Write mechanics (feature 29).** `src/worker/adminWrite.ts` registers the write routes behind the
+same three middleware. The shared mechanics live in `src/shared/adminWrite.ts`, so the portal and
+the Worker agree on them:
+
+- **Ids are generated, never accepted.** Topic ids are `slugify(title)`; a collision gets `-2`,
+  `-3`, … across live and archived rows. Pack ids are `<topicId>-<n>`, the smallest positive number
+  not used by that topic's packs (archived included). A non-Latin title falls back to `topic-1`,
+  `topic-2`. Ids are immutable.
+- **Body rules run before the database.** The body is parsed against an allowlist of fields; an
+  unknown field (including `id` or, on a pack edit, `topicId`) is `422`. A blank required field is
+  `422`, and so is an empty patch. Malformed JSON is `400 invalid_json`.
+- **Concurrency.** A request may send `If-Match: "<contentVersion>"`. A version that is not the
+  stored one is `409 conflict`; the portal refetches the snapshot under the banner. The header is
+  optional so a script can write without one.
+- **Validation before writing.** The change is applied to the loaded rows in memory, mapped through
+  `toContentBundle`, and checked by the shared validator. Structural errors answer `422
+  validation_failed` with an `issues` array in the error envelope, and nothing is written.
+  Editorial warnings are returned in the successful response. `topic-no-packs` and `pack-no-words`
+  are downgraded to warnings because the editor is incremental.
+- **Atomic version bump.** The row write and
+  `UPDATE content_meta SET content_version = <patch+1>` share one `db.batch`, so the public `ETag`
+  changes exactly when content does. A rejected or no-op write bumps nothing.
+- **Archive is soft and idempotent.** Only `archived_at` changes; a pack under an archived topic
+  keeps `archivedAt: null` and is hidden by its ancestor in the read model. Archiving or restoring
+  a row already in that state is a no-op. Editing an archived row is `409 archived`.
+- **Ordering is a permutation.** The body lists every live id exactly once; a missing or extra id
+  is `422`. Renumbering to the current order is a no-op.
+
 **405 with `Allow`.** `ROUTES` declares the methods for each admin path. `routeMethodsFor` in
 `src/worker/errors.ts` matches the exact path first, then registered `:param` patterns, so a wrong
-method on `/v1/admin/topics/:id` will answer `405` with `Allow: PATCH` once feature 29 registers it,
-rather than `404`.
+method on `/v1/admin/topics/:id` answers `405` with `Allow: PATCH`, while `POST
+/v1/admin/topics/order` answers `405` with `Allow: PUT`, not `404`.
 
 **CORS.** `ALLOWED_METHODS` now includes `PUT`, and `ALLOWED_HEADERS` includes `If-Match` and
 `If-None-Match`, so the portal's later conditional writes preflight cleanly. Origins stay

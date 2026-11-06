@@ -362,8 +362,11 @@ Pack {
   word counts.
 - **Admin portal (Mission 3):** a second front end at `admin.words.nioh.uk`, source
   `src/portal`, lets teachers and admins manage topics, packs, and words and own artwork approval.
-  Feature 28 delivers the shell, the staff gate, and the admin read model; the vocabulary screens
-  follow. It is scoped in the [Mission 3 sprint](features/00-mission-3-sprint.md).
+  Feature 28 delivers the shell, the staff gate, and the admin read model. Feature 29 adds the
+  first write surface — topics and packs can be created, edited, ordered, archived, and restored,
+  with every accepted change live for children and atomic with the content-version bump that drives
+  the public `ETag`. Word authoring (30), word images (31), and artwork approval (32) follow. It is
+  scoped in the [Mission 3 sprint](features/00-mission-3-sprint.md).
 
 ---
 
@@ -966,6 +969,7 @@ export const config = {
 | 21 | API (Mission 2, 2026-10-29) | Hono Worker; bearer token validated against the tenant JWKS; CORS allowlist; versioned content with `ETag`; idempotent session commit; one D1 batch per commit. |
 | 22 | Deployment (Mission 2, 2026-10-30) | Cloudflare Git integration for Pages and Workers Builds. The Worker deploy applies migrations first. CI checks but never deploys, and the remote D1 job uses only `WORDS_TEST_*` credentials. |
 | 23 | Admin portal foundation (Mission 3, 2026-11-06) | A second Cloudflare Pages app at `admin.words.nioh.uk` (source `src/portal`, output `src/dist-portal`) reuses the child app's Entra registration. The Worker enforces `teacher`/`admin` from the verified token's `roles` claim on every `/v1/admin` route before any handler body (`401` anonymous, `403 forbidden` for a signed-in `user`); `profiles.role` is not consulted. `GET /v1/admin/content` returns a `no-store` snapshot that includes archived rows and words in no pack; `GET /v1/admin/access` returns the caller's role. |
+| 24 | Admin write model (Mission 3, 2026-11-06) | Topics and packs are created, edited, ordered, archived, and restored through `/v1/admin` routes. Ids are server-generated (`slugify(title)`; packs `<topicId>-<n>`) and immutable; a collision suffixes `-2`, `-3`, … across live and archived rows. The body is parsed against an allowlist before any database access. A request may send `If-Match: "<contentVersion>"`; a stale version is `409 conflict`. The change is validated against the shared validator in memory before writing — structural errors are `422` with an `issues` array, and `topic-no-packs`/`pack-no-words` are warnings because editing is incremental. The row write and the `content_version` bump share one `db.batch`, so the public `ETag` changes exactly when content does; a rejected or no-op change bumps nothing. Archive is soft and idempotent, and an archived row refuses edits (`409 archived`). Ordering is a full permutation of the live ids renumbered 1..N. |
 
 **Additional v0.3 decisions:**
 
