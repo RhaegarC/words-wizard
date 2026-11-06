@@ -51,20 +51,6 @@ const TOPIC_BODY = {
   descriptionZh: "做东西。",
 }
 
-const WORD_BODY = {
-  text: "brave",
-  phonetic: "/breɪv/",
-  partOfSpeech: "adjective",
-  meaningEn: "Ready to face danger.",
-  meaningZh: "勇敢的。",
-  definitionEn: "Not afraid.",
-  definitionZh: "不害怕。",
-  examples: [{ en: "The brave knight smiled.", zh: "勇敢的骑士笑了。" }],
-  level: 2,
-  tags: ["abstract"],
-  emoji: "🦁",
-}
-
 describe("the write gate", () => {
   it("answers 401 anonymously on every write route", async () => {
     const routes = [
@@ -78,9 +64,6 @@ describe("the write gate", () => {
       ["POST", "/v1/admin/packs/pack-a/archive"],
       ["POST", "/v1/admin/packs/pack-a/restore"],
       ["PUT", "/v1/admin/packs/order"],
-      ["POST", "/v1/admin/words"],
-      ["PATCH", "/v1/admin/words/word-a"],
-      ["PUT", "/v1/admin/packs/pack-a/membership"],
     ] as const
 
     for (const [method, path] of routes) {
@@ -187,81 +170,6 @@ describe("body rules run before the database", () => {
     expect(response.status).toBe(422)
     expect((await errorOf(response)).code).toBe("validation_failed")
   })
-
-  it("rejects a word outside the level range", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/words",
-      {
-        method: "POST",
-        headers: jsonHeaders(),
-        body: JSON.stringify({ ...WORD_BODY, level: 4 }),
-      },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(422)
-    expect((await errorOf(response)).code).toBe("validation_failed")
-  })
-
-  it("rejects a word with no examples", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/words",
-      {
-        method: "POST",
-        headers: jsonHeaders(),
-        body: JSON.stringify({ ...WORD_BODY, examples: [] }),
-      },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(422)
-    expect((await errorOf(response)).code).toBe("validation_failed")
-  })
-
-  it("rejects an image, which only the upload route writes", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/words",
-      {
-        method: "POST",
-        headers: jsonHeaders(),
-        body: JSON.stringify({ ...WORD_BODY, image: "https://example.test/a.png" }),
-      },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(422)
-    expect((await errorOf(response)).code).toBe("validation_failed")
-  })
-
-  it("rejects a membership list with a duplicate id", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/packs/pack-a/membership",
-      {
-        method: "PUT",
-        headers: jsonHeaders(),
-        body: JSON.stringify({ ids: ["w-a", "w-a"] }),
-      },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(422)
-    expect((await errorOf(response)).code).toBe("validation_failed")
-  })
-
-  it("lets a valid word body reach the handler", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/words",
-      {
-        method: "POST",
-        headers: jsonHeaders(),
-        body: JSON.stringify(WORD_BODY),
-      },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(500)
-    expect((await errorOf(response)).code).toBe("config_missing")
-  })
 })
 
 describe("method handling", () => {
@@ -306,27 +214,5 @@ describe("method handling", () => {
     )
 
     expect(response.status).toBe(404)
-  })
-
-  it("offers no delete route for a word", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/words/word-a",
-      { method: "DELETE", headers: jsonHeaders() },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(405)
-    expect(response.headers.get("allow")).toBe("PATCH")
-  })
-
-  it("answers 405 on the membership route with the wrong method", async () => {
-    const response = await appFor("teacher").request(
-      "/v1/admin/packs/pack-a/membership",
-      { method: "POST", headers: jsonHeaders(), body: "{}" },
-      TEST_ENV,
-    )
-
-    expect(response.status).toBe(405)
-    expect(response.headers.get("allow")).toBe("PUT")
   })
 })

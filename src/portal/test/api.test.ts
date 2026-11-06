@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import type { WordCreatePayload } from "../../shared/adminWrite"
 import { AdminRequestError, createAdminApi } from "../api"
 
 /**
@@ -126,113 +125,6 @@ describe("creating and editing", () => {
       topicId: "craft-build",
       ids: ["craft-build-2", "craft-build-1"],
     })
-  })
-})
-
-const WORD: WordCreatePayload = {
-  text: "brave",
-  phonetic: "/breɪv/",
-  partOfSpeech: "adjective",
-  meaningEn: "Ready to face danger.",
-  meaningZh: "勇敢的。",
-  definitionEn: "Not afraid.",
-  definitionZh: "不害怕。",
-  examples: [{ en: "The brave knight smiled.", zh: "勇敢的骑士笑了。" }],
-  level: 2,
-  tags: ["abstract"],
-  emoji: "🦁",
-}
-
-describe("words and membership", () => {
-  it("posts a word, carrying the pack when creating from a pack", async () => {
-    const { api, calls } = apiWith(() =>
-      jsonResponse({ contentVersion: "0.3.1", warnings: [] }),
-    )
-
-    await api.createWord({ ...WORD, packId: "craft-build-1" }, "0.3.0")
-
-    expect(calls[0]?.url).toBe("https://api.test/v1/admin/words")
-    expect(calls[0]?.init.method).toBe("POST")
-    expect(headersOf(calls[0]!.init)["If-Match"]).toBe('"0.3.0"')
-    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
-      ...WORD,
-      packId: "craft-build-1",
-    })
-  })
-
-  it("patches a word at its parameterised path", async () => {
-    const { api, calls } = apiWith(() =>
-      jsonResponse({ contentVersion: "0.3.2", warnings: [] }),
-    )
-
-    await api.updateWord("w-brave", { meaningZh: "勇敢。" }, "0.3.1")
-
-    expect(calls[0]?.url).toBe("https://api.test/v1/admin/words/w-brave")
-    expect(calls[0]?.init.method).toBe("PATCH")
-    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
-      meaningZh: "勇敢。",
-    })
-  })
-
-  it("puts a membership as the full ordered list", async () => {
-    const { api, calls } = apiWith(() =>
-      jsonResponse({ contentVersion: "0.4.0", warnings: [] }),
-    )
-
-    await api.saveMembership(
-      "craft-build-1",
-      ["w-zebra", "w-quokka"],
-      "0.3.0",
-    )
-
-    expect(calls[0]?.url).toBe(
-      "https://api.test/v1/admin/packs/craft-build-1/membership",
-    )
-    expect(calls[0]?.init.method).toBe("PUT")
-    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
-      ids: ["w-zebra", "w-quokka"],
-    })
-  })
-})
-
-describe("word images", () => {
-  it("uploads the file as multipart and lets the browser set the boundary", async () => {
-    const { api, calls } = apiWith(() =>
-      jsonResponse({ contentVersion: "0.3.1", warnings: [] }),
-    )
-    const file = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], {
-      type: "image/png",
-    })
-
-    await api.uploadWordImage("w-brave", file, "0.3.0")
-
-    expect(calls[0]?.url).toBe(
-      "https://api.test/v1/admin/words/w-brave/image",
-    )
-    expect(calls[0]?.init.method).toBe("POST")
-    const headers = headersOf(calls[0]!.init)
-    expect(headers.Authorization).toBe("Bearer token-abc")
-    expect(headers["If-Match"]).toBe('"0.3.0"')
-    // A hand-set Content-Type would lose the multipart boundary.
-    expect(headers["Content-Type"]).toBeUndefined()
-
-    const body = calls[0]?.init.body as FormData
-    expect(body).toBeInstanceOf(FormData)
-    expect(body.get("file")).toBeInstanceOf(Blob)
-  })
-
-  it("removes the image with the version header", async () => {
-    const { api, calls } = apiWith(() =>
-      jsonResponse({ contentVersion: "0.3.2", warnings: [] }),
-    )
-
-    await api.removeWordImage("w-brave", "0.3.1")
-
-    expect(calls[0]?.url).toBe(
-      "https://api.test/v1/admin/words/w-brave/image",
-    )
-    expect(calls[0]?.init.method).toBe("DELETE")
-    expect(headersOf(calls[0]!.init)["If-Match"]).toBe('"0.3.1"')
   })
 })
 

@@ -6,7 +6,8 @@ to the same Worker as the child app. Deployment is **two Pages projects and one 
 portal has no API of its own, no service worker, and no locale bundle.
 
 Feature 28 ships the shell and the staff gate: sign-in, the Topics / Words / Archived navigation,
-and a read-only content snapshot. The vocabulary screens arrive in features 29–31.
+and a read-only content snapshot. Feature 29 adds the topic and pack write screens; the word
+library and membership arrive in features 30–31.
 
 ## One-time setup
 
@@ -75,13 +76,33 @@ Role precedence is `admin` > `teacher` > `user`, decoded from the access token's
 token that clearly carries `user` skips the round trip and goes straight to Access Denied. A `403`
 from the API also lands on Access Denied; a `401` clears the session and shows the expired message.
 
-The hash routes are `#/topics` (default), `#/words`, and `#/archived`. An unknown fragment lands on
-Topics rather than a 404 screen.
+### Screens and routes
+
+| Route | Screen |
+|---|---|
+| `#/topics` (default) | topics list, in curated order, with pack and word counts |
+| `#/topics/new` | topic editor, create |
+| `#/topics/:id` | topic editor, edit; the id is read-only and there is an archive danger zone |
+| `#/topics/:id/packs` | packs in the topic, with move up/down that saves immediately |
+| `#/topics/:id/packs/new` | pack editor, create |
+| `#/packs/:id` | pack editor, edit; the topic is read-only |
+| `#/words` | word library (summary until feature 30) |
+| `#/archived/topics` · `#/archived/packs` | archived rows with a Restore action |
+
+An unknown fragment lands on Topics rather than a 404 screen; an unknown id shows a "does not
+exist" panel. `#/archived` without a tab shows Topics.
+
+Every write sends `If-Match` with the snapshot's `contentVersion`. A `409 conflict` loads the
+latest snapshot and shows a banner: the teacher reviews the change and saves again. A `409
+archived` means the row must be restored first. A `422` lists the validator's findings above the
+form and keeps the entered values. A successful save refetches the snapshot, so counts and order
+are never stale; editorial warnings are mentioned in the success notice.
 
 ### Debug
 
-- The portal fetches two endpoints: `GET /v1/admin/access` and `GET /v1/admin/content`. Filter the
-  Network tab on `localhost:8787`.
+- The portal reads `GET /v1/admin/access` and `GET /v1/admin/content` and writes to
+  `/v1/admin/topics` and `/v1/admin/packs`. Filter the Network tab on `localhost:8787`; a write
+  carries `If-Match` with the snapshot version.
 - A CORS error means `ALLOWED_ORIGINS` does not list `http://localhost:8444`.
 - A `401` means the token failed validation — check the Worker auth values in
   [worker.md](worker.md#debug).
@@ -97,7 +118,9 @@ Topics rather than a 404 screen.
 The portal's unit tier covers the parts that can be decided offline:
 
 - `role.test.ts` — role precedence and malformed-token handling;
-- `router.test.ts` — hash parsing, defaults, and href building;
+- `router.test.ts` — nested hash parsing, defaults, and href round-trips;
+- `order.test.ts` — moving an id up or down, including the edge no-ops;
+- `api.test.ts` — the write client's verb, path, `If-Match`, and how 409/422 reach the screen;
 - `access.test.ts` — the four-state machine;
 - `boundary.test.ts` — the portal imports only `page/auth/{config,msal,token,account,session}` from
   the child app, never a page provider, store, or API client; no child build can contain the

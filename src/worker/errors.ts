@@ -38,13 +38,10 @@ export class AppError extends Error {
   }
 }
 
-/**
- * A required Worker var is absent, blank, or unusable; the request must not be
- * served. `problem` says which, without changing the stable error code.
- */
+/** A required Worker var is absent or blank; the request must not be served. */
 export class ConfigError extends AppError {
-  constructor(readonly key: string, problem = "Missing or blank") {
-    super("config_missing", 500, `${problem} configuration: ${key}`)
+  constructor(readonly key: string) {
+    super("config_missing", 500, `Missing or blank configuration: ${key}`)
   }
 }
 
@@ -174,38 +171,6 @@ export function errorResponse(
       : { error: { code, message, ...details } },
     status,
   )
-}
-
-/**
- * The methods a path accepts, or undefined when it is unknown. Exact paths win;
- * a `:param` segment matches exactly one non-empty segment, so a wrong method
- * on `/v1/admin/topics/:id` is a 405 while a longer path is still a 404.
- */
-export function routeMethodsFor(
-  routes: Readonly<Record<string, readonly string[]>>,
-  path: string,
-): readonly string[] | undefined {
-  const exact = routes[path]
-  if (exact !== undefined) return exact
-
-  for (const [pattern, methods] of Object.entries(routes)) {
-    if (pattern.includes(":") && matchesPattern(pattern, path)) return methods
-  }
-
-  return undefined
-}
-
-function matchesPattern(pattern: string, path: string): boolean {
-  const patternParts = pattern.split("/")
-  const pathParts = path.split("/")
-
-  if (patternParts.length !== pathParts.length) return false
-
-  return patternParts.every((part, index) => {
-    const value = pathParts[index] ?? ""
-
-    return part.startsWith(":") ? value.length > 0 : part === value
-  })
 }
 
 /**
