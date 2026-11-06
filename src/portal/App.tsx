@@ -27,6 +27,7 @@ import {
   type PortalSection,
 } from "./router"
 import { roleFromAccessToken } from "./role"
+import { confirmLeave } from "./unsaved"
 
 /**
  * The portal application: one Entra session, one staff gate, one content
@@ -212,6 +213,9 @@ export default function App() {
   )
 
   const navigate = useCallback((next: PortalRoute) => {
+    // A screen with an unsaved draft may refuse; the route stays put.
+    if (!confirmLeave()) return
+
     setPageError(null)
     setRoute(next)
     window.location.hash = routeHref(next)

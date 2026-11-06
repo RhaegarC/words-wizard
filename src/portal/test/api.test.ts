@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import type { WordCreatePayload } from "../../shared/adminWrite"
 import { AdminRequestError, createAdminApi } from "../api"
 
 /**
@@ -124,6 +125,72 @@ describe("creating and editing", () => {
     expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
       topicId: "craft-build",
       ids: ["craft-build-2", "craft-build-1"],
+    })
+  })
+})
+
+const WORD: WordCreatePayload = {
+  text: "brave",
+  phonetic: "/breɪv/",
+  partOfSpeech: "adjective",
+  meaningEn: "Ready to face danger.",
+  meaningZh: "勇敢的。",
+  definitionEn: "Not afraid.",
+  definitionZh: "不害怕。",
+  examples: [{ en: "The brave knight smiled.", zh: "勇敢的骑士笑了。" }],
+  level: 2,
+  tags: ["abstract"],
+  emoji: "🦁",
+}
+
+describe("words and membership", () => {
+  it("posts a word, carrying the pack when creating from a pack", async () => {
+    const { api, calls } = apiWith(() =>
+      jsonResponse({ contentVersion: "0.3.1", warnings: [] }),
+    )
+
+    await api.createWord({ ...WORD, packId: "craft-build-1" }, "0.3.0")
+
+    expect(calls[0]?.url).toBe("https://api.test/v1/admin/words")
+    expect(calls[0]?.init.method).toBe("POST")
+    expect(headersOf(calls[0]!.init)["If-Match"]).toBe('"0.3.0"')
+    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
+      ...WORD,
+      packId: "craft-build-1",
+    })
+  })
+
+  it("patches a word at its parameterised path", async () => {
+    const { api, calls } = apiWith(() =>
+      jsonResponse({ contentVersion: "0.3.2", warnings: [] }),
+    )
+
+    await api.updateWord("w-brave", { meaningZh: "勇敢。" }, "0.3.1")
+
+    expect(calls[0]?.url).toBe("https://api.test/v1/admin/words/w-brave")
+    expect(calls[0]?.init.method).toBe("PATCH")
+    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
+      meaningZh: "勇敢。",
+    })
+  })
+
+  it("puts a membership as the full ordered list", async () => {
+    const { api, calls } = apiWith(() =>
+      jsonResponse({ contentVersion: "0.4.0", warnings: [] }),
+    )
+
+    await api.saveMembership(
+      "craft-build-1",
+      ["w-zebra", "w-quokka"],
+      "0.3.0",
+    )
+
+    expect(calls[0]?.url).toBe(
+      "https://api.test/v1/admin/packs/craft-build-1/membership",
+    )
+    expect(calls[0]?.init.method).toBe("PUT")
+    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
+      ids: ["w-zebra", "w-quokka"],
     })
   })
 })
