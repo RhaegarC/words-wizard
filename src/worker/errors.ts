@@ -1,5 +1,7 @@
 import type { Context, ErrorHandler, Hono, NotFoundHandler } from "hono"
 
+import type { ContentIssue } from "../shared/content/types"
+
 import type { AppEnv } from "./context"
 
 /** Stable error identifiers clients may branch on; never free-form text. */
@@ -17,6 +19,8 @@ export type ErrorCode =
   | "unknown_pack_word"
   | "profile_not_found"
   | "care_unavailable"
+  | "conflict"
+  | "archived"
 
 type ErrorStatus = 400 | 401 | 403 | 404 | 405 | 409 | 422 | 500
 
@@ -26,6 +30,8 @@ export class AppError extends Error {
     readonly status: ErrorStatus,
     message: string,
     readonly headers?: Readonly<Record<string, string>>,
+    /** Extra members merged into the `error` envelope (the issue list). */
+    readonly details?: Readonly<Record<string, unknown>>,
   ) {
     super(message)
     this.name = new.target.name
@@ -102,18 +108,69 @@ export class CareUnavailableError extends AppError {
   }
 }
 
+/** The snapshot the client edited is older than the stored content. */
+export class ConflictError extends AppError {
+  constructor(
+    message = "The content changed since it was loaded. Refresh and try again.",
+  ) {
+    super("conflict", 409, message)
+  }
+}
+
+/** The row is archived; the portal restores it before an edit. */
+export class ArchivedError extends AppError {
+  constructor(message = "This row is archived. Restore it before editing.") {
+    super("archived", 409, message)
+  }
+}
+
+/** A content row named by an admin route does not exist. */
+export class ContentNotFoundError extends AppError {
+  constructor(message = "The requested content row does not exist.") {
+    super("not_found", 404, message)
+  }
+}
+
+/** Structural validation findings, listed in the error envelope. */
+export class ContentValidationError extends AppError {
+  constructor(readonly issues: readonly ContentIssue[]) {
+    super(
+      "validation_failed",
+      422,
+      `The change does not satisfy the content rules: ${[
+        ...new Set(issues.map((issue) => issue.code)),
+      ].join(", ")}.`,
+      undefined,
+      {
+        issues: issues.map(({ code, severity, id, message }) => ({
+          code,
+          severity,
+          id,
+          message,
+        })),
+      },
+    )
+  }
+}
+
 export function errorResponse(
   c: Context<AppEnv>,
   status: ErrorStatus,
   code: ErrorCode,
   message: string,
   headers?: Readonly<Record<string, string>>,
+  details?: Readonly<Record<string, unknown>>,
 ): Response {
   for (const [name, value] of Object.entries(headers ?? {})) {
     c.header(name, value)
   }
 
-  return c.json({ error: { code, message } }, status)
+  return c.json(
+    details === undefined
+      ? { error: { code, message } }
+      : { error: { code, message, ...details } },
+    status,
+  )
 }
 
 /**
@@ -169,6 +226,7 @@ export function installErrorHandlers(
         error.code,
         error.message,
         error.headers,
+        error.details,
       )
     }
 

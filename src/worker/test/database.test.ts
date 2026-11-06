@@ -692,3 +692,89 @@ describe("packs and pack_words", () => {
     TIMEOUT,
   )
 })
+
+describe("ordering and soft delete, as executed", () => {
+  it(
+    "renumbers packs in place and reads them back in the new order",
+    () => {
+      execute(topicInsert("db-topic-order"))
+      execute(packInsert("db-pack-order-a", "db-topic-order", 1))
+      execute(packInsert("db-pack-order-b", "db-topic-order", 2))
+      execute(packInsert("db-pack-order-c", "db-topic-order", 3))
+
+      // No unique index on sort_order, so a swap needs no temporary slot.
+      execute(
+        "UPDATE packs SET sort_order = 2, updated_at = 5 WHERE id = 'db-pack-order-a';",
+      )
+      execute(
+        "UPDATE packs SET sort_order = 1, updated_at = 5 WHERE id = 'db-pack-order-b';",
+      )
+
+      expect(
+        query<{ id: string; sort_order: number; updated_at: number }>(
+          "SELECT id, sort_order, updated_at FROM packs WHERE topic_id = 'db-topic-order' ORDER BY sort_order",
+        ),
+      ).toEqual([
+        { id: "db-pack-order-b", sort_order: 1, updated_at: 5 },
+        { id: "db-pack-order-a", sort_order: 2, updated_at: 5 },
+        { id: "db-pack-order-c", sort_order: 3, updated_at: 0 },
+      ])
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "keeps an archived row and excludes it only through the read filter",
+    () => {
+      execute(topicInsert("db-topic-soft"))
+      execute(packInsert("db-pack-soft", "db-topic-soft", 1))
+      execute(wordInsert("db-word-soft"))
+      execute(
+        "INSERT INTO pack_words (pack_id, word_id, position) VALUES ('db-pack-soft', 'db-word-soft', 1);",
+      )
+      execute(
+        "UPDATE packs SET archived_at = 7 WHERE id = 'db-pack-soft';",
+      )
+
+      expect(
+        query<{ present: number }>(
+          "SELECT COUNT(*) AS present FROM packs WHERE id = 'db-pack-soft'",
+        )[0]?.present,
+      ).toBe(1)
+
+      expect(
+        query<{ id: string }>(
+          "SELECT id FROM packs WHERE topic_id = 'db-topic-soft' AND archived_at IS NULL",
+        ),
+      ).toEqual([])
+
+      // Soft delete touches no child row: the membership survives.
+      expect(
+        query<{ present: number }>(
+          "SELECT COUNT(*) AS present FROM pack_words WHERE pack_id = 'db-pack-soft'",
+        )[0]?.present,
+      ).toBe(1)
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "leaves a pack's archived_at null when its topic is archived",
+    () => {
+      execute(topicInsert("db-topic-ancestor"))
+      execute(packInsert("db-pack-ancestor", "db-topic-ancestor", 1))
+      execute(
+        "UPDATE topics SET archived_at = 9 WHERE id = 'db-topic-ancestor';",
+      )
+
+      // The row is hidden by its ancestor, so the read model must join the
+      // filter; the engine deliberately does not cascade the archive.
+      expect(
+        query<{ archived_at: number | null }>(
+          "SELECT archived_at FROM packs WHERE id = 'db-pack-ancestor'",
+        ),
+      ).toEqual([{ archived_at: null }])
+    },
+    TIMEOUT,
+  )
+})

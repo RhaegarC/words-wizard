@@ -1,6 +1,6 @@
 # Feature 29 — Topics and Packs Admin
 
-> Priority: Must · Mission 3 · **Status: Specced — design locked; not implemented**
+> Priority: Must · Mission 3 · **Status: Implemented**
 > Depends on: 28 (portal foundation). Blocks: 30.
 > Source of truth: [Mission 3 sprint](00-mission-3-sprint.md) and the
 > [portal UI brief](../Portal.md).
@@ -72,20 +72,20 @@ All under the feature 28 role boundary.
 
 ## Acceptance criteria
 
-- [ ] A topic can be created with bilingual title, icon, and descriptions; its id is derived and
+- [x] A topic can be created with bilingual title, icon, and descriptions; its id is derived and
       read-only.
-- [ ] A pack can be created under a topic; its id is `<topicId>-<n>` and skips numbers used by
+- [x] A pack can be created under a topic; its id is `<topicId>-<n>` and skips numbers used by
       archived packs.
-- [ ] Duplicate names do not collide ids; the suffix rule applies.
-- [ ] Topics and packs can be edited; generated ids never change.
-- [ ] Reordering writes contiguous `sort_order` and the child app sees the new order.
-- [ ] Archiving a topic hides it, its packs, and its words from `/v1/content`; restoring returns
+- [x] Duplicate names do not collide ids; the suffix rule applies.
+- [x] Topics and packs can be edited; generated ids never change.
+- [x] Reordering writes contiguous `sort_order` and the child app sees the new order.
+- [x] Archiving a topic hides it, its packs, and its words from `/v1/content`; restoring returns
       them.
-- [ ] Archiving a pack hides only that pack; its words stay in the library.
-- [ ] Archived rows are listed for restore and refused for edit.
-- [ ] Every accepted change bumps the content version; a rejected change writes nothing and bumps
+- [x] Archiving a pack hides only that pack; its words stay in the library.
+- [x] Archived rows are listed for restore and refused for edit.
+- [x] Every accepted change bumps the content version; a rejected change writes nothing and bumps
       nothing.
-- [ ] Structural validation failures return the issue list; editorial warnings do not block at
+- [x] Structural validation failures return the issue list; editorial warnings do not block at
       `dev`.
 
 ## Test plan

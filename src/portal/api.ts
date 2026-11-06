@@ -1,56 +1,244 @@
-import type { AdminAccess, AdminSnapshot } from "../shared/admin"
+import type {
+  AdminAccess,
+  AdminPack,
+  AdminSnapshot,
+  AdminTopic,
+} from "../shared/admin"
+import type {
+  PackCreatePayload,
+  PackPatchPayload,
+  TopicCreatePayload,
+  TopicPatchPayload,
+} from "../shared/adminWrite"
+import type { ContentIssue } from "../shared/content/types"
 
 /**
- * The two admin reads the shell needs. A non-2xx response is an error the
- * shell interprets: 401 means the session expired, 403 means Access Denied.
+ * The admin API client. A non-2xx response is an error the screen acts on:
+ * 401 means the session expired, 403 means Access Denied, 409 is either a
+ * stale editor or an archived row, and 422 carries the validator's findings.
  */
 export class AdminRequestError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    readonly code?: string,
+    readonly issues?: readonly unknown[],
   ) {
     super(message)
     this.name = "AdminRequestError"
   }
 }
 
-async function adminGet<T>(
+export interface TopicWriteResult {
+  readonly contentVersion: string
+  readonly warnings: ContentIssue[]
+  readonly topic?: AdminTopic
+}
+
+export interface PackWriteResult {
+  readonly contentVersion: string
+  readonly warnings: ContentIssue[]
+  readonly pack?: AdminPack
+}
+
+export interface AdminApi {
+  access(): Promise<AdminAccess>
+  snapshot(): Promise<AdminSnapshot>
+  createTopic(
+    input: TopicCreatePayload,
+    contentVersion: string,
+  ): Promise<TopicWriteResult>
+  updateTopic(
+    topicId: string,
+    input: TopicPatchPayload,
+    contentVersion: string,
+  ): Promise<TopicWriteResult>
+  setTopicArchived(
+    topicId: string,
+    archived: boolean,
+    contentVersion: string,
+  ): Promise<TopicWriteResult>
+  orderTopics(
+    ids: readonly string[],
+    contentVersion: string,
+  ): Promise<TopicWriteResult>
+  createPack(
+    input: PackCreatePayload,
+    contentVersion: string,
+  ): Promise<PackWriteResult>
+  updatePack(
+    packId: string,
+    input: PackPatchPayload,
+    contentVersion: string,
+  ): Promise<PackWriteResult>
+  setPackArchived(
+    packId: string,
+    archived: boolean,
+    contentVersion: string,
+  ): Promise<PackWriteResult>
+  orderPacks(
+    topicId: string,
+    ids: readonly string[],
+    contentVersion: string,
+  ): Promise<PackWriteResult>
+}
+
+interface ErrorPayload {
+  code?: string
+  message?: string
+  issues?: readonly unknown[]
+}
+
+async function readError(response: Response): Promise<ErrorPayload> {
+  try {
+    const payload = (await response.json()) as { error?: ErrorPayload }
+    return payload.error ?? {}
+  } catch {
+    return {}
+  }
+}
+
+async function send<T>(
+  request: typeof fetch,
   apiBaseUrl: string,
-  path: string,
   token: string,
+  path: string,
+  init: RequestInit,
 ): Promise<T> {
   let response: Response
 
   try {
-    response = await fetch(`${apiBaseUrl}${path}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    response = await request(`${apiBaseUrl}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(init.headers as Record<string, string> | undefined),
+      },
     })
   } catch {
     throw new AdminRequestError(0, "The server could not be reached.")
   }
 
   if (!response.ok) {
+    const payload = await readError(response)
+
     throw new AdminRequestError(
       response.status,
       response.status === 403
         ? "This account does not have admin access."
-        : "The admin request failed.",
+        : (payload.message ?? "The admin request failed."),
+      payload.code,
+      payload.issues,
     )
   }
 
   return (await response.json()) as T
 }
 
+function jsonInit(method: string, body: unknown, contentVersion: string): RequestInit {
+  return {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "If-Match": `"${contentVersion}"`,
+    },
+    body: JSON.stringify(body),
+  }
+}
+
+/**
+ * One client bound to a token and an API origin. The token is captured when
+ * the shell loads; a refreshed token rebuilds the client.
+ */
+export function createAdminApi(
+  apiBaseUrl: string,
+  token: string,
+  request: typeof fetch = fetch,
+): AdminApi {
+  const get = <T>(path: string): Promise<T> =>
+    send<T>(request, apiBaseUrl, token, path, {
+      headers: { "Content-Type": "application/json" },
+    })
+
+  const write = <T>(
+    path: string,
+    method: string,
+    body: unknown,
+    contentVersion: string,
+  ): Promise<T> =>
+    send<T>(
+      request,
+      apiBaseUrl,
+      token,
+      path,
+      jsonInit(method, body, contentVersion),
+    )
+
+  return {
+    access: () => get<AdminAccess>("/v1/admin/access"),
+    snapshot: () => get<AdminSnapshot>("/v1/admin/content"),
+
+    createTopic: (input, contentVersion) =>
+      write<TopicWriteResult>("/v1/admin/topics", "POST", input, contentVersion),
+    updateTopic: (topicId, input, contentVersion) =>
+      write<TopicWriteResult>(
+        `/v1/admin/topics/${topicId}`,
+        "PATCH",
+        input,
+        contentVersion,
+      ),
+    setTopicArchived: (topicId, archived, contentVersion) =>
+      write<TopicWriteResult>(
+        `/v1/admin/topics/${topicId}/${archived ? "archive" : "restore"}`,
+        "POST",
+        {},
+        contentVersion,
+      ),
+    orderTopics: (ids, contentVersion) =>
+      write<TopicWriteResult>(
+        "/v1/admin/topics/order",
+        "PUT",
+        { ids: [...ids] },
+        contentVersion,
+      ),
+
+    createPack: (input, contentVersion) =>
+      write<PackWriteResult>("/v1/admin/packs", "POST", input, contentVersion),
+    updatePack: (packId, input, contentVersion) =>
+      write<PackWriteResult>(
+        `/v1/admin/packs/${packId}`,
+        "PATCH",
+        input,
+        contentVersion,
+      ),
+    setPackArchived: (packId, archived, contentVersion) =>
+      write<PackWriteResult>(
+        `/v1/admin/packs/${packId}/${archived ? "archive" : "restore"}`,
+        "POST",
+        {},
+        contentVersion,
+      ),
+    orderPacks: (topicId, ids, contentVersion) =>
+      write<PackWriteResult>(
+        "/v1/admin/packs/order",
+        "PUT",
+        { topicId, ids: [...ids] },
+        contentVersion,
+      ),
+  }
+}
+
+// The feature-28 helpers stay for callers that only read.
 export function fetchAdminAccess(
   apiBaseUrl: string,
   token: string,
 ): Promise<AdminAccess> {
-  return adminGet<AdminAccess>(apiBaseUrl, "/v1/admin/access", token)
+  return createAdminApi(apiBaseUrl, token).access()
 }
 
 export function fetchAdminSnapshot(
   apiBaseUrl: string,
   token: string,
 ): Promise<AdminSnapshot> {
-  return adminGet<AdminSnapshot>(apiBaseUrl, "/v1/admin/content", token)
+  return createAdminApi(apiBaseUrl, token).snapshot()
 }
