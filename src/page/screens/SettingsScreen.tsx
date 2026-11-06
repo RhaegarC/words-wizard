@@ -1,0 +1,590 @@
+import { useEffect, useState, type FormEvent } from "react"
+import { avatarInitials, avatarUrl } from "../avatar"
+
+import { AvatarPortrait } from "../components/AvatarPortrait"
+import { Icon } from "../components/Icon"
+import { LegacyImportCard } from "../components/LegacyImportCard"
+import { SettingsDiagnostics } from "../components/SettingsDiagnostics"
+import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
+import { getAvatarSet, getContentMeta, getTopic } from "../content"
+import { progressProvider } from "../api/provider"
+import { Outbox } from "../api/outbox"
+import { useAuth } from "../auth/AuthProvider"
+import { DEVICE_KEYS } from "@shared/device"
+import {
+  APP_VERSION,
+  buildExport,
+  EXPORT_SCHEMA_VERSION,
+  exportFileName,
+} from "@shared/export"
+import { buildRecustomizePatch, type RecustomizeError } from "@/domain/settings"
+import type { Device, Profile } from "@shared/types"
+import { downloadJson } from "../download"
+import { useLocale } from "../i18n/LocaleProvider"
+import type { Locale } from "../i18n/locale"
+import type { MessageKey } from "../i18n/messages"
+import { useRouter } from "../router/RouterContext"
+
+const ERROR_KEYS: Record<RecustomizeError, MessageKey> = {
+  empty: "create.error.empty",
+  "too-long": "create.error.tooLong",
+  "invalid-character": "create.error.invalidCharacter",
+  avatar: "create.error.avatar",
+}
+
+type SaveError = RecustomizeError | "save" | "photo" | "name-after-photo"
+type LocaleChoice = { id: Locale; label: string }
+
+const LOCALE_CHOICES: readonly LocaleChoice[] = [
+  { id: "en", label: "English" },
+  { id: "zh", label: "中文" },
+]
+
+/**
+ * Feature 14. Settings edits the profile, opens the existing topic picker,
+ * downloads a backup, reports facts, and signs out. There is no delete, reset,
+ * or account-removal control.
+ */
+export function SettingsScreen({
+  profile,
+  onProfileUpdated,
+}: {
+  profile: Profile
+  onProfileUpdated: (profile: Profile) => void
+}) {
+  const { locale, setLocale, t } = useLocale()
+  const { navigate } = useRouter()
+  const auth = useAuth()
+  const avatars = getAvatarSet()
+  const [name, setName] = useState(profile.characterName)
+  const [avatarId, setAvatarId] = useState(profile.avatar)
+  const [saveError, setSaveError] = useState<SaveError | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [removePhoto, setRemovePhoto] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [localeFailed, setLocaleFailed] = useState(false)
+  const [localeSaving, setLocaleSaving] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportFailed, setExportFailed] = useState(false)
+  const [signOutOpen, setSignOutOpen] = useState(false)
+  const [pendingCommit, setPendingCommit] = useState(false)
+
+  const topic =
+    profile.currentTopicId === null
+      ? undefined
+      : getTopic(profile.currentTopicId)
+  const topicTitle =
+    topic === undefined
+      ? t("settings.noTopic")
+      : locale === "zh"
+        ? topic.titleZh
+        : topic.title
+
+  // A chosen file previews from the browser; otherwise the stored key is
+  // shown unless the child asked to remove it.
+  const storedPhoto =
+    auth.config === null
+      ? null
+      : avatarUrl(auth.config.avatarBaseUrl, profile.userAvatarKey)
+  const photo = photoPreview ?? (removePhoto ? null : storedPhoto)
+  const hasStoredPhoto =
+    profile.userAvatarKey !== null && profile.userAvatarKey !== undefined
+
+  useEffect(() => {
+    if (photoFile === null) {
+      return
+    }
+    const url = URL.createObjectURL(photoFile)
+    setPhotoPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [photoFile])
+
+  const choosePhoto = (file: File | null) => {
+    setSaveError(null)
+    if (file === null) {
+      setPhotoFile(null)
+      setPhotoPreview(null)
+      return
+    }
+    setRemovePhoto(false)
+    setPhotoFile(file)
+  }
+
+  const requestRemovePhoto = () => {
+    setSaveError(null)
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setRemovePhoto(true)
+  }
+
+  const chooseLocale = (next: Locale) => {
+    if (next === locale || localeSaving) {
+      return
+    }
+
+    const previous = locale
+
+    setLocaleFailed(false)
+    setLocaleSaving(true)
+    setLocale(next)
+
+    void progressProvider
+      .updateProfile(profile.id, { locale: next })
+      .then(() => onProfileUpdated({ ...profile, locale: next }))
+      .catch((reason: unknown) => {
+        console.error("[settings] Could not save the language", reason)
+        setLocale(previous)
+        setLocaleFailed(true)
+      })
+      .finally(() => setLocaleSaving(false))
+  }
+
+  const saveCharacter = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (saving) {
+      return
+    }
+
+    const result = buildRecustomizePatch({
+      characterName: name,
+      avatar: avatarId,
+    })
+
+    if (!result.ok) {
+      setSaveError(result.reason)
+      return
+    }
+
+    setSaveError(null)
+    setSaving(true)
+
+    const wantsPhoto = photoFile !== null || (removePhoto && hasStoredPhoto)
+    let stage: "photo" | "name" = wantsPhoto ? "photo" : "name"
+    let photoSaved = false
+    let latest = profile
+    const savePhoto = (): Promise<Profile | null> => {
+      if (photoFile !== null) {
+        return progressProvider.uploadAvatar(photoFile)
+      }
+      if (removePhoto && hasStoredPhoto) {
+        return progressProvider.removeAvatar()
+      }
+      return Promise.resolve(null)
+    }
+    void savePhoto()
+      .then((updated) => {
+        if (updated === null) {
+          return
+        }
+        photoSaved = true
+        latest = { ...latest, ...updated }
+        onProfileUpdated(latest)
+        setPhotoFile(null)
+        setRemovePhoto(false)
+      })
+      .then(() => {
+        stage = "name"
+        return progressProvider.updateProfile(profile.id, result.patch)
+      })
+      .then(() => {
+        latest = { ...latest, ...result.patch }
+        onProfileUpdated(latest)
+        navigate({ id: "home" })
+      })
+      .catch((reason: unknown) => {
+        console.error("[settings] Could not save the profile", reason)
+        setSaveError(
+          stage === "photo"
+            ? "photo"
+            : photoSaved
+              ? "name-after-photo"
+              : "save",
+        )
+      })
+      .finally(() => setSaving(false))
+  }
+
+  const exportBackup = () => {
+    if (exporting) {
+      return
+    }
+
+    const now = Date.now()
+
+    setExporting(true)
+    setExportFailed(false)
+
+    void Promise.all([
+      progressProvider.getAllProgress(profile.id),
+      progressProvider.getMetrics(profile.id),
+      readDeviceRows(),
+    ])
+      .then(([progress, metrics, device]) => {
+        const payload = buildExport({
+          profile,
+          progress,
+          metrics,
+          device,
+          meta: {
+            schemaVersion: EXPORT_SCHEMA_VERSION,
+            contentVersion: getContentMeta().contentVersion,
+            appVersion: APP_VERSION,
+          },
+          now,
+        })
+
+        downloadJson(exportFileName(now), payload)
+      })
+      .catch((reason: unknown) => {
+        console.error("[settings] Could not prepare the backup", reason)
+        setExportFailed(true)
+      })
+      .finally(() => setExporting(false))
+  }
+
+  const requestSignOut = () => {
+    setPendingCommit(new Outbox(window.localStorage).all().length > 0)
+    setSignOutOpen(true)
+  }
+
+  const confirmSignOut = () => {
+    setSignOutOpen(false)
+
+    void auth.signOut().catch((reason: unknown) => {
+      console.error("[settings] Could not sign out", reason)
+    })
+  }
+
+  return (
+    <section className="settings-page">
+      <span className="eyebrow">{t("settings.eyebrow")}</span>
+      <h2 className="settings-title">{t("settings.heading")}</h2>
+
+      <UpdateStatusSlot />
+
+      <div className="settings-grid">
+        <article className="settings-card" aria-labelledby="settings-language">
+          <header>
+            <Icon name="globe" />
+            <div>
+              <h3 id="settings-language">{t("settings.language")}</h3>
+              <p>{t("settings.languageHint")}</p>
+            </div>
+          </header>
+
+          <div
+            className="language-toggle"
+            role="group"
+            aria-labelledby="settings-language"
+          >
+            {LOCALE_CHOICES.map((choice) => {
+              const selected = locale === choice.id
+
+              return (
+                <button
+                  key={choice.id}
+                  type="button"
+                  className={selected ? "active" : undefined}
+                  aria-pressed={selected}
+                  disabled={localeSaving}
+                  onClick={() => chooseLocale(choice.id)}
+                >
+                  {choice.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {localeFailed ? (
+            <p role="alert" className="form-error">
+              {t("settings.localeError")}
+            </p>
+          ) : null}
+        </article>
+
+        <form
+          className="settings-card"
+          aria-labelledby="settings-buddy"
+          onSubmit={saveCharacter}
+          noValidate
+        >
+          <header>
+            <Icon name="user" />
+            <div>
+              <h3 id="settings-buddy">{t("settings.customise")}</h3>
+              <p>{t("settings.customiseHint")}</p>
+            </div>
+          </header>
+
+          <div className="setting-photo">
+            {photo !== null ? (
+              <img className="setting-photo-preview" src={photo} alt="" />
+            ) : (
+              <span className="setting-photo-preview" aria-hidden="true">
+                {avatarInitials(name)}
+              </span>
+            )}
+            <div className="setting-photo-actions">
+              <label className="button secondary">
+                {photo !== null
+                  ? t("settings.changePhoto")
+                  : t("settings.choosePhoto")}
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(event) => {
+                    choosePhoto(event.target.files?.[0] ?? null)
+                    event.target.value = ""
+                  }}
+                />
+              </label>
+              {photo !== null ? (
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={requestRemovePhoto}
+                >
+                  {t("settings.removePhoto")}
+                </button>
+              ) : null}
+            </div>
+          </div>
+          <p className="field-hint">{t("settings.photoHint")}</p>
+          <label className="setting-input" htmlFor="settings-name">
+            <span>{t("create.nameLabel")}</span>
+            <input
+              id="settings-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder={t("create.namePlaceholder")}
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="done"
+              aria-invalid={
+                saveError === "empty" ||
+                saveError === "too-long" ||
+                saveError === "invalid-character"
+              }
+              aria-describedby={
+                saveError !== null
+                  ? "settings-name-hint settings-save-error"
+                  : "settings-name-hint"
+              }
+            />
+          </label>
+          <p id="settings-name-hint" className="field-hint">
+            {t("create.nameHint")}
+          </p>
+
+          <fieldset className="avatar-fieldset">
+            <legend className="field-label">{t("create.avatarLabel")}</legend>
+            <div className="settings-avatars">
+              {avatars.map((avatar) => {
+                const selected = avatarId === avatar.id
+
+                return (
+                  <label
+                    key={avatar.id}
+                    className="settings-avatar"
+                    data-selected={selected || undefined}
+                    style={{ background: avatar.pale }}
+                  >
+                    <input
+                      type="radio"
+                      name="settings-avatar"
+                      value={avatar.id}
+                      checked={selected}
+                      onChange={() => setAvatarId(avatar.id)}
+                    />
+                    <AvatarPortrait avatar={avatar} />
+                    <span className="sr-only">
+                      {locale === "zh" ? avatar.nameZh : avatar.name}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </fieldset>
+
+          {saveError !== null ? (
+            <p id="settings-save-error" className="form-error" role="alert">
+              {saveError === "photo"
+                ? t("settings.photoError")
+                : saveError === "name-after-photo"
+                  ? t("settings.photoSavedNameFailed")
+                  : saveError === "save"
+                    ? t("settings.saveError")
+                    : t(ERROR_KEYS[saveError])}
+            </p>
+          ) : null}
+
+          <button type="submit" className="button primary" disabled={saving}>
+            {saving ? t("create.saving") : t("settings.save")}
+          </button>
+        </form>
+
+        <article className="settings-card" aria-labelledby="settings-topic">
+          <header>
+            <Icon name="image" />
+            <div>
+              <h3 id="settings-topic">{t("settings.changeTopic")}</h3>
+              <p>{t("settings.currentTopic", { topic: topicTitle })}</p>
+            </div>
+          </header>
+
+          <p className="settings-copy">{t("settings.changeTopicHint")}</p>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => navigate({ id: "topics", from: "settings" })}
+          >
+            {t("settings.changeTopic")}
+          </button>
+        </article>
+
+        <article className="settings-card" aria-labelledby="settings-backup">
+          <header>
+            <Icon name="download" />
+            <div>
+              <h3 id="settings-backup">{t("settings.export")}</h3>
+              <p>{t("settings.exportHint")}</p>
+            </div>
+          </header>
+
+          <button
+            type="button"
+            className="button primary"
+            disabled={exporting}
+            onClick={exportBackup}
+          >
+            <Icon name="download" size={17} />{" "}
+            {exporting ? t("settings.exporting") : t("settings.export")}
+          </button>
+
+          {exportFailed ? (
+            <p role="alert" className="form-error">
+              {t("settings.exportError")}
+            </p>
+          ) : null}
+        </article>
+
+        <LegacyImportCard />
+
+        <article className="settings-card" aria-labelledby="settings-account">
+          <header>
+            <Icon name="user" />
+            <div>
+              <h3 id="settings-account">{t("auth.account")}</h3>
+              <p>{t("auth.signedInAs", { name: auth.displayName || "—" })}</p>
+            </div>
+          </header>
+
+          <p className="settings-copy">{t("auth.privacyNotice")}</p>
+          <a
+            className="settings-link"
+            href="./privacy.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("auth.privacyLink")}
+          </a>
+
+          <button
+            type="button"
+            className="button secondary"
+            onClick={requestSignOut}
+          >
+            {t("auth.signOut")}
+          </button>
+        </article>
+
+        <SettingsDiagnostics profileId={profile.id} />
+
+        <article className="settings-card" aria-labelledby="settings-about">
+          <header>
+            <Icon name="shield" />
+            <div>
+              <h3 id="settings-about">{t("settings.about")}</h3>
+              <p>{t("settings.aboutBody")}</p>
+            </div>
+          </header>
+
+          <dl className="settings-facts">
+            <div>
+              <dt>{t("settings.appVersion")}</dt>
+              <dd>{APP_VERSION}</dd>
+            </div>
+            <div>
+              <dt>{t("settings.contentVersion")}</dt>
+              <dd>{getContentMeta().contentVersion}</dd>
+            </div>
+          </dl>
+
+          <a
+            className="settings-link"
+            href="https://github.com/RhaegarC/words-wizard/blob/master/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("settings.licence")}
+          </a>
+        </article>
+      </div>
+
+      {signOutOpen ? (
+        <div
+          className="modal-backdrop"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setSignOutOpen(false)
+            }
+          }}
+        >
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-signout-title"
+          >
+            <h2 id="settings-signout-title" className="modal-title">
+              {t("auth.signOutTitle")}
+            </h2>
+            <p className="modal-body">
+              {pendingCommit ? t("auth.signOutPending") : t("auth.signOutBody")}
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setSignOutOpen(false)}
+                autoFocus
+              >
+                {t("auth.signOutCancel")}
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={confirmSignOut}
+              >
+                {t("auth.signOutConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  )
+}
+
+/** Known device keys, read as plain rows for the backup builder. */
+async function readDeviceRows(): Promise<Device[]> {
+  return Promise.all(
+    Object.values(DEVICE_KEYS).map(async (key) => ({
+      key,
+      value: await progressProvider.getDevice(key),
+    })),
+  )
+}

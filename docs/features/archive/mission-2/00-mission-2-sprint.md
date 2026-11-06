@@ -1,0 +1,197 @@
+# Mission 2 — Sprint Goal: "Your buddy follows you"
+
+> Status: **Mission 2 is historical.** Features 17 and 21–27 are done and archived; content
+> sign-off (17) and production provisioning and deployment (25) are handled by the operator. The
+> Definition of Done checkboxes below are the original plan, not a current status.
+> Source of truth: [docs/PRD.md](../../../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
+> disagree, the Mission 2 doc wins.
+> Baseline: Mission 1 (features 01–20) is shipped on `develop`.
+
+## Goal
+
+Make Words Wizard online. A child signs in with Microsoft Entra ID, and their buddy, XP, streak,
+progress, and settings live in Cloudflare D1 instead of one browser. Topics, packs, and words come
+from the API rather than a bundled JSON file, so content can be corrected or extended without
+shipping a new app build. Progress written on one device is visible on another.
+
+Mission 1's offline-first posture is deliberately retired. The product requires a network
+connection; there is no offline practice, no cached-content fallback, and no guest profile.
+
+## What Mission 1 assumed, and what changes
+
+| Mission 1 | Mission 2 |
+|---|---|
+| No backend, no accounts | Microsoft Entra ID sign-in; one identity = one profile |
+| Content bundled as JSON in the SPA | D1 is authoritative; the SPA calls `GET /v1/content` |
+| Progress in Dexie (IndexedDB) | Progress in D1, read and written through the Worker API |
+| Works fully offline after first load | Online required; a blocking offline screen replaces boot |
+| One device, one character | The same profile follows the identity across devices |
+| No runtime network requests | The Pages app, the Worker API, and Microsoft Entra sign-in |
+| Metrics are local-only counters | Metrics are per-user rows in D1, still not analytics |
+| Cloudflare Pages only | Cloudflare Pages + a Worker on `wordsapi.nioh.uk` |
+
+## Target topology
+
+```
+Browser (PWA, words.nioh.uk)
+  ├─ MSAL ──redirect + PKCE──> login.microsoftonline.com/<tenant-id>
+  ├─ GET  /v1/content ────────> Worker (wordsapi.nioh.uk) ──> D1 content tables
+  ├─ GET  /v1/me ─────────────> Worker (Bearer JWT) ────────> D1 user tables
+  ├─ POST /v1/me/sessions ────> Worker (one idempotent D1 batch)
+  ├─ POST/DELETE /v1/me/avatar > Worker ──> R2 (uploaded photo)
+  ├─ GET /v1/avatars/* ───────> Worker ──> R2, or the bucket domain directly
+  └─ static shell, locales, art ──> Cloudflare Pages
+```
+
+- `words.nioh.uk` — the Pages app; hash routes are unchanged.
+- `wordsapi.nioh.uk` — the Worker; CORS allows only `https://words.nioh.uk` and
+  `http://localhost:8443`.
+- Avatar art stays static under `src/page/public/art/`; a word image is a URL in `words.image`,
+  with R2 serving the file in a later sprint. D1 stores no artwork metadata.
+- The repository is split into `src/page/` (SPA), `src/worker/` (API), and `src/shared/` (pure
+  domain). Page and Worker never import each other.
+
+## Definition of Done (whole mission)
+
+- [ ] Phase 0 has landed: `src/page/`, `src/worker/`, and `src/shared/` exist, and the existing
+      suite, build, and dev server behave exactly as before the move.
+- [ ] An unauthenticated visitor sees a sign-in screen; a tenant account signs in through Entra with
+      auth-code + PKCE, and a silent renew keeps the session alive until sign-out.
+- [ ] A fresh identity gets no profile until character creation; the same identity on another device
+      gets the same profile, XP, streak, progress, and settings.
+- [x] Content is fetched from `GET /v1/content`; bundled content JSON is gone; `ETag` / `304`
+      works; every active topic, pack, word, and avatar row is served from D1, and archived rows
+      are not.
+- [x] A word introduced in one pack is introduced anew in another; word mastery stays shared, and
+      the next pack in a topic unlocks only when every word of the previous pack has been
+      introduced for that user.
+- [x] A finished session commits exactly once in one D1 batch; replaying the same session id leaves
+      every counter unchanged; a failed commit leaves no partial rows.
+- [x] A commit that cannot reach the API is parked in a `localStorage` outbox and applied once on
+      reconnect; the UI tells the child it is waiting rather than losing the session.
+- [x] The app boots online-only: no network or no API produces a clear retry screen, not a partial
+      app.
+- [x] Local Dexie data is imported once into the signed-in account on first load of the new
+      version, with a one-time notice; the legacy database is deleted only after a successful
+      import or an explicit discard (feature 27, superseding the original delete-at-boot rule).
+- [x] A signed-in child can re-customise the buddy, change topic and locale, export their data, and
+      read a short bilingual privacy note. There is no delete or reset control.
+- [x] A signed-in identity syncs its email and app role from the token on every authenticated
+      request, and can upload, replace, or remove a profile photo stored in R2; the page shows the
+      photo or initials with the display name in a top-right chip.
+- [ ] `wordsapi.nioh.uk/health` answers; `words.nioh.uk` serves the app; CORS rejects an unlisted
+      origin; a real Entra token is accepted and a forged one is rejected. *(Operator-owned.)*
+- [ ] The Worker and page deploy from Workers Builds / Pages Git integration with no Cloudflare
+      deploy secret in GitHub. *(Operator-owned.)*
+- [x] Tests follow the project's tier model: unit, model, local D1 database, host, and a
+      credential-gated remote D1 run. The content-integrity gate assembles the bundle from D1 and
+      runs `validateContent`.
+- [x] PRD v0.3, `docs/operations.md`, `docs/privacy.md`, the README, and this sprint index describe
+      what actually shipped; Mission 1 docs are marked historical.
+- [ ] Feature 17's final-dataset gate passes against D1 before any public release. *(Operator-owned
+      release gate; tracked outside this repository, so the box stays open.)*
+
+## Phase 0 — repository restructure (chore PR, not a numbered feature)
+
+A pure move with no behaviour change, merged to `develop` before feature 21 starts.
+
+- [x] `src/page/` holds the SPA: `index.html`, `main.tsx`, `App.tsx`, `public/`, `components/`,
+      `screens/`, `shell/`, `i18n/`, `router/`, `session/`, `modes/`, `pwa/`, `dev/`, `db/`,
+      `content/`, `scripts/`, and the page-only domain modules (`firstRun`, `settings`, `install`).
+- [x] `src/shared/` holds pure domain code: `types`, `config`, `progression`, `session`,
+      `character`, `sessionPayload`, `metrics`, `provider`, `device`, and the pure `content/`
+      modules (`types`, `validate`, `artwork`). It imports nothing from `page/` or `worker/`. The
+      authoring data and rules stay under `page/content/` until feature 22 moves the rules to
+      `shared/content/rules/`.
+- [x] `src/worker/` exists as the new Worker tree; feature 21 fills it.
+- [x] Vite runs with `root: "page"`, `publicDir: "public"`, `build.outDir: "../dist"`; aliases are
+      `@` → `page` and `@shared` → `shared`.
+- [x] Vitest configuration is split out of `vite.config.ts`; TS configuration is split into
+      base/page/worker/test; `pnpm typecheck` covers page and tests (worker joins in feature 21).
+- [x] Script paths (`validate:content`, `extract:wordlist`, `check:dist`, `check:deploy`) and the
+      doc-assertion path arithmetic point at the new locations.
+- [x] `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check:dist` match the pre-move result;
+      the only expected red is the existing `deployment-config.test.ts` policy failure caused by
+      `delete-preview.yml`, which feature 25 rewrites.
+- [x] A manual dev-server smoke shows the same screens and behaviour as before the move.
+- [x] No file under `Figma/` is touched.
+
+## Feature table
+
+| # | Feature | Status | Depends on |
+|---|---------|--------|------------|
+| 0 | Repository restructure into `page/`, `worker/`, `shared/` | Done | — |
+| 21 | [Worker foundation & Entra token validation](21-worker-foundation.md) | Done | Phase 0 |
+| 22 | [D1 content store & content API](22-d1-content-store.md) | Done | 21 |
+| 23 | [User profile, progress & session commit](23-user-data-api.md) | Done | 21, 22 |
+| 24 | [Client online integration](24-client-online-integration.md) | Done | 22, 23 |
+| 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | Done — repository work complete; operator owns provisioning and deployment | 21–24 |
+| 26 | [User profile, email & role sync](26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
+| 27 | [Legacy device data import](27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
+| 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | Done — seed authored; operator owns review, artwork, and the release gate | 22 |
+
+Completed feature files move to the `mission-1/` and `mission-2/` folders next to this file; the table keeps the row for history.
+
+## Vertical slice map
+
+```
+Phase 0  restructure (chore PR)
+  └─► 21  Worker foundation + Entra token validation
+        └─► 22  D1 content schema + GET /v1/content
+              ├─► 23  user data API: /v1/me, profile, sessions, metrics, care
+              │     └─► 24  client: MSAL, loader, API provider, outbox, Dexie removal
+              │           └─► 25  domains, Workers Builds, CI, PRD v0.3, operations
+              │                 └─► 26  email + role sync, avatar upload to R2, top-right chip
+              │                       └─► 27  legacy device data import
+              └─► 17  author remaining words/art as content migrations (parallel)
+```
+
+## Sequencing caveats
+
+- **Phase 0 first.** Every Mission 2 branch cuts from a `develop` that already has the new layout;
+  otherwise every later diff conflicts on paths.
+- **Feature 21 before 22 and 23.** The API edge and token verifier are the security boundary; user
+  and content routes are added behind it.
+- **22 deletes the bundled content JSON, but the client fetch lands in 24.** Between those merges
+  the SPA builds and typechecks but cannot load real content. Do not deploy `develop` to
+  production in that window; the production URL stays on the last Mission 1 build until 24 lands.
+- **22 owns the session-builder rewrite.** `Topic.packIds` and `Pack.unlockRule` disappear with the
+  content model, so `buildSession` moves to sequential per-pack completion in 22. Until 23 stores
+  introductions and 24 supplies them, 22 derives a per-pack introduced set from existing progress;
+  that fallback is deleted in 24.
+- **23 adds the API but leaves the page on Dexie.** It defines the server-side DTOs and adapts the
+  shared session-payload validation to the server shape; the page's identity types stay numeric
+  until feature 24 unifies them as Entra `oid` strings.
+- **Only 24 makes `develop` deployable again.** It is the first merge where sign-in, content, and
+  progress all come from the real services.
+- **Feature 26 needs an operator-created R2 bucket.** It adds the `AVATARS` binding and
+  `avatars.nioh.uk`, and extends feature 25's operations contract with the create/domain commands;
+  without the bucket the avatar routes fail closed on a missing binding, and the rest of the
+  profile feature still ships. It also defines the Entra
+  app roles (`user`, `teacher`, `admin`) that Mission 3 authorizes against — but stores them only,
+  and authorizes nothing.
+- **The operator owns production provisioning.** Feature 25 records the Worker, Pages, D1, Entra,
+  and Workers Builds contract and extends the smoke check, but it does not create databases,
+  domains, or a Git connection. Earlier features verify against local D1 and the credential-gated
+  remote test database, never production.
+- **No branch preview environments.** Pages previews stay off; `delete-preview.yml` is the one
+  workflow allowed account credentials, and only to delete preview deployments after a merge.
+- **Feature 27 replaced the Mission 1 deletion rule.** Boot no longer deletes `WordsWizardDB`;
+  feature 27 imports the data into the signed-in account and deletes only after success or an
+  explicit discard. The DoD line about deleting Dexie data at boot is superseded.
+- **Feature 17's final gate is still a release gate.** The repository ships the authored seed
+  (`docs/develop/content/InitData.sql`), but the dataset must not be marked `final` — and no public
+  release should go out — until the teacher review, artwork, and final integrity gate are complete.
+  That work is operator-owned and tracked outside the repository.
+- **Mission 1 docs are historical.** The archived Mission 1 sprint and PRD v0.2's "no backend / no
+  accounts / offline" posture are superseded by PRD v0.3 and this sprint.
+
+## Out of scope
+
+Guest mode, offline practice or cached content fallback, multiple profiles per identity, profile
+switcher UI, parent/teacher dashboards, content CMS or admin UI, facilitator content/JSON import,
+account self-deletion, push notifications, badges/achievements, recorded audio, speech recognition,
+branch preview environments, and any analytics beyond the existing per-user counters. Deletion is
+an operator procedure, not a product feature. Role-based authorization and every gated route are
+deferred to [Mission 3](../../00-mission-3-sprint.md); feature 26 stores the role but enforces nothing
+with it. The admin portal is deferred there too.

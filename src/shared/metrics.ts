@@ -1,0 +1,42 @@
+/**
+ * Local counter names from PRD §15. These are the only strings written to
+ * `Metric.name`; screens and the session commit import the constants so a
+ * counter cannot drift into a lookalike spelling.
+ *
+ * Install status and the `persist()` result are device keys (PRD §8.3), not
+ * metrics, because they describe the device rather than a profile's activity.
+ */
+export const METRIC_NAMES = {
+  sessionStarted: "session.started",
+  sessionCompleted: "session.completed",
+  sessionAbandoned: "session.abandoned",
+  wordLearned: "word.learned",
+  wordMastered: "word.mastered",
+  stageUp: "stage.up",
+  xpEarned: "xp.earned",
+  collectionOpened: "collection.opened",
+  wordBookOpened: "wordBook.opened",
+  monthlyReviewOffered: "monthlyReview.offered",
+  monthlyReviewCompleted: "monthlyReview.completed",
+  /** Signed average: a review that finds decay adds a negative delta. */
+  reviewStrengthDelta: "monthlyReview.strengthDelta",
+  revivalSession: "revival.session",
+  revivalQuickWake: "revival.quickWake",
+} as const
+
+export type MetricName = (typeof METRIC_NAMES)[keyof typeof METRIC_NAMES]
+
+export const METRIC_NAME_VALUES: readonly MetricName[] =
+  Object.values(METRIC_NAMES)
+
+/**
+ * The allowlist as a predicate. The legacy import skips an unknown name and
+ * counts it rather than failing the whole import: content and counters may
+ * have been renamed or retired since Mission 1.
+ */
+export function isMetricName(value: unknown): value is MetricName {
+  return (
+    typeof value === "string" &&
+    (METRIC_NAME_VALUES as readonly string[]).includes(value)
+  )
+}
