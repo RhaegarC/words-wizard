@@ -33,7 +33,12 @@ describe("readConfig", () => {
       tokenIssuer: TEST_ENV.TOKEN_ISSUER,
       expectedAudience: TEST_ENV.EXPECTED_AUDIENCE,
       expectedTenant: TEST_ENV.EXPECTED_TENANT,
-      allowedOrigins: ["https://words.nioh.uk", "http://localhost:8443"],
+      allowedOrigins: [
+        "https://words.nioh.uk",
+        "http://localhost:8443",
+        "https://admin.words.nioh.uk",
+        "http://localhost:8444",
+      ],
     })
   })
 

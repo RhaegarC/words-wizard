@@ -15,17 +15,20 @@ and `wrangler d1 migrations apply --local`). Feature 26 re-ran `pnpm typecheck`,
 `pnpm test`, `pnpm build`, and `pnpm check:dist` on 2026-11-05; the host tier
 boots the real Worker in `wrangler dev` with a local D1 and a local R2 under a
 temporary `--persist-to` directory, and covers avatar upload, replacement,
-removal, and public serving. The custom domains, production D1 database, R2
-bucket, Workers Builds connection, Entra sign-in and app roles, and production
-`pnpm check:deploy` are configured by the operator and were not run from the
-repository.
+removal, and public serving. Feature 28 re-ran those commands plus
+`pnpm build:portal` on 2026-11-06; its host tier boots the same Worker with real
+RS256 tokens and covers the admin staff boundary and snapshot. The custom
+domains, production D1 database, R2 bucket, Workers Builds connection, both
+Pages projects, Entra sign-in and app roles, and production `pnpm check:deploy`
+are configured by the operator and were not run from the repository.
 
 ## Topology
 
 | Piece | Value |
 |---|---|
 | App | `https://words.nioh.uk` — Cloudflare Pages, hash routes |
-| API | `https://wordsapi.nioh.uk` — Cloudflare Worker |
+| Admin portal | `https://admin.words.nioh.uk` — a second Cloudflare Pages project, hash routes |
+| API | `https://wordsapi.nioh.uk` — Cloudflare Worker, serving both front ends |
 | Production D1 | `words-wizard`, binding `DB` |
 | Test D1 | `words-wizard-test`, used only by the gated remote tier |
 | Avatars | Cloudflare R2 `words-wizard-avatars`, binding `AVATARS`, public read at `https://avatars.nioh.uk` |
@@ -35,10 +38,15 @@ repository.
 
 ## Entra ID
 
-1. Register a **single-page application** in the tenant and add both redirect
-   URIs under **Authentication → Single-page application**:
+1. Register a **single-page application** in the tenant and add all four
+   redirect URIs under **Authentication → Single-page application**:
    - `https://words.nioh.uk/`
    - `http://localhost:8443/`
+   - `https://admin.words.nioh.uk/`
+   - `http://localhost:8444/`
+
+   The child app and the admin portal share this one registration: same client
+   id, same scope, same app roles.
 2. Under **Expose an API**, set the Application ID URI to
    `api://<client-id>` and add an enabled delegated scope named
    `access_as_user` (`type: User`). The browser requests `openid`, `profile`,
@@ -55,8 +63,11 @@ repository.
    assign the role to the account through **Enterprise applications →
    Users and groups**. The Worker maps the token's `roles` claim to the stored
    profile role (`admin` beats `teacher`, which beats `user`); a token without
-   the claim — or with an unassigned role — stores `user`. The role authorises
-   nothing in the current release; the teacher/admin portal is planned.
+   the claim — or with an unassigned role — stores `user`. The Worker also
+   enforces the role on every `/v1/admin` route directly from the verified
+   token: `teacher` and `admin` pass, a signed-in `user` gets `403 forbidden`,
+   and an anonymous caller gets `401`. The admin portal shows Access Denied for
+   a `user` but is not the enforcement point.
    To change a role, update the assignment in Entra. The next request carrying
    a fresh token syncs it; the old token keeps its old role until it expires
    (MSAL caches tokens for up to an hour).
@@ -90,7 +101,7 @@ The Worker validates the access token against the tenant's JWKS endpoint:
 | `TOKEN_ISSUER` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
 | `EXPECTED_AUDIENCE` | the API application (client) id |
 | `EXPECTED_TENANT` | the tenant id |
-| `ALLOWED_ORIGINS` | `https://words.nioh.uk,http://localhost:8443` |
+| `ALLOWED_ORIGINS` | `https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444` |
 
 `src/worker/wrangler.jsonc` holds these vars (the committed values are
 placeholders until the operator replaces them). They are configuration, not
@@ -223,12 +234,35 @@ Set these production environment variables:
 Attach the custom domain `words.nioh.uk`. TLS is automatic. Previews stay off:
 a preview URL would publish the dev dataset and its service worker.
 
+### Admin portal
+
+The portal is a **second Pages project** connected to the same repository. It
+builds a different output directory from a different Vite config; neither app's
+build contains the other.
+
+| Setting | Value |
+|---|---|
+| Project | `words-wizard-admin` |
+| Production branch | `master` |
+| Root directory | `src` |
+| Build command | `pnpm build:portal` |
+| Output directory | `dist-portal` |
+| Build environment | Node 22, pnpm 10 |
+| Preview deployments | off |
+
+It reads the same production environment variables as the child app
+(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`, `VITE_ENTRA_SCOPE`,
+`VITE_API_BASE_URL`, optionally `VITE_AVATAR_BASE_URL`). Attach the custom
+domain `admin.words.nioh.uk`; sign-in requires the redirect URI
+`https://admin.words.nioh.uk/` on the shared registration. The portal never
+stores data of its own — it reads the same D1 database through the Worker.
+
 ## CI
 
 Pull requests to `develop` run `.github/workflows/ci.yml`:
 
-1. `verify` — frozen install, `pnpm typecheck` (page, tests, worker),
-   `pnpm test`, `pnpm build`, `pnpm check:dist`.
+1. `verify` — frozen install, `pnpm typecheck` (page, portal, tests, worker),
+   `pnpm test`, `pnpm build`, `pnpm build:portal`, `pnpm check:dist`.
 2. `remote-d1` — runs `pnpm test:db:remote` only when the three
    `WORDS_TEST_*` secrets exist; otherwise the job reports a visible skip.
 
