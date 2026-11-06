@@ -365,8 +365,12 @@ Pack {
   Feature 28 delivers the shell, the staff gate, and the admin read model. Feature 29 adds the
   first write surface — topics and packs can be created, edited, ordered, archived, and restored,
   with every accepted change live for children and atomic with the content-version bump that drives
-  the public `ETag`. Word authoring (30), word images (31), and artwork approval (32) follow. It is
-  scoped in the [Mission 3 sprint](features/00-mission-3-sprint.md).
+  the public `ETag`. Feature 30 adds the word library and pack membership: a word is one shared
+  master record that any number of packs reference, so an edit changes every appearance, and
+  membership is replaced as a full ordered list (`1..N`) in one atomic batch. Words are never
+  deleted or archived — removing a word from every pack hides it from children while it stays in
+  the library. Word images (31) and artwork approval (32) follow. It is scoped in the
+  [Mission 3 sprint](features/00-mission-3-sprint.md).
 
 ---
 
@@ -970,6 +974,7 @@ export const config = {
 | 22 | Deployment (Mission 2, 2026-10-30) | Cloudflare Git integration for Pages and Workers Builds. The Worker deploy applies migrations first. CI checks but never deploys, and the remote D1 job uses only `WORDS_TEST_*` credentials. |
 | 23 | Admin portal foundation (Mission 3, 2026-11-06) | A second Cloudflare Pages app at `admin.words.nioh.uk` (source `src/portal`, output `src/dist-portal`) reuses the child app's Entra registration. The Worker enforces `teacher`/`admin` from the verified token's `roles` claim on every `/v1/admin` route before any handler body (`401` anonymous, `403 forbidden` for a signed-in `user`); `profiles.role` is not consulted. `GET /v1/admin/content` returns a `no-store` snapshot that includes archived rows and words in no pack; `GET /v1/admin/access` returns the caller's role. |
 | 24 | Admin write model (Mission 3, 2026-11-06) | Topics and packs are created, edited, ordered, archived, and restored through `/v1/admin` routes. Ids are server-generated (`slugify(title)`; packs `<topicId>-<n>`) and immutable; a collision suffixes `-2`, `-3`, … across live and archived rows. The body is parsed against an allowlist before any database access. A request may send `If-Match: "<contentVersion>"`; a stale version is `409 conflict`. The change is validated against the shared validator in memory before writing — structural errors are `422` with an `issues` array, and `topic-no-packs`/`pack-no-words` are warnings because editing is incremental. The row write and the `content_version` bump share one `db.batch`, so the public `ETag` changes exactly when content does; a rejected or no-op change bumps nothing. Archive is soft and idempotent, and an archived row refuses edits (`409 archived`). Ordering is a full permutation of the live ids renumbered 1..N. |
+| 25 | Word library and membership (Mission 3, 2026-11-06) | Words are master records shared by every pack: `POST /v1/admin/words` (optional `packId` places the word in that pack in the same atomic batch) and `PATCH /v1/admin/words/:id` (rejects `id` and `image`). Word ids are `w-<slugify(headword)>`, suffixed on collision across live and archived rows and never reused. The headword is unique case-insensitively across all words including archived ones; a duplicate is `409 conflict` naming the colliding id, not a server error. Words are never deleted or archived — no such route exists — and a word in no live pack is omitted from `/v1/content` while remaining in the admin snapshot. `PUT /v1/admin/packs/:id/membership` takes the full ordered id list and replaces membership delete-then-insert at positions `1..N` in one atomic batch; duplicate ids, unknown or archived words, an archived pack or topic, and a list over 500 are rejected with nothing written. Every accepted change bumps the pack's `updated_at` and the content version; a no-op save bumps nothing. |
 
 **Additional v0.3 decisions:**
 

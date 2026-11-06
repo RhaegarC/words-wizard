@@ -1,6 +1,6 @@
 # Feature 30 — Word Library and Pack Membership
 
-> Priority: Must · Mission 3 · **Status: Specced — design locked; not implemented**
+> Priority: Must · Mission 3 · **Status: Implemented**
 > Depends on: 28 (portal foundation), 29 (topics and packs). Blocks: 31.
 > Source of truth: [Mission 3 sprint](00-mission-3-sprint.md) and the
 > [portal UI brief](../Portal.md).
@@ -61,21 +61,21 @@ collision across active and archived rows, and never reused.
 
 ## Acceptance criteria
 
-- [ ] A word can be created and edited; all bilingual fields, examples, level, tags, and emoji
+- [x] A word can be created and edited; all bilingual fields, examples, level, tags, and emoji
       round-trip.
-- [ ] The word id is derived from the headword, read-only, collision-suffixed, and never reused.
-- [ ] A duplicate headword, case-insensitive and including archived rows, is rejected with a clear
+- [x] The word id is derived from the headword, read-only, collision-suffixed, and never reused.
+- [x] A duplicate headword, case-insensitive and including archived rows, is rejected with a clear
       conflict message and nothing written.
-- [ ] No portal screen or route deletes or archives a word.
-- [ ] A word can be added to several packs across topics; editing it changes every appearance.
-- [ ] Removing a word from every pack hides it from `/v1/content` but keeps it in the admin
+- [x] No portal screen or route deletes or archives a word.
+- [x] A word can be added to several packs across topics; editing it changes every appearance.
+- [x] Removing a word from every pack hides it from `/v1/content` but keeps it in the admin
       snapshot and the library.
-- [ ] Pack membership saves as a full ordered replace with positions `1..N`; `/v1/content` serves
+- [x] Pack membership saves as a full ordered replace with positions `1..N`; `/v1/content` serves
       the same order.
-- [ ] Duplicate ids, unknown words, archived words, and an archived pack are rejected; nothing is
+- [x] Duplicate ids, unknown words, archived words, and an archived pack are rejected; nothing is
       written.
-- [ ] Create-with-pack places the word in the pack atomically.
-- [ ] Every accepted change bumps the content version; rejections do not.
+- [x] Create-with-pack places the word in the pack atomically.
+- [x] Every accepted change bumps the content version; rejections do not.
 
 ## Test plan
 

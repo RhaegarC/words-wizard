@@ -144,6 +144,9 @@ The role comes from the **verified token's** `roles` claim (`admin` > `teacher` 
 | `PATCH /v1/admin/packs/:id` | teacher, admin | edit the bilingual title; the topic is immutable |
 | `POST /v1/admin/packs/:id/archive` · `/restore` | teacher, admin | flip `archived_at` |
 | `PUT /v1/admin/packs/order` | teacher, admin | renumber within a topic |
+| `POST /v1/admin/words` | teacher, admin | create a word; the id is derived (`201`); an optional `packId` adds it to that pack in the same batch |
+| `PATCH /v1/admin/words/:id` | teacher, admin | edit the word record; the id and `image` are not accepted |
+| `PUT /v1/admin/packs/:id/membership` | teacher, admin | replace the pack's ordered word list (`1..N`) |
 
 The snapshot differs from the public `/v1/content` bundle because the portal must edit what the
 child app cannot see:
@@ -185,6 +188,35 @@ the Worker agree on them:
   a row already in that state is a no-op. Editing an archived row is `409 archived`.
 - **Ordering is a permutation.** The body lists every live id exactly once; a missing or extra id
   is `422`. Renumbering to the current order is a no-op.
+
+**Word library and membership (feature 30).**
+
+- **Word ids.** `w-<slugify(headword)>`, then `w-…-2`, `w-…-3` on collision across active and
+  archived rows; a headword with no ASCII slug falls back to `w-1`, `w-2`. The id is read-only and
+  never reused.
+- **One headword, one word.** `text` is unique case-insensitively across every word, archived
+  included, enforced by `words_text_nocase`. The route checks it against the loaded rows first, so a
+  duplicate is `409 conflict` with the colliding id — not a constraint failure reported as a server
+  error. An edit may keep its own headword. An archived word cannot be edited (`409 archived`).
+- **No delete, no archive.** There is no word delete or archive route, and no such method is
+  registered, so `DELETE /v1/admin/words/:id` answers `405` with `Allow: PATCH`. Removing a word
+  from every pack is how it stops reaching children; the row and its library entry stay.
+- **Create with a pack.** `POST /v1/admin/words` accepts an optional `packId`. The word insert, the
+  `pack_words` insert at the next position, and the version bump share one `db.batch`; an archived
+  pack or a pack under an archived topic is `409 archived` before anything is written. The response
+  carries `word` and, when a pack was named, `membership`.
+- **Membership is a full ordered replace.** `PUT /v1/admin/packs/:id/membership` takes
+  `{ "ids": [...] }` in the intended order. The write deletes the pack's rows and inserts `1..N` in
+  one atomic batch — `(pack_id, position)` is the primary key, so an in-place renumber cannot be
+  partial. Inserts are chunked at 33 rows per statement to stay inside D1's 100-parameter cap.
+- **Membership rules.** Duplicate ids (`duplicate-id`), unknown words, and archived words are `422
+  validation_failed`, as is a list longer than 500. An archived pack or a pack under an archived
+  topic is `409 archived`. Saving the current order is a no-op that bumps nothing; any accepted
+  change bumps the pack's `updated_at` and the content version.
+- **Words and the public bundle.** A word in no live pack is omitted from `/v1/content` but stays
+  in `/v1/admin/content` and every pack that still holds it. An edit to a shared word changes every
+  pack's appearance, because packs reference the one row. `image` is written only by feature 31's
+  upload route; create and edit reject it as an unknown field.
 
 **405 with `Allow`.** `ROUTES` declares the methods for each admin path. `routeMethodsFor` in
 `src/worker/errors.ts` matches the exact path first, then registered `:param` patterns, so a wrong

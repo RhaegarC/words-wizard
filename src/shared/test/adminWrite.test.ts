@@ -1,17 +1,25 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  MAX_EXAMPLES,
+  MAX_MEMBERSHIP,
+  MAX_TAGS,
   bumpContentVersion,
   checkProposal,
+  headwordTaken,
   packIdFor,
+  parseMembership,
   parsePackCreate,
   parsePackOrder,
   parsePackPatch,
   parseTopicCreate,
   parseTopicOrder,
   parseTopicPatch,
+  parseWordCreate,
+  parseWordPatch,
   slugify,
   topicIdFor,
+  wordIdFor,
 } from "../adminWrite"
 import { STAGE_IDS } from "../types"
 import type { ContentBundle } from "../content/types"
@@ -239,6 +247,227 @@ describe("order request rules", () => {
       value: { topicId: "craft-build", ids: ["p-2", "p-1"] },
     })
     expect(parsePackOrder({ ids: ["p-1"] }).ok).toBe(false)
+  })
+})
+
+const WORD = {
+  text: "brave",
+  phonetic: "/breɪv/",
+  partOfSpeech: "adjective",
+  meaningEn: "Ready to face danger.",
+  meaningZh: "勇敢的。",
+  definitionEn: "Not afraid.",
+  definitionZh: "不害怕。",
+  examples: [{ en: "The brave knight smiled.", zh: "勇敢的骑士笑了。" }],
+  level: 2,
+  tags: ["abstract"],
+  emoji: "🦁",
+}
+
+describe("word ids", () => {
+  it("prefixes the headword slug with w-", () => {
+    expect(wordIdFor("Brave", new Set())).toBe("w-brave")
+    expect(wordIdFor("ice cream", new Set())).toBe("w-ice-cream")
+  })
+
+  it("suffixes a collision from 2 upwards", () => {
+    expect(wordIdFor("Brave", new Set(["w-brave"]))).toBe("w-brave-2")
+    expect(wordIdFor("Brave", new Set(["w-brave", "w-brave-2"]))).toBe(
+      "w-brave-3",
+    )
+  })
+
+  it("falls back to a numbered id for a non-Latin headword", () => {
+    expect(wordIdFor("勇敢", new Set())).toBe("w-1")
+    expect(wordIdFor("勇敢", new Set(["w-1"]))).toBe("w-2")
+  })
+})
+
+describe("headword uniqueness", () => {
+  const words = [
+    { id: "w-brave", text: "Brave" },
+    { id: "w-old", text: "Old" },
+  ]
+
+  it("matches case-insensitively and trims the candidate", () => {
+    expect(headwordTaken(words, "brave")).toBe("w-brave")
+    expect(headwordTaken(words, "  BRAVE  ")).toBe("w-brave")
+  })
+
+  it("returns null when the headword is free", () => {
+    expect(headwordTaken(words, "kind")).toBeNull()
+  })
+
+  it("skips the row being edited", () => {
+    expect(headwordTaken(words, "Brave", "w-brave")).toBeNull()
+  })
+
+  it("sees an archived row because the caller passes every row", () => {
+    expect(headwordTaken([{ id: "w-old", text: "Old" }], "old")).toBe("w-old")
+  })
+})
+
+describe("word request rules", () => {
+  it("accepts and trims a complete create body", () => {
+    expect(parseWordCreate({ ...WORD, text: "  brave  " })).toEqual({
+      ok: true,
+      value: { ...WORD, text: "brave" },
+    })
+  })
+
+  it("accepts a create with an optional pack", () => {
+    expect(parseWordCreate({ ...WORD, packId: "craft-build-1" })).toEqual({
+      ok: true,
+      value: { ...WORD, packId: "craft-build-1" },
+    })
+  })
+
+  it("rejects the id and the image, which only the server writes", () => {
+    for (const field of ["id", "image"]) {
+      const parsed = parseWordCreate({ ...WORD, [field]: "x" })
+
+      expect(parsed.ok, field).toBe(false)
+      expect(parsed.ok === false && parsed.issues).toContain("unknown-field")
+    }
+  })
+
+  it("rejects every required text field when it is blank", () => {
+    for (const field of [
+      "text",
+      "phonetic",
+      "partOfSpeech",
+      "meaningEn",
+      "meaningZh",
+      "definitionEn",
+      "definitionZh",
+    ] as const) {
+      const parsed = parseWordCreate({ ...WORD, [field]: "   " })
+
+      expect(parsed.ok, field).toBe(false)
+    }
+  })
+
+  it("requires at least one paired example and caps the count", () => {
+    expect(parseWordCreate({ ...WORD, examples: [] }).ok).toBe(false)
+    expect(
+      parseWordCreate({
+        ...WORD,
+        examples: Array.from({ length: MAX_EXAMPLES + 1 }, () => ({
+          en: "One.",
+          zh: "一。",
+        })),
+      }).ok,
+    ).toBe(false)
+  })
+
+  it("rejects an example missing either language", () => {
+    expect(
+      parseWordCreate({ ...WORD, examples: [{ en: "One.", zh: " " }] }).ok,
+    ).toBe(false)
+    expect(
+      parseWordCreate({ ...WORD, examples: [{ en: "One." }] }).ok,
+    ).toBe(false)
+  })
+
+  it("accepts only level 1, 2, or 3", () => {
+    for (const level of [0, 4, 2.5, "2", null]) {
+      expect(parseWordCreate({ ...WORD, level }).ok, String(level)).toBe(false)
+    }
+
+    for (const level of [1, 2, 3]) {
+      expect(parseWordCreate({ ...WORD, level }).ok, String(level)).toBe(true)
+    }
+  })
+
+  it("trims, deduplicates, and caps the tags", () => {
+    expect(parseWordCreate({ ...WORD, tags: [" abstract ", "abstract"] })).toEqual({
+      ok: true,
+      value: { ...WORD, tags: ["abstract"] },
+    })
+    expect(
+      parseWordCreate({
+        ...WORD,
+        tags: Array.from({ length: MAX_TAGS + 1 }, (_, index) => `tag-${index}`),
+      }).ok,
+    ).toBe(false)
+    expect(parseWordCreate({ ...WORD, tags: [1] }).ok).toBe(false)
+  })
+
+  it("treats a blank or absent emoji as null and caps its length", () => {
+    expect(parseWordCreate({ ...WORD, emoji: "  " })).toEqual({
+      ok: true,
+      value: { ...WORD, emoji: null },
+    })
+    expect(parseWordCreate({ ...WORD, emoji: null })).toEqual({
+      ok: true,
+      value: { ...WORD, emoji: null },
+    })
+    expect(parseWordCreate({ ...WORD, emoji: "😀".repeat(20) }).ok).toBe(false)
+  })
+
+  it("accepts a partial edit and rejects an empty one", () => {
+    expect(parseWordPatch({ meaningZh: "勇敢的。" })).toEqual({
+      ok: true,
+      value: { meaningZh: "勇敢的。" },
+    })
+    expect(parseWordPatch({})).toEqual({
+      ok: false,
+      issues: ["empty-patch"],
+    })
+  })
+
+  it("keeps pack, id, and image out of an edit", () => {
+    for (const field of ["packId", "id", "image"]) {
+      const parsed = parseWordPatch({ [field]: "x" })
+
+      expect(parsed.ok, field).toBe(false)
+      expect(parsed.ok === false && parsed.issues).toContain("unknown-field")
+    }
+  })
+
+  it("rejects a non-object body", () => {
+    expect(parseWordCreate(null)).toEqual({
+      ok: false,
+      issues: ["invalid-payload"],
+    })
+  })
+})
+
+describe("membership request rules", () => {
+  it("accepts an ordered list and an empty one", () => {
+    expect(parseMembership({ ids: ["w-b", "w-a"] })).toEqual({
+      ok: true,
+      value: { ids: ["w-b", "w-a"] },
+    })
+    expect(parseMembership({ ids: [] })).toEqual({ ok: true, value: { ids: [] } })
+  })
+
+  it("rejects a duplicate id", () => {
+    const parsed = parseMembership({ ids: ["w-a", "w-a"] })
+
+    expect(parsed.ok).toBe(false)
+    expect(parsed.ok === false && parsed.issues).toContain("duplicate-id")
+  })
+
+  it("rejects a non-string id and an unknown field", () => {
+    expect(parseMembership({ ids: ["w-a", 2] }).ok).toBe(false)
+    expect(parseMembership({ ids: [], position: 1 }).ok).toBe(false)
+  })
+
+  it("caps the list length", () => {
+    const parsed = parseMembership({
+      ids: Array.from({ length: MAX_MEMBERSHIP + 1 }, (_, index) => `w-${index}`),
+    })
+
+    expect(parsed.ok).toBe(false)
+    expect(parsed.ok === false && parsed.issues).toContain("list-too-long")
+  })
+
+  it("rejects a body that is not an object", () => {
+    expect(parseMembership([])).toEqual({
+      ok: false,
+      issues: ["invalid-payload"],
+    })
   })
 })
 

@@ -6,8 +6,8 @@ to the same Worker as the child app. Deployment is **two Pages projects and one 
 portal has no API of its own, no service worker, and no locale bundle.
 
 Feature 28 ships the shell and the staff gate: sign-in, the Topics / Words / Archived navigation,
-and a read-only content snapshot. Feature 29 adds the topic and pack write screens; the word
-library and membership arrive in features 30–31.
+and a read-only content snapshot. Feature 29 adds the topic and pack write screens. Feature 30 adds
+the word library, the word editor, and ordered pack membership; word images arrive in feature 31.
 
 ## One-time setup
 
@@ -86,7 +86,10 @@ from the API also lands on Access Denied; a `401` clears the session and shows t
 | `#/topics/:id/packs` | packs in the topic, with move up/down that saves immediately |
 | `#/topics/:id/packs/new` | pack editor, create |
 | `#/packs/:id` | pack editor, edit; the topic is read-only |
-| `#/words` | word library (summary until feature 30) |
+| `#/packs/:id/contents` | pack contents: the ordered word draft, add/remove/move, **Save changes** |
+| `#/words` | searchable word library: headword, Chinese meaning, phonetic, level, usage |
+| `#/words/new` · `#/words/new?pack=:id` | word editor, create (optionally straight into a pack) |
+| `#/words/:id` | word editor, edit; the id is read-only and there is no delete or archive control |
 | `#/archived/topics` · `#/archived/packs` | archived rows with a Restore action |
 
 An unknown fragment lands on Topics rather than a 404 screen; an unknown id shows a "does not
@@ -97,6 +100,18 @@ latest snapshot and shows a banner: the teacher reviews the change and saves aga
 archived` means the row must be restored first. A `422` lists the validator's findings above the
 form and keeps the entered values. A successful save refetches the snapshot, so counts and order
 are never stale; editorial warnings are mentioned in the success notice.
+
+**Words are shared and kept.** The library lists every word, including one in no pack (marked
+*Not in any pack — hidden from children*) and archived history. Creating a word from a pack sends
+`packId` with the create and lands back on that pack's contents; the placement is one atomic
+batch. An edit changes every pack that holds the word, and the editor says so. There is no delete
+or archive action anywhere in the portal.
+
+**Pack contents is a draft.** The screen edits the whole ordered list locally. **Save changes**
+sends the full list (`PUT /v1/admin/packs/:id/membership`); **Discard changes** restores the saved
+order. While the draft differs, every in-app exit — sidebar, breadcrumb, back — asks before the
+draft is lost, and a reload or close triggers the browser's own prompt. A duplicate or unknown id
+is prevented by the picker, and a server `422` is shown above the list with the draft intact.
 
 ### Debug
 
@@ -120,7 +135,10 @@ The portal's unit tier covers the parts that can be decided offline:
 - `role.test.ts` — role precedence and malformed-token handling;
 - `router.test.ts` — nested hash parsing, defaults, and href round-trips;
 - `order.test.ts` — moving an id up or down, including the edge no-ops;
-- `api.test.ts` — the write client's verb, path, `If-Match`, and how 409/422 reach the screen;
+- `membership.test.ts` — appending without duplicates or mutation, removal, and order-sensitive
+  dirtiness for the pack-contents draft;
+- `api.test.ts` — the write client's verb, path, `If-Match`, and how 409/422 reach the screen,
+  including `createWord`, `updateWord`, and `saveMembership`;
 - `access.test.ts` — the four-state machine;
 - `boundary.test.ts` — the portal imports only `page/auth/{config,msal,token,account,session}` from
   the child app, never a page provider, store, or API client; no child build can contain the

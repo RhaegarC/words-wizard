@@ -1,14 +1,18 @@
 import type {
   AdminAccess,
+  AdminMembership,
   AdminPack,
   AdminSnapshot,
   AdminTopic,
+  AdminWord,
 } from "../shared/admin"
 import type {
   PackCreatePayload,
   PackPatchPayload,
   TopicCreatePayload,
   TopicPatchPayload,
+  WordCreatePayload,
+  WordPatchPayload,
 } from "../shared/adminWrite"
 import type { ContentIssue } from "../shared/content/types"
 
@@ -41,9 +45,27 @@ export interface PackWriteResult {
   readonly pack?: AdminPack
 }
 
+/**
+ * A word write. Creating from a pack returns the membership that was extended
+ * in the same batch, so the screen refreshes the pack without a second call.
+ */
+export interface WordWriteResult {
+  readonly contentVersion: string
+  readonly warnings: ContentIssue[]
+  readonly word?: AdminWord
+  readonly membership?: AdminMembership
+}
+
+export interface MembershipWriteResult {
+  readonly contentVersion: string
+  readonly warnings: ContentIssue[]
+  readonly membership?: AdminMembership
+}
+
 export interface AdminApi {
   access(): Promise<AdminAccess>
   snapshot(): Promise<AdminSnapshot>
+
   createTopic(
     input: TopicCreatePayload,
     contentVersion: string,
@@ -81,6 +103,20 @@ export interface AdminApi {
     ids: readonly string[],
     contentVersion: string,
   ): Promise<PackWriteResult>
+  createWord(
+    input: WordCreatePayload,
+    contentVersion: string,
+  ): Promise<WordWriteResult>
+  updateWord(
+    wordId: string,
+    input: WordPatchPayload,
+    contentVersion: string,
+  ): Promise<WordWriteResult>
+  saveMembership(
+    packId: string,
+    ids: readonly string[],
+    contentVersion: string,
+  ): Promise<MembershipWriteResult>
 }
 
 interface ErrorPayload {
@@ -223,6 +259,23 @@ export function createAdminApi(
         "/v1/admin/packs/order",
         "PUT",
         { topicId, ids: [...ids] },
+        contentVersion,
+      ),
+
+    createWord: (input, contentVersion) =>
+      write<WordWriteResult>("/v1/admin/words", "POST", input, contentVersion),
+    updateWord: (wordId, input, contentVersion) =>
+      write<WordWriteResult>(
+        `/v1/admin/words/${wordId}`,
+        "PATCH",
+        input,
+        contentVersion,
+      ),
+    saveMembership: (packId, ids, contentVersion) =>
+      write<MembershipWriteResult>(
+        `/v1/admin/packs/${packId}/membership`,
+        "PUT",
+        { ids: [...ids] },
         contentVersion,
       ),
   }

@@ -4,9 +4,11 @@ import type { AddressInfo } from "node:net"
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 
 import type {
+  AdminMembership,
   AdminPack,
   AdminSnapshot,
   AdminTopic,
+  AdminWord,
 } from "../../shared/admin"
 import { startWorker, workerConfig, type RunningWorker } from "./harness"
 import { TEST_ENV, createTestKey, mintToken, type TestKey } from "./tokens"
@@ -333,6 +335,83 @@ function insertWord(id: string): void {
 function addToPack(packId: string, wordId: string, position = 1): void {
   worker.query(
     `INSERT INTO pack_words (pack_id, word_id, position) VALUES ('${packId}', '${wordId}', ${position});`,
+  )
+}
+
+function insertArchivedWord(id: string, text: string): void {
+  worker.query(
+    `INSERT INTO words (id, text, phonetic, part_of_speech, meaning_en, meaning_zh, definition_en, definition_zh, examples, image, emoji, level, tags, created_at, updated_at, archived_at) VALUES ('${id}', '${text}', '/x/', 'noun', 'm', 'm', 'd', 'd', '[{"en":"It is ${text}.","zh":"它。"}]', NULL, NULL, 1, '[]', 0, 0, 333);`,
+  )
+}
+
+interface WordWriteResult {
+  readonly contentVersion: string
+  readonly warnings: ReadonlyArray<{ code: string; message: string }>
+  readonly word?: AdminWord
+  readonly membership?: AdminMembership
+}
+
+interface MembershipWriteResult {
+  readonly contentVersion: string
+  readonly warnings: ReadonlyArray<{ code: string; message: string }>
+  readonly membership?: AdminMembership
+}
+
+function wordBody(
+  text: string,
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    text,
+    phonetic: `/${text}/`,
+    partOfSpeech: "noun",
+    meaningEn: `The meaning of ${text}.`,
+    meaningZh: `${text} 的意思。`,
+    definitionEn: "A definition.",
+    definitionZh: "一个定义。",
+    examples: [{ en: `I can see the ${text}.`, zh: `我能看到 ${text}。` }],
+    level: 1,
+    tags: [],
+    emoji: "🦁",
+    ...overrides,
+  }
+}
+
+async function createWord(
+  text: string,
+  overrides: Record<string, unknown> = {},
+): Promise<WordWriteResult> {
+  const version = await currentVersion()
+  const response = await call("/v1/admin/words", {
+    token: teacherToken,
+    method: "POST",
+    ifMatch: `"${version}"`,
+    body: wordBody(text, overrides),
+  })
+
+  expect(response.status).toBe(201)
+  return (await response.json()) as WordWriteResult
+}
+
+async function saveMembership(
+  packId: string,
+  ids: readonly string[],
+  version: string,
+): Promise<Response> {
+  return call(`/v1/admin/packs/${packId}/membership`, {
+    token: teacherToken,
+    method: "PUT",
+    ifMatch: `"${version}"`,
+    body: { ids },
+  })
+}
+
+function membershipOf(
+  snapshot: AdminSnapshot,
+  packId: string,
+): string[] {
+  return (
+    snapshot.memberships.find((entry) => entry.packId === packId)?.wordIds ?? []
   )
 }
 
@@ -723,5 +802,302 @@ describe("concurrency", () => {
     expect(
       snapshot.topics.some((row) => row.id === "stale-second"),
     ).toBe(false)
+  })
+})
+
+describe("the word library", () => {
+  it("creates a word with a derived id, bumping the version", async () => {
+    const before = await currentVersion()
+    const result = await createWord("Quokka")
+
+    expect(result.word?.id).toBe("w-quokka")
+    expect(result.contentVersion).not.toBe(before)
+    expect(result.contentVersion).toBe(await currentVersion())
+
+    const snapshot = await snapshotFor(teacherToken)
+    const row = snapshot.words.find((word) => word.id === "w-quokka")
+
+    expect(row).toMatchObject({
+      text: "Quokka",
+      phonetic: "/Quokka/",
+      partOfSpeech: "noun",
+      meaningEn: "The meaning of Quokka.",
+      meaningZh: "Quokka 的意思。",
+      level: 1,
+      tags: [],
+      emoji: "🦁",
+      image: null,
+      archivedAt: null,
+      topicIds: [],
+    })
+    expect(row?.examples).toEqual([
+      { en: "I can see the Quokka.", zh: "我能看到 Quokka。" },
+    ])
+
+    const bundle = await publicBundle()
+    expect(bundle.words.some((word) => word.id === "w-quokka")).toBe(false)
+  })
+
+  it("suffixes the id when two headwords slug the same", async () => {
+    const first = await createWord("Ice Cream")
+    const second = await createWord("Ice-Cream")
+
+    expect(first.word?.id).toBe("w-ice-cream")
+    expect(second.word?.id).toBe("w-ice-cream-2")
+  })
+
+  it("rejects a duplicate headword case-insensitively, writing nothing", async () => {
+    await createWord("Narwhal")
+
+    const before = await currentVersion()
+    const response = await call("/v1/admin/words", {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${before}"`,
+      body: wordBody("narwhal"),
+    })
+
+    expect(response.status).toBe(409)
+    const payload = (await response.json()) as {
+      error: { code: string; message: string }
+    }
+    expect(payload.error.code).toBe("conflict")
+    expect(payload.error.message).toContain("narwhal")
+    expect(await currentVersion()).toBe(before)
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.words.filter((word) => word.text.toLowerCase() === "narwhal"),
+    ).toHaveLength(1)
+  })
+
+  it("rejects a headword an archived row already uses", async () => {
+    insertArchivedWord("f30-w-zephyr", "Zephyr")
+
+    const response = await call("/v1/admin/words", {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+      body: wordBody("zephyr"),
+    })
+
+    expect(response.status).toBe(409)
+    expect(
+      ((await response.json()) as { error?: { code?: string } }).error?.code,
+    ).toBe("conflict")
+  })
+})
+
+describe("editing words", () => {
+  it("edits the record without changing the id", async () => {
+    const created = await createWord("Puffin")
+    expect(created.word?.id).toBe("w-puffin")
+
+    const before = await currentVersion()
+    const response = await call("/v1/admin/words/w-puffin", {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${before}"`,
+      body: {
+        meaningZh: "海鹦。",
+        level: 3,
+        tags: ["abstract"],
+        emoji: null,
+        examples: [{ en: "A puffin dives.", zh: "海鹦潜水。" }],
+      },
+    })
+
+    expect(response.status).toBe(200)
+    const result = (await response.json()) as WordWriteResult
+    expect(result.word?.id).toBe("w-puffin")
+    expect(result.contentVersion).not.toBe(before)
+
+    const snapshot = await snapshotFor(teacherToken)
+    const row = snapshot.words.find((word) => word.id === "w-puffin")
+
+    expect(row).toMatchObject({
+      text: "Puffin",
+      meaningZh: "海鹦。",
+      level: 3,
+      tags: ["abstract"],
+    })
+    expect(row).not.toHaveProperty("emoji")
+    expect(row?.examples).toEqual([
+      { en: "A puffin dives.", zh: "海鹦潜水。" },
+    ])
+  })
+
+  it("refuses an edit that would duplicate another headword", async () => {
+    await createWord("Heron")
+    await createWord("Crane")
+
+    const before = await currentVersion()
+    const response = await call("/v1/admin/words/w-heron", {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${before}"`,
+      body: { text: "crane" },
+    })
+
+    expect(response.status).toBe(409)
+    expect(
+      ((await response.json()) as { error?: { code?: string } }).error?.code,
+    ).toBe("conflict")
+    expect(await currentVersion()).toBe(before)
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.words.find((word) => word.id === "w-heron")?.text,
+    ).toBe("Heron")
+  })
+})
+
+describe("pack membership", () => {
+  it("create-with-pack appends the word and serves it", async () => {
+    const topic = await createTopic("Feature 30 Create With Pack")
+    const pack = await createPack(topic.topic!.id, "First Pack")
+
+    const before = await currentVersion()
+    const created = await createWord("Binturong", {
+      packId: pack.pack!.id,
+    })
+
+    expect(created.word?.id).toBe("w-binturong")
+    expect(created.membership?.wordIds).toEqual(["w-binturong"])
+    expect(created.contentVersion).not.toBe(before)
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(membershipOf(snapshot, pack.pack!.id)).toEqual(["w-binturong"])
+
+    const bundle = await publicBundle()
+    expect(
+      bundle.packs.find((candidate) => candidate.id === pack.pack!.id)?.wordIds,
+    ).toEqual(["w-binturong"])
+    expect(bundle.words.some((word) => word.id === "w-binturong")).toBe(true)
+  })
+
+  it("replaces membership in the given order", async () => {
+    const topic = await createTopic("Feature 30 Membership Order")
+    const pack = await createPack(topic.topic!.id, "Ordered Pack")
+    const alpha = await createWord("Xylophone")
+    const beta = await createWord("Yacht")
+    const gamma = await createWord("Zebra")
+    const ids = [gamma.word!.id, alpha.word!.id, beta.word!.id]
+
+    const before = await currentVersion()
+    const response = await saveMembership(pack.pack!.id, ids, before)
+
+    expect(response.status).toBe(200)
+    const result = (await response.json()) as MembershipWriteResult
+    expect(result.membership?.wordIds).toEqual(ids)
+    expect(result.contentVersion).not.toBe(before)
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(membershipOf(snapshot, pack.pack!.id)).toEqual(ids)
+
+    const bundle = await publicBundle()
+    expect(
+      bundle.packs.find((candidate) => candidate.id === pack.pack!.id)?.wordIds,
+    ).toEqual(ids)
+  })
+
+  it("removing every word hides it from children, keeping it in the library", async () => {
+    const topic = await createTopic("Feature 30 Membership Empty")
+    const pack = await createPack(topic.topic!.id, "Emptied Pack")
+    const word = await createWord("Wombat")
+
+    const first = await saveMembership(
+      pack.pack!.id,
+      [word.word!.id],
+      await currentVersion(),
+    )
+    expect(first.status).toBe(200)
+
+    const before = await currentVersion()
+    const response = await saveMembership(pack.pack!.id, [], before)
+    expect(response.status).toBe(200)
+    expect(
+      ((await response.json()) as MembershipWriteResult).contentVersion,
+    ).not.toBe(before)
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(membershipOf(snapshot, pack.pack!.id)).toEqual([])
+    expect(
+      snapshot.words.some((candidate) => candidate.id === "w-wombat"),
+    ).toBe(true)
+
+    const bundle = await publicBundle()
+    expect(
+      bundle.packs.find((candidate) => candidate.id === pack.pack!.id)?.wordIds,
+    ).toEqual([])
+    expect(bundle.words.some((candidate) => candidate.id === "w-wombat")).toBe(
+      false,
+    )
+  })
+
+  it("rejects unknown, archived, and duplicate ids without writing", async () => {
+    const topic = await createTopic("Feature 30 Membership Rejections")
+    const pack = await createPack(topic.topic!.id, "Guarded Pack")
+    const word = await createWord("Vicuna")
+    insertArchivedWord("f30-w-dodo", "Dodo")
+
+    const before = await currentVersion()
+
+    for (const ids of [
+      ["not-a-word"],
+      [word.word!.id, "f30-w-dodo"],
+      [word.word!.id, word.word!.id],
+    ]) {
+      const response = await saveMembership(pack.pack!.id, ids, before)
+
+      expect(response.status, JSON.stringify(ids)).toBe(422)
+      expect(
+        ((await response.json()) as { error?: { code?: string } }).error?.code,
+      ).toBe("validation_failed")
+    }
+
+    expect(await currentVersion()).toBe(before)
+    const snapshot = await snapshotFor(teacherToken)
+    expect(membershipOf(snapshot, pack.pack!.id)).toEqual([])
+  })
+
+  it("rejects a membership save on an archived pack", async () => {
+    const topic = await createTopic("Feature 30 Archived Pack")
+    const pack = await createPack(topic.topic!.id, "Hidden Pack")
+
+    const archived = await call(`/v1/admin/packs/${pack.pack!.id}/archive`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+    })
+    expect(archived.status).toBe(200)
+
+    const response = await saveMembership(
+      pack.pack!.id,
+      [],
+      await currentVersion(),
+    )
+
+    expect(response.status).toBe(409)
+    expect(
+      ((await response.json()) as { error?: { code?: string } }).error?.code,
+    ).toBe("archived")
+  })
+
+  it("leaves the version alone when the list is unchanged", async () => {
+    const topic = await createTopic("Feature 30 Membership No Op")
+    const pack = await createPack(topic.topic!.id, "Settled Pack")
+    const word = await createWord("Tapir")
+    const ids = [word.word!.id]
+
+    await saveMembership(pack.pack!.id, ids, await currentVersion())
+
+    const before = await currentVersion()
+    const response = await saveMembership(pack.pack!.id, ids, before)
+    const result = (await response.json()) as MembershipWriteResult
+
+    expect(response.status).toBe(200)
+    expect(result.contentVersion).toBe(before)
+    expect(await currentVersion()).toBe(before)
   })
 })
