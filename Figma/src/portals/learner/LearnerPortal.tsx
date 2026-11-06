@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { db, type Profile } from "./db";
 import { practiceWords, topics, words, type Word } from "./content";
@@ -519,13 +521,14 @@ function Shell({ profile, route, go, children }: { profile: Profile; route: Rout
 }
 
 function routeFromHash(): Route {
+  if (typeof window === "undefined") return "home";
   const value = location.hash.replace(/^#\//, "").split("?")[0];
   return (["home", "topics", "session", "words", "buddy", "settings", "review"].includes(value) ? value : "home") as Route;
 }
 
-export default function App() {
+export default function LearnerPortal() {
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
-  const [route, setRoute] = useState<Route>(routeFromHash);
+  const [route, setRoute] = useState<Route>("home");
   const [showInstall, setShowInstall] = useState(false);
   useEffect(() => {
     db.profiles.toCollection().first().then((saved) => {
@@ -534,7 +537,11 @@ export default function App() {
       if (saved && !installed) setShowInstall(true);
     });
     navigator.storage?.persist?.().catch(() => undefined);
+    if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
     const onHash = () => setRoute(routeFromHash());
+    onHash();
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);

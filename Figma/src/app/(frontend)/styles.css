@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --admin-purple: #7059dc;
+  --admin-purple-dark: #5942c0;
+  --admin-purple-pale: #eeeafd;
+  --admin-ink: #302747;
+  --admin-muted: #777180;
+  --admin-line: #e9e5ed;
+  --admin-green: #56a87c;
+  --admin-amber: #b07e26;
+  --admin-amber-pale: #fff2d2;
+  --admin-coral: #d97854;
+  --admin-coral-pale: #ffeadf;
+  --admin-blue: #4489a5;
+  --admin-pink: #c45f87;
+  --admin-canvas: #f8f7fa;
+}
+
+@layer base {
+  body {
+    font-family: "Avenir Next", "Segoe UI", "PingFang SC", sans-serif;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--admin-purple) 35%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+.admin-scrollbar {
+  scrollbar-color: #d8d3dd transparent;
+  scrollbar-width: thin;
+}
+
+.admin-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #d8d3dd;
+}
+
+.figma-custom-code-fragment {
+  display: contents;
+}
+
+.figma-bypass-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 2147483647;
+  transform: translateY(-150%);
+  border-radius: 6px;
+  background: #111827;
+  color: #fff;
+  padding: 8px 12px;
+  font: 600 14px/1.2 system-ui, sans-serif;
+  text-decoration: none;
+}
+
+.figma-bypass-link:focus {
+  transform: translateY(0);
+}
