@@ -34,8 +34,9 @@ and its toolchain is independent of the production app.
   imported once on first boot and then deleted.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
 - **Cloudflare Pages + Worker** hosting, with hash routing.
-- **Illustrations:** word images served from R2 URLs (emoji fallback until authored) plus 8 buddy
-  portraits, AI-generated and human-reviewed.
+- **Illustrations:** word images uploaded by teachers to a dedicated R2 bucket and served through
+  the Worker (emoji fallback until one is uploaded), plus 8 buddy portraits, AI-generated and
+  human-reviewed.
 
 ## Repository layout
 
@@ -224,8 +225,12 @@ Workers Builds settings:
 The Pages build needs `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`,
 `VITE_ENTRA_SCOPE`, and `VITE_API_BASE_URL` in its environment; it optionally
 takes `VITE_AVATAR_BASE_URL` to read photos from the R2 domain instead of the
-Worker. They are public configuration. The Worker reads its vars from `src/worker/wrangler.jsonc`, and the D1
-database id goes in `d1_databases[0].database_id`.
+Worker. They are public configuration. The Worker reads its vars from
+`src/worker/wrangler.jsonc`, the D1 database id goes in
+`d1_databases[0].database_id`, and the two buckets — `words-wizard-avatars`
+(`AVATARS`) and `words-wizard-images` (`WORD_IMAGES`) — go in `r2_buckets`.
+Create both before the first deploy; see
+[docs/operations.md](docs/operations.md#r2-and-avatars).
 
 Pull requests to `develop` run `.github/workflows/ci.yml`: frozen pnpm install,
 `typecheck`, `test`, `build`, `build:portal`, and `check:dist`. A second job runs

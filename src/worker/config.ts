@@ -13,6 +13,7 @@ export interface WorkerEnv {
   ALLOWED_ORIGINS?: string | undefined
   DB?: D1Database | undefined
   AVATARS?: R2Bucket | undefined
+  WORD_IMAGES?: R2Bucket | undefined
 }
 
 /** Validated configuration; handlers never read `WorkerEnv` directly. */
@@ -89,6 +90,16 @@ export function requireAvatars(env: WorkerEnv): R2Bucket {
   if (env.AVATARS === undefined) throw new ConfigError("AVATARS")
   return env.AVATARS
 }
+
+/**
+ * The R2 binding for word pictures. A bucket of its own, deliberately separate
+ * from the avatars: the two stores have different owners, keys, and lifetimes.
+ */
+export function requireWordImages(env: WorkerEnv): R2Bucket {
+  if (env.WORD_IMAGES === undefined) throw new ConfigError("WORD_IMAGES")
+  return env.WORD_IMAGES
+}
+
 function parseOrigins(value: string): string[] {
   const origins = value
     .split(",")

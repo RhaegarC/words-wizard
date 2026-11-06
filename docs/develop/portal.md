@@ -7,7 +7,8 @@ portal has no API of its own, no service worker, and no locale bundle.
 
 Feature 28 ships the shell and the staff gate: sign-in, the Topics / Words / Archived navigation,
 and a read-only content snapshot. Feature 29 adds the topic and pack write screens. Feature 30 adds
-the word library, the word editor, and ordered pack membership; word images arrive in feature 31.
+the word library, the word editor, and ordered pack membership. Feature 31 adds the word image
+card.
 
 ## One-time setup
 
@@ -107,6 +108,16 @@ are never stale; editorial warnings are mentioned in the success notice.
 batch. An edit changes every pack that holds the word, and the editor says so. There is no delete
 or archive action anywhere in the portal.
 
+**The word image card is separate from the form and saves immediately.** It appears only when
+editing an existing word (a new word has no id to key an object under). With no image it shows a
+drop-zone-style empty state and **Upload image**; with one it shows a preview plus **Replace image**
+and **Remove image**. The file picker accepts PNG, JPEG, and WebP. Uploading and removing each send
+the snapshot's `contentVersion` and refetch the snapshot on success, so the preview updates without
+a Save. A rejected file (wrong type, over 2 MB) stays on the card as an error; a `401`, `403`, or
+`409 conflict` goes to the shell, because it is session or stale-editor business rather than
+something the card can fix. The form itself never carries an `image` value; the emoji stays a
+separate text field and is the fallback whenever no image exists.
+
 **Pack contents is a draft.** The screen edits the whole ordered list locally. **Save changes**
 sends the full list (`PUT /v1/admin/packs/:id/membership`); **Discard changes** restores the saved
 order. While the draft differs, every in-app exit — sidebar, breadcrumb, back — asks before the
@@ -116,8 +127,11 @@ is prevented by the picker, and a server `422` is shown above the list with the 
 ### Debug
 
 - The portal reads `GET /v1/admin/access` and `GET /v1/admin/content` and writes to
-  `/v1/admin/topics` and `/v1/admin/packs`. Filter the Network tab on `localhost:8787`; a write
-  carries `If-Match` with the snapshot version.
+  `/v1/admin/topics`, `/v1/admin/packs`, `/v1/admin/words`, and `/v1/admin/words/:id/image`. Filter
+  the Network tab on `localhost:8787`; a write carries `If-Match` with the snapshot version.
+- A word image stored locally should start with `http://localhost:8787` (or the dev server's
+  origin). If it starts with the production API host, `wrangler dev` was started without
+  `--infer-origin-from-routes false`; restart it and re-upload.
 - A CORS error means `ALLOWED_ORIGINS` does not list `http://localhost:8444`.
 - A `401` means the token failed validation — check the Worker auth values in
   [worker.md](worker.md#debug).
@@ -138,7 +152,8 @@ The portal's unit tier covers the parts that can be decided offline:
 - `membership.test.ts` — appending without duplicates or mutation, removal, and order-sensitive
   dirtiness for the pack-contents draft;
 - `api.test.ts` — the write client's verb, path, `If-Match`, and how 409/422 reach the screen,
-  including `createWord`, `updateWord`, and `saveMembership`;
+  including `createWord`, `updateWord`, `saveMembership`, the multipart image upload (no hand-set
+  `Content-Type`), and the image removal;
 - `access.test.ts` — the four-state machine;
 - `boundary.test.ts` — the portal imports only `page/auth/{config,msal,token,account,session}` from
   the child app, never a page provider, store, or API client; no child build can contain the

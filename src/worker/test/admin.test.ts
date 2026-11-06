@@ -326,9 +326,11 @@ async function createPack(
   return (await response.json()) as WriteResult<AdminPack>
 }
 
-function insertWord(id: string): void {
+function insertWord(id: string, emoji: string | null = null): void {
+  const emojiSql = emoji === null ? "NULL" : `'${emoji}'`
+
   worker.query(
-    `INSERT INTO words (id, text, phonetic, part_of_speech, meaning_en, meaning_zh, definition_en, definition_zh, examples, image, emoji, level, tags, created_at, updated_at, archived_at) VALUES ('${id}', '${id}', '/x/', 'noun', 'm', 'm', 'd', 'd', '[{"en":"It is ${id}.","zh":"它。"}]', NULL, NULL, 1, '[]', 0, 0, NULL);`,
+    `INSERT INTO words (id, text, phonetic, part_of_speech, meaning_en, meaning_zh, definition_en, definition_zh, examples, image, emoji, level, tags, created_at, updated_at, archived_at) VALUES ('${id}', '${id}', '/x/', 'noun', 'm', 'm', 'd', 'd', '[{"en":"It is ${id}.","zh":"它。"}]', NULL, ${emojiSql}, 1, '[]', 0, 0, NULL);`,
   )
 }
 
@@ -413,6 +415,54 @@ function membershipOf(
   return (
     snapshot.memberships.find((entry) => entry.packId === packId)?.wordIds ?? []
   )
+}
+
+const PNG_BYTES = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x00,
+])
+const JPEG_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10])
+const GIF_BYTES = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61])
+
+function uploadWordImage(
+  wordId: string,
+  bytes: Uint8Array<ArrayBuffer> = PNG_BYTES,
+  options: {
+    token?: string | null
+    ifMatch?: string
+    name?: string
+  } = {},
+): Promise<Response> {
+  const form = new FormData()
+  form.append(
+    "file",
+    new Blob([bytes], { type: "image/png" }),
+    options.name ?? "picture.png",
+  )
+
+  const headers: Record<string, string> = {}
+  const token = options.token === undefined ? teacherToken : options.token
+  if (token !== null) headers.Authorization = `Bearer ${token}`
+  if (options.ifMatch !== undefined) headers["If-Match"] = options.ifMatch
+
+  return fetch(`${worker.baseUrl}/v1/admin/words/${wordId}/image`, {
+    method: "POST",
+    headers,
+    body: form,
+  })
+}
+
+async function removeWordImage(
+  wordId: string,
+  options: { token?: string | null } = {},
+): Promise<Response> {
+  const headers: Record<string, string> = {}
+  const token = options.token === undefined ? teacherToken : options.token
+  if (token !== null) headers.Authorization = `Bearer ${token}`
+
+  return fetch(`${worker.baseUrl}/v1/admin/words/${wordId}/image`, {
+    method: "DELETE",
+    headers,
+  })
 }
 
 describe("creating topics", () => {
@@ -1099,5 +1149,166 @@ describe("pack membership", () => {
     expect(response.status).toBe(200)
     expect(result.contentVersion).toBe(before)
     expect(await currentVersion()).toBe(before)
+  })
+})
+
+describe("word images", () => {
+  it("uploads a PNG, points the word at it, and serves it publicly", async () => {
+    insertWord("a-w-image-png")
+    const before = await currentVersion()
+
+    const response = await uploadWordImage("a-w-image-png")
+    const result = (await response.json()) as WordWriteResult
+
+    expect(response.status).toBe(200)
+    expect(result.contentVersion).toBe(await currentVersion())
+    expect(result.contentVersion).not.toBe(before)
+    expect(result.word?.image).toMatch(
+      /\/v1\/images\/word-images\/a-w-image-png\/[A-Za-z0-9-]+\.png$/,
+    )
+
+    const served = await fetch(result.word!.image!)
+    expect(served.status).toBe(200)
+    expect(served.headers.get("content-type")).toBe("image/png")
+    expect(served.headers.get("cache-control")).toBe(
+      "public, max-age=31536000, immutable",
+    )
+    expect(new Uint8Array(await served.arrayBuffer())).toEqual(PNG_BYTES)
+  })
+
+  it("keeps the key valid only for the origin it was written from", async () => {
+    insertWord("a-w-image-origin")
+    const result = (await (
+      await uploadWordImage("a-w-image-origin")
+    ).json()) as WordWriteResult
+
+    expect(result.word!.image!.startsWith(worker.baseUrl)).toBe(true)
+  })
+
+  it("replaces with a new key and deletes the old object", async () => {
+    insertWord("a-w-image-replace")
+    const first = (await (
+      await uploadWordImage("a-w-image-replace", PNG_BYTES)
+    ).json()) as WordWriteResult
+
+    const second = (await (
+      await uploadWordImage("a-w-image-replace", JPEG_BYTES)
+    ).json()) as WordWriteResult
+
+    expect(second.word?.image).not.toBe(first.word?.image)
+    expect(second.word?.image).toMatch(/\.jpg$/)
+    expect((await fetch(first.word!.image!)).status).toBe(404)
+
+    const served = await fetch(second.word!.image!)
+    expect(served.status).toBe(200)
+    expect(served.headers.get("content-type")).toBe("image/jpeg")
+  })
+
+  it("removes the image, deletes the object, and leaves the emoji fallback", async () => {
+    insertWord("a-w-image-remove", "🦁")
+    const uploaded = (await (
+      await uploadWordImage("a-w-image-remove")
+    ).json()) as WordWriteResult
+    const before = await currentVersion()
+
+    const response = await removeWordImage("a-w-image-remove")
+    const result = (await response.json()) as WordWriteResult
+
+    expect(response.status).toBe(200)
+    expect(result.word?.image).toBeNull()
+    expect(result.contentVersion).not.toBe(before)
+    expect(await currentVersion()).toBe(result.contentVersion)
+    expect((await fetch(uploaded.word!.image!)).status).toBe(404)
+
+    const snapshot = await snapshotFor(teacherToken)
+    const word = snapshot.words.find((row) => row.id === "a-w-image-remove")
+    expect(word?.image).toBeNull()
+    expect(word?.emoji).toBe("🦁")
+  })
+
+  it("treats removing an absent image as a no-op", async () => {
+    insertWord("a-w-image-none")
+    const before = await currentVersion()
+
+    const response = await removeWordImage("a-w-image-none")
+    const result = (await response.json()) as WordWriteResult
+
+    expect(response.status).toBe(200)
+    expect(result.word?.image).toBeNull()
+    expect(result.contentVersion).toBe(before)
+    expect(await currentVersion()).toBe(before)
+  })
+
+  it("rejects a fake and an unsupported image without writing", async () => {
+    insertWord("a-w-image-bad")
+    const before = await currentVersion()
+
+    for (const bytes of [GIF_BYTES, new Uint8Array([1, 2, 3, 4, 5])]) {
+      const response = await uploadWordImage("a-w-image-bad", bytes)
+
+      expect(response.status).toBe(422)
+      expect(
+        ((await response.json()) as { error?: { code?: string } }).error?.code,
+      ).toBe("validation_failed")
+    }
+
+    expect(await currentVersion()).toBe(before)
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.words.find((row) => row.id === "a-w-image-bad")?.image,
+    ).toBeNull()
+  })
+
+  it("rejects an image larger than 2 MiB without writing", async () => {
+    insertWord("a-w-image-large")
+    const before = await currentVersion()
+    const large = new Uint8Array(2 * 1024 * 1024 + 1)
+    large.set(PNG_BYTES)
+
+    const response = await uploadWordImage("a-w-image-large", large)
+
+    expect(response.status).toBe(422)
+    expect(await currentVersion()).toBe(before)
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.words.find((row) => row.id === "a-w-image-large")?.image,
+    ).toBeNull()
+  })
+
+  it("refuses an archived word for both upload and removal", async () => {
+    insertArchivedWord("a-w-image-archived", "Archived image word")
+    const before = await currentVersion()
+
+    for (const response of [
+      await uploadWordImage("a-w-image-archived"),
+      await removeWordImage("a-w-image-archived"),
+    ]) {
+      expect(response.status).toBe(409)
+      expect(
+        ((await response.json()) as { error?: { code?: string } }).error?.code,
+      ).toBe("archived")
+    }
+
+    expect(await currentVersion()).toBe(before)
+  })
+
+  it("requires a staff token on upload and removal", async () => {
+    insertWord("a-w-image-auth")
+    const userToken = await staffToken("a-image-user", [])
+
+    expect((await uploadWordImage("a-w-image-auth", PNG_BYTES, { token: null })).status).toBe(401)
+    expect((await uploadWordImage("a-w-image-auth", PNG_BYTES, { token: userToken })).status).toBe(403)
+    expect((await removeWordImage("a-w-image-auth", { token: null })).status).toBe(401)
+    expect((await removeWordImage("a-w-image-auth", { token: userToken })).status).toBe(403)
+  })
+
+  it("answers 404 for a public key the upload route could not have written", async () => {
+    for (const path of [
+      "/v1/images/avatars/oid-1/0c9f.png",
+      "/v1/images/word-images/w-brave/0c9f.gif",
+      "/v1/images/word-images/w-brave/missing.png",
+    ]) {
+      expect((await fetch(`${worker.baseUrl}${path}`)).status, path).toBe(404)
+    }
   })
 })

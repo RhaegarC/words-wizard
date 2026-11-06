@@ -31,6 +31,12 @@
     {
       "binding": "AVATARS",
       "bucket_name": "words-wizard-avatars"
+    },
+    // Word pictures (feature 31), a bucket of their own. Same as avatars: the
+    // bucket is created by the operator before the first image upload.
+    {
+      "binding": "WORD_IMAGES",
+      "bucket_name": "words-wizard-images"
     }
   ],
   // Activated when the operator first deploys the Worker.

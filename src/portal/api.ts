@@ -112,6 +112,15 @@ export interface AdminApi {
     input: WordPatchPayload,
     contentVersion: string,
   ): Promise<WordWriteResult>
+  uploadWordImage(
+    wordId: string,
+    file: Blob,
+    contentVersion: string,
+  ): Promise<WordWriteResult>
+  removeWordImage(
+    wordId: string,
+    contentVersion: string,
+  ): Promise<WordWriteResult>
   saveMembership(
     packId: string,
     ids: readonly string[],
@@ -270,6 +279,34 @@ export function createAdminApi(
         "PATCH",
         input,
         contentVersion,
+      ),
+    // No Content-Type: the browser sets the multipart boundary itself.
+    uploadWordImage: (wordId, file, contentVersion) => {
+      const body = new FormData()
+      body.append("file", file)
+
+      return send<WordWriteResult>(
+        request,
+        apiBaseUrl,
+        token,
+        `/v1/admin/words/${wordId}/image`,
+        {
+          method: "POST",
+          headers: { "If-Match": `"${contentVersion}"` },
+          body,
+        },
+      )
+    },
+    removeWordImage: (wordId, contentVersion) =>
+      send<WordWriteResult>(
+        request,
+        apiBaseUrl,
+        token,
+        `/v1/admin/words/${wordId}/image`,
+        {
+          method: "DELETE",
+          headers: { "If-Match": `"${contentVersion}"` },
+        },
       ),
     saveMembership: (packId, ids, contentVersion) =>
       write<MembershipWriteResult>(
