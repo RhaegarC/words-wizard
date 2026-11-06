@@ -182,6 +182,12 @@ export async function startWorker(
     String(port),
     "--persist-to",
     persistDir,
+    // Without this, wrangler dev rewrites request.url and Host to the first
+    // configured custom-domain route, so the Worker sees a production origin
+    // on a local machine. That breaks anything derived from the request
+    // origin — word-image URLs, in particular — and makes them unfetchable.
+    "--infer-origin-from-routes",
+    "false",
   ]
 
   for (const [name, value] of Object.entries(vars)) {
