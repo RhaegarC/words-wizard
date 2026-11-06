@@ -2,8 +2,8 @@
 
 > Priority: Must · Mission 3 · **Status: Implemented**
 > Depends on: 28 (portal foundation), 29 (topics and packs). Blocks: 31.
-> Source of truth: [Mission 3 sprint](00-mission-3-sprint.md) and the
-> [portal UI brief](../Portal.md).
+> Source of truth: [Mission 3 sprint](../../00-mission-3-sprint.md) and the
+> [portal UI brief](../../../Portal.md).
 
 ## Summary
 
