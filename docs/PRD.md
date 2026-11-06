@@ -370,7 +370,7 @@ Pack {
   membership is replaced as a full ordered list (`1..N`) in one atomic batch. Words are never
   deleted or archived — removing a word from every pack hides it from children while it stays in
   the library. Word images (31) and artwork approval (32) follow. It is scoped in the
-  [Mission 3 sprint](features/00-mission-3-sprint.md).
+  [Mission 3 sprint](features/archive/mission-3/00-mission-3-sprint.md).
 
 ---
 

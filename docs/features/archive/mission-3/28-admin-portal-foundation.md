@@ -2,7 +2,7 @@
 
 > Priority: Must · Mission 3 · **Status: Implemented**
 > Depends on: 25 (deployment), 26 (roles and identity). Blocks: 29, 30, 31.
-> Source of truth: [Mission 3 sprint](../../00-mission-3-sprint.md) and the
+> Source of truth: [Mission 3 sprint](00-mission-3-sprint.md) and the
 > [portal UI brief](../../../Portal.md).
 
 ## Summary
