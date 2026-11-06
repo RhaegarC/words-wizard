@@ -2,7 +2,7 @@
 
 > Priority: Must · Mission 2 · **Status: Done — merged in PR #60**
 > Depends on: 21 (auth edge), 22 (content tables and word ids). Blocks: 24.
-> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md).
+> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
 ## Summary
 
@@ -75,7 +75,7 @@ a user id, profile id, or `oid` in its body or path.
 character. It is not a `404`. `introductions` is `[]` until the first committed session and never
 null; the client uses it, with the bundle's pack order, to decide which pack is unlocked.
 
-The wire shapes live in [`src/shared/me.ts`](../../src/shared/me.ts) and carry no numeric row ids
+The wire shapes live in [`src/shared/me.ts`](../../../../src/shared/me.ts) and carry no numeric row ids
 and no `profileId`: the profile is keyed by the token's `oid`, `ServerProfile` returns `name` (which
 Mission 1 keeps identical to `characterName`) plus the fields above, `ServerProgress` is keyed by
 `wordId`, and `ServerMetric` is `{ name, value, updatedAt }`. Feature 24 removes the client's

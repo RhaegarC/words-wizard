@@ -1,10 +1,10 @@
 # Mission 1 — Sprint Goal: "A child, a buddy, and a session that survives a reload"
 
 > Status: **Mission 1 is historical.** Features 01–16 and 18–20 are done and archived; feature 17
-> content production continues inside [Mission 2](../00-mission-2-sprint.md), which makes the product
+> content production continues inside [Mission 2](../mission-2/00-mission-2-sprint.md), which makes the product
 > online and supersedes this mission's offline-first, no-account, Dexie-only posture. The Definition
 > of Done checkboxes below are the original plan, not a current status.
-> Source of truth: [docs/PRD.md](../../PRD.md) v0.3. This file records the Mission 1 plan; where it
+> Source of truth: [docs/PRD.md](../../../PRD.md) v0.3. This file records the Mission 1 plan; where it
 > and v0.3 disagree, v0.3 wins.
 
 ## Goal
@@ -57,7 +57,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 14 | [Settings, export & diagnostics](14-settings.md) | Done | 03, 05, 06, 09, 10 |
 | 15 | [PWA install, offline & updates](15-pwa-offline.md) | Done | 02, 05, 14 |
 | 16 | [Cloudflare Pages deployment & CI](16-cloudflare-pages.md) | Done | 01, 04, 15 |
-| 17 | [Content production: D1 vocabulary authoring](17-content-production.md) | Done — seed authored; operator owns review, artwork, and the release gate | 04 (authoring runs in parallel) |
+| 17 | [Content production: D1 vocabulary authoring](../mission-2/17-content-production.md) | Done — seed authored; operator owns review, artwork, and the release gate | 04 (authoring runs in parallel) |
 | 18 | [Spelling-first five-mode practice & 10-word sessions](18-spelling-practice-and-session-size.md) | Done | 07, 08 |
 | 19 | [Buddy portraits, settings return & detail polish](19-buddy-portraits-and-settings-polish.md) | Done | 03, 06, 12, 14, 15 |
 | 20 | [Five words a day & comprehensive practice](20-five-word-daily-and-comprehensive.md) | Done | 07, 08, 09, 12, 18 |
@@ -119,7 +119,7 @@ Completed feature files live in this directory; the table keeps the row for hist
 - Branching and PRs follow the project workflow: feature branches target `develop`; `master` is the
   release branch that 16 deploys from.
 
-## Out of scope (see [backlog.md](../backlog.md))
+## Out of scope (see [backlog.md](../../backlog.md))
 
 Badges, multi-profile UI, Tricky Words, story mode, timed challenges, speaking practice, custom
 words/import, cloud sync, and any parent dashboard. Phase 2/3 in PRD §13.

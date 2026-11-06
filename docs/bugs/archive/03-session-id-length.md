@@ -10,8 +10,8 @@ After a practice session ends, the commit to `POST /v1/me/sessions` is refused w
 D1. The client payload is well formed; the server rejects it because the session id is longer than
 its validation allows.
 
-Reported payload: [`docs/develop/payload.json`](../../develop/payload.json) (a local debugging
-artefact, deliberately not committed).
+Reported payload: a local debugging artefact, deliberately not committed; the shape is reproduced
+by the regression test below.
 
 ## Environment
 

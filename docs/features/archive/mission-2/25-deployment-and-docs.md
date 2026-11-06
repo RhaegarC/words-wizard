@@ -4,7 +4,7 @@
 > documentation implemented; infrastructure and production deployment are handled by the
 > operator**
 > Depends on: 21–24. Blocks: public release.
-> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md).
+> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
 ## Summary
 

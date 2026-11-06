@@ -2,7 +2,7 @@
 
 > Priority: Must · Mission 2 · **Status: Done — merged in PR #53**
 > Depends on: Phase 0 (repository restructure). Blocks: 22, 23.
-> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md).
+> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md).
 
 ## Summary
 

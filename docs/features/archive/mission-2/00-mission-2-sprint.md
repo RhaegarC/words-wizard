@@ -1,8 +1,9 @@
 # Mission 2 — Sprint Goal: "Your buddy follows you"
 
-> Status: **Repository work complete — features 21–27 are archived; content sign-off (17) and
-> production provisioning and deployment (25) are handled by the operator.**
-> Source of truth: [docs/PRD.md](../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
+> Status: **Mission 2 is historical.** Features 17 and 21–27 are done and archived; content
+> sign-off (17) and production provisioning and deployment (25) are handled by the operator. The
+> Definition of Done checkboxes below are the original plan, not a current status.
+> Source of truth: [docs/PRD.md](../../../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
 > disagree, the Mission 2 doc wins.
 > Baseline: Mission 1 (features 01–20) is shipped on `develop`.
 
@@ -120,16 +121,16 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
 | 0 | Repository restructure into `page/`, `worker/`, `shared/` | Done | — |
-| 21 | [Worker foundation & Entra token validation](archive/21-worker-foundation.md) | Done | Phase 0 |
-| 22 | [D1 content store & content API](archive/22-d1-content-store.md) | Done | 21 |
-| 23 | [User profile, progress & session commit](archive/23-user-data-api.md) | Done | 21, 22 |
-| 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
-| 25 | [Deployment, domains & documentation](archive/25-deployment-and-docs.md) | Done — repository work complete; operator owns provisioning and deployment | 21–24 |
-| 26 | [User profile, email & role sync](archive/26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
-| 27 | [Legacy device data import](archive/27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
-| 17 | [Content production](archive/17-content-production.md) — D1 vocabulary authoring via reviewed migrations | Done — seed authored; operator owns review, artwork, and the release gate | 22 |
+| 21 | [Worker foundation & Entra token validation](21-worker-foundation.md) | Done | Phase 0 |
+| 22 | [D1 content store & content API](22-d1-content-store.md) | Done | 21 |
+| 23 | [User profile, progress & session commit](23-user-data-api.md) | Done | 21, 22 |
+| 24 | [Client online integration](24-client-online-integration.md) | Done | 22, 23 |
+| 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | Done — repository work complete; operator owns provisioning and deployment | 21–24 |
+| 26 | [User profile, email & role sync](26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
+| 27 | [Legacy device data import](27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
+| 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | Done — seed authored; operator owns review, artwork, and the release gate | 22 |
 
-Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
+Completed feature files move to the `mission-1/` and `mission-2/` folders next to this file; the table keeps the row for history.
 
 ## Vertical slice map
 
@@ -192,5 +193,5 @@ switcher UI, parent/teacher dashboards, content CMS or admin UI, facilitator con
 account self-deletion, push notifications, badges/achievements, recorded audio, speech recognition,
 branch preview environments, and any analytics beyond the existing per-user counters. Deletion is
 an operator procedure, not a product feature. Role-based authorization and every gated route are
-deferred to [Mission 3](00-mission-3-sprint.md); feature 26 stores the role but enforces nothing
+deferred to [Mission 3](../../00-mission-3-sprint.md); feature 26 stores the role but enforces nothing
 with it. The admin portal is deferred there too.

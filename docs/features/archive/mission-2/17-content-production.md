@@ -9,10 +9,10 @@
 > [feature 22](22-d1-content-store.md). The validator and review gates below stay; the
 > `src/content/` file paths and the `pnpm validate:content` loop are Mission 1's and are replaced by
 > the database integrity gate. **Do not author into JSON.** New words are written once, directly
-> into D1. See the [Mission 2 sprint](../00-mission-2-sprint.md).
+> into D1. See the [Mission 2 sprint](00-mission-2-sprint.md).
 >
 > **State on 2026-11-06:** the vocabulary seed is authored as
-> [`docs/develop/content/InitData.sql`](../../develop/content/InitData.sql) (120 words across Craft
+> [`docs/develop/content/InitData.sql`](../../../develop/content/InitData.sql) (120 words across Craft
 > & Build and Explore & Discover, `dataset: 'dev'`, version `0.4.0`). It is not in the migration
 > set, so the operator applies it. The sign-offs in
 > `src/shared/content/rules/REVIEW.md` describe the retired Mission 1 model and cover no D1 row;
@@ -154,6 +154,6 @@ reviewed migration, not by editing a bundled file.
 - No phrases or sentences (Phase 3), no recorded audio.
 - No content CMS, editor, or admin API in this sprint. A future admin portal for teachers/admins
   replaces hand-written SQL; artwork approval belongs to that layer. It is scoped in the
-  [Mission 3 sprint](../00-mission-3-sprint.md).
+  [Mission 3 sprint](../../00-mission-3-sprint.md).
 - No hard-coded topic, pack, or word counts; coverage is an editorial decision.
 - No image generation at runtime or in CI.

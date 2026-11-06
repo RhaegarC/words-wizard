@@ -575,7 +575,7 @@ One token type, one currency, two spend options.
 Mission 2 moved content and learner data from the browser to Cloudflare D1 behind a
 Worker API, and made the app online-required. The SPA is a thin client: it renders what
 the API returns and commits finished sessions back to it. See the
-[Mission 2 sprint](features/00-mission-2-sprint.md) and features 22–24.
+[Mission 2 sprint](features/archive/mission-2/00-mission-2-sprint.md) and features 22–24.
 
 ### 8.1 Stack
 

@@ -3,7 +3,7 @@
 > Priority: Should (upgrade path from Mission 1) · Mission 2 · **Status: Implemented**
 > Depends on: 23 (user-data API), 24 (client online integration), 26 (user profile)
 > Blocks: nothing; it changes the Mission 1 upgrade path.
-> Source of truth: [Mission 2 sprint](../00-mission-2-sprint.md) and [PRD](../../PRD.md) §8.
+> Source of truth: [Mission 2 sprint](00-mission-2-sprint.md) and [PRD](../../../PRD.md) §8.
 
 ## Summary
 
