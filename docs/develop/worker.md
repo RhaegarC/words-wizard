@@ -17,7 +17,7 @@ placeholders with the same tenant and client the page uses, or local sign-in can
 | `TOKEN_ISSUER` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
 | `EXPECTED_AUDIENCE` | the API application (client) id |
 | `EXPECTED_TENANT` | the tenant id |
-| `ALLOWED_ORIGINS` | must include `http://localhost:8443` |
+| `ALLOWED_ORIGINS` | must include `http://localhost:8443` and `http://localhost:8444` |
 
 The `d1_databases[0].database_id` placeholder does not matter locally: `--local` never contacts a
 remote database, and the id is only used before a deploy. The `r2_buckets` binding `AVATARS` is
@@ -119,6 +119,47 @@ share one atomic `db.batch` (≤33 statements); progress is written in chunks of
 because D1 caps bound parameters at 100. Progress is therefore not one atomic batch: a failed run
 leaves a valid prefix and the retry converges.
 
+### Admin routes
+
+`src/worker/admin.ts` owns the staff boundary. Every route under `/v1/admin` runs the same ordered
+chain **before any handler body**:
+
+1. `Cache-Control: no-store` — set first, so not even an error response is cacheable;
+2. `requireAuth` — an anonymous or invalid token is `401`;
+3. `requireRole(["teacher", "admin"])` — a valid token without a staff role is `403` with the
+   `forbidden` code and message *"This operation requires teacher or admin access."*
+
+The role comes from the **verified token's** `roles` claim (`admin` > `teacher` > `user`).
+`profiles.role` is never consulted, so a stale or tampered database row cannot grant access.
+
+| Route | Access | Response |
+|---|---|---|
+| `GET /v1/admin/access` | teacher, admin | `{ role }` for the signed-in caller |
+| `GET /v1/admin/content` | teacher, admin | one content snapshot (see below) |
+
+The snapshot differs from the public `/v1/content` bundle because the portal must edit what the
+child app cannot see:
+
+| Field | Contents |
+|---|---|
+| `contentVersion`, `dataset` | the same values `/v1/content` reports |
+| `topics`, `packs` | **archived rows included**, each with `archivedAt`; ordered by `sortOrder` (packs grouped by their topic's order) |
+| `words` | every word, including words assigned to no pack, each with `archivedAt`; ordered by id |
+| `memberships` | one entry **per pack**, including empty packs, with `wordIds` in `position` order |
+
+The pure mapper is `toAdminSnapshot(rows)` in `src/worker/adminContent.ts`; it shares the row reader,
+`toWord`, and the select columns with the public bundle so the two views cannot drift.
+
+**405 with `Allow`.** `ROUTES` declares the methods for each admin path. `routeMethodsFor` in
+`src/worker/errors.ts` matches the exact path first, then registered `:param` patterns, so a wrong
+method on `/v1/admin/topics/:id` will answer `405` with `Allow: PATCH` once feature 29 registers it,
+rather than `404`.
+
+**CORS.** `ALLOWED_METHODS` now includes `PUT`, and `ALLOWED_HEADERS` includes `If-Match` and
+`If-None-Match`, so the portal's later conditional writes preflight cleanly. Origins stay
+exact-matched. `https://admin.words.nioh.uk` and `http://localhost:8444` must be listed in
+`ALLOWED_ORIGINS`.
+
 ### Debug
 
 - The dev server logs each request and any stack trace to its terminal.
@@ -149,7 +190,11 @@ leaves a valid prefix and the retry converges.
   `EXPECTED_AUDIENCE` is the **API** client id (not the SPA client id), that `EXPECTED_TENANT` and
   `TOKEN_ISSUER` name the same tenant, and that `JWKS_URL` is reachable. The SPA must request
   `VITE_ENTRA_SCOPE` for that same API client id. A browser-side CORS failure instead means
-  `ALLOWED_ORIGINS` does not list the page origin.
+  `ALLOWED_ORIGINS` does not list the page origin — `http://localhost:8443` for the child app or
+  `http://localhost:8444` for the portal.
+
+- A `403` on an admin route is correct for a signed-in account whose Entra app role is `user` or
+  unassigned. Change the assignment; the next fresh token carries the new role.
 
 - `pnpm worker:typecheck` type-checks the Worker alone. `pnpm test` runs the Worker tests against
   their own temporary D1 directories and never touches this local database.

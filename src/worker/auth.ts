@@ -5,7 +5,7 @@ import type { JWTVerifyGetKey } from "jose"
 import type { Role } from "../shared/types"
 import type { WorkerConfig } from "./config"
 import type { AppEnv, Principal } from "./context"
-import { UnauthorizedError } from "./errors"
+import { ForbiddenError, UnauthorizedError } from "./errors"
 
 /** The delegated scope the SPA's app registration exposes to itself. */
 export const ACCESS_SCOPE = "access_as_user"
@@ -101,6 +101,24 @@ export function requireAuth(verify: TokenVerifier): MiddlewareHandler<AppEnv> {
     if (!token) throw new UnauthorizedError()
 
     c.set("principal", await verify(token))
+    await next()
+  }
+}
+
+/**
+ * Runs after `requireAuth` and refuses a verified caller whose token role is
+ * not in the allowlist. The role is the one the verifier copied from the
+ * token; `profiles.role` is never consulted, so a stale database row cannot
+ * grant access.
+ */
+export function requireRole(
+  allowed: readonly Role[],
+): MiddlewareHandler<AppEnv> {
+  return async (c, next) => {
+    const principal: Principal | undefined = c.get("principal")
+    if (principal === undefined) throw new UnauthorizedError()
+    if (!allowed.includes(principal.role)) throw new ForbiddenError()
+
     await next()
   }
 }

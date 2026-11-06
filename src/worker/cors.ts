@@ -3,8 +3,9 @@ import type { Context, MiddlewareHandler } from "hono"
 import type { WorkerConfig } from "./config"
 import type { AppEnv } from "./context"
 
-export const ALLOWED_METHODS = "GET,POST,PATCH,DELETE,OPTIONS"
-export const ALLOWED_HEADERS = "Authorization, Content-Type, If-None-Match"
+export const ALLOWED_METHODS = "GET,POST,PATCH,PUT,DELETE,OPTIONS"
+export const ALLOWED_HEADERS =
+  "Authorization, Content-Type, If-Match, If-None-Match"
 const MAX_AGE_SECONDS = "86400"
 
 /**

@@ -8,7 +8,7 @@
     "TOKEN_ISSUER": "https://login.microsoftonline.com/3f18e889-b0e4-41ae-ad36-7d2f73d416ff/v2.0",
     "EXPECTED_AUDIENCE": "2fc2ab8a-4a9b-40b2-a4fa-a8a95fb7b969",
     "EXPECTED_TENANT": "3f18e889-b0e4-41ae-ad36-7d2f73d416ff",
-    "ALLOWED_ORIGINS": "https://words.nioh.uk,http://localhost:8443"
+    "ALLOWED_ORIGINS": "https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444"
   },
   "d1_databases": [
     {

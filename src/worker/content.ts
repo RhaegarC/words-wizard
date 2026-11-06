@@ -219,7 +219,8 @@ export function toContentBundle(rows: ContentRows): ContentBundle {
   }
 }
 
-function toWord(row: WordRow, topicIds: readonly string[]): Word {
+/** Exported so the admin read model maps a row to the same shape. */
+export function toWord(row: WordRow, topicIds: readonly string[]): Word {
   return {
     id: row.id,
     text: row.text,
@@ -339,7 +340,7 @@ const SELECT = {
 } as const
 
 /** Read every row the bundle needs. Archive filtering happens in the mapper. */
-export async function readContent(db: D1Database): Promise<ContentBundle> {
+export async function readContentRows(db: D1Database): Promise<ContentRows> {
   const [meta, topics, packs, words, packWords, avatars, avatarStages] =
     await Promise.all([
       db.prepare(SELECT.meta).first<MetaRow>(),
@@ -351,7 +352,7 @@ export async function readContent(db: D1Database): Promise<ContentBundle> {
       db.prepare(SELECT.avatarStages).all<AvatarStageRow>(),
     ])
 
-  return toContentBundle({
+  return {
     meta,
     topics: topics.results,
     packs: packs.results,
@@ -359,7 +360,11 @@ export async function readContent(db: D1Database): Promise<ContentBundle> {
     packWords: packWords.results,
     avatars: avatars.results,
     avatarStages: avatarStages.results,
-  })
+  }
+}
+
+export async function readContent(db: D1Database): Promise<ContentBundle> {
+  return toContentBundle(await readContentRows(db))
 }
 
 /** `/health` needs the live version only, not the whole bundle. */

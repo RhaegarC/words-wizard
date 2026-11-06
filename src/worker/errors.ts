@@ -5,6 +5,7 @@ import type { AppEnv } from "./context"
 /** Stable error identifiers clients may branch on; never free-form text. */
 export type ErrorCode =
   | "unauthorized"
+  | "forbidden"
   | "config_missing"
   | "not_found"
   | "method_not_allowed"
@@ -17,7 +18,7 @@ export type ErrorCode =
   | "profile_not_found"
   | "care_unavailable"
 
-type ErrorStatus = 400 | 401 | 404 | 405 | 409 | 422 | 500
+type ErrorStatus = 400 | 401 | 403 | 404 | 405 | 409 | 422 | 500
 
 export class AppError extends Error {
   constructor(
@@ -42,6 +43,13 @@ export class ConfigError extends AppError {
 export class UnauthorizedError extends AppError {
   constructor(message = "Authentication required.") {
     super("unauthorized", 401, message, { "WWW-Authenticate": "Bearer" })
+  }
+}
+
+/** The caller is authenticated but the token's role is not allowed here. */
+export class ForbiddenError extends AppError {
+  constructor(message = "This operation requires teacher or admin access.") {
+    super("forbidden", 403, message)
   }
 }
 
@@ -109,6 +117,38 @@ export function errorResponse(
 }
 
 /**
+ * The methods a path accepts, or undefined when it is unknown. Exact paths win;
+ * a `:param` segment matches exactly one non-empty segment, so a wrong method
+ * on `/v1/admin/topics/:id` is a 405 while a longer path is still a 404.
+ */
+export function routeMethodsFor(
+  routes: Readonly<Record<string, readonly string[]>>,
+  path: string,
+): readonly string[] | undefined {
+  const exact = routes[path]
+  if (exact !== undefined) return exact
+
+  for (const [pattern, methods] of Object.entries(routes)) {
+    if (pattern.includes(":") && matchesPattern(pattern, path)) return methods
+  }
+
+  return undefined
+}
+
+function matchesPattern(pattern: string, path: string): boolean {
+  const patternParts = pattern.split("/")
+  const pathParts = path.split("/")
+
+  if (patternParts.length !== pathParts.length) return false
+
+  return patternParts.every((part, index) => {
+    const value = pathParts[index] ?? ""
+
+    return part.startsWith(":") ? value.length > 0 : part === value
+  })
+}
+
+/**
  * Installs the one error path shared by the Worker and by the small apps the
  * tests build. `routes` lets a 405 name the methods a known path accepts.
  */
@@ -138,7 +178,7 @@ export function installErrorHandlers(
   }
 
   const notFound: NotFoundHandler<AppEnv> = (c) => {
-    const methods = routes[c.req.path]
+    const methods = routeMethodsFor(routes, c.req.path)
     if (methods) {
       c.header("Allow", methods.join(", "))
       return errorResponse(c, 405, "method_not_allowed", "Method not allowed.")

@@ -16,6 +16,7 @@ export default defineConfig({
     environment: "node",
     include: [
       "page/test/**/*.test.ts",
+      "portal/test/**/*.test.ts",
       "shared/test/**/*.test.ts",
       "worker/test/**/*.test.ts",
     ],
