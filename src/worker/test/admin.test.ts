@@ -3,7 +3,11 @@ import type { AddressInfo } from "node:net"
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 
-import type { AdminSnapshot } from "../../shared/admin"
+import type {
+  AdminPack,
+  AdminSnapshot,
+  AdminTopic,
+} from "../../shared/admin"
 import { startWorker, workerConfig, type RunningWorker } from "./harness"
 import { TEST_ENV, createTestKey, mintToken, type TestKey } from "./tokens"
 
@@ -68,6 +72,7 @@ function startJwksServer(jwk: unknown): Promise<JwksServer> {
 let worker: RunningWorker
 let jwks: JwksServer
 let key: TestKey
+let teacherToken: string
 
 function staffToken(oid: string, roles: readonly string[]): Promise<string> {
   return mintToken(key, { oid, roles })
@@ -75,16 +80,30 @@ function staffToken(oid: string, roles: readonly string[]): Promise<string> {
 
 async function call(
   path: string,
-  options: { token?: string; method?: string; origin?: string } = {},
+  options: {
+    token?: string
+    method?: string
+    origin?: string
+    body?: unknown
+    ifMatch?: string
+  } = {},
 ): Promise<Response> {
   const headers: Record<string, string> = {}
+  let body: string | undefined
 
   if (options.token !== undefined) headers.Authorization = `Bearer ${options.token}`
   if (options.origin !== undefined) headers.Origin = options.origin
+  if (options.ifMatch !== undefined) headers["If-Match"] = options.ifMatch
+
+  if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json"
+    body = JSON.stringify(options.body)
+  }
 
   return fetch(`${worker.baseUrl}${path}`, {
     method: options.method ?? "GET",
     headers,
+    body,
   })
 }
 
@@ -106,6 +125,8 @@ beforeAll(async () => {
     await jwks.close()
     throw error
   }
+
+  teacherToken = await staffToken("a-teacher", ["teacher"])
 }, 180_000)
 
 afterAll(async () => {
@@ -223,5 +244,484 @@ describe("GET /v1/admin/content", () => {
     expect(byPack.get("a-p-live")).toEqual(["a-w2", "a-w1", "a-w-archived"])
     // A word in no active pack is still in the admin snapshot.
     expect(byPack.get("a-p-hidden")).toEqual(["a-w-free"])
+  })
+})
+
+interface WriteResult<T> {
+  readonly contentVersion: string
+  readonly warnings: ReadonlyArray<{ code: string; severity: string }>
+  readonly topic?: T
+  readonly pack?: T
+}
+
+interface PublicBundle {
+  readonly topics: ReadonlyArray<{ id: string }>
+  readonly packs: ReadonlyArray<{
+    id: string
+    topicId: string
+    order: number
+    wordIds: string[]
+  }>
+  readonly words: ReadonlyArray<{ id: string }>
+}
+
+async function currentVersion(): Promise<string> {
+  const response = await call("/health")
+  return ((await response.json()) as { contentVersion: string }).contentVersion
+}
+
+async function snapshotFor(token: string): Promise<AdminSnapshot> {
+  const response = await call("/v1/admin/content", { token })
+  return (await response.json()) as AdminSnapshot
+}
+
+async function publicBundle(): Promise<PublicBundle> {
+  const response = await call("/v1/content")
+  return (await response.json()) as PublicBundle
+}
+
+async function createTopic(
+  title: string,
+  overrides: Partial<{
+    titleZh: string
+    icon: string
+    description: string
+    descriptionZh: string
+  }> = {},
+): Promise<WriteResult<AdminTopic>> {
+  const version = await currentVersion()
+  const response = await call("/v1/admin/topics", {
+    token: teacherToken,
+    method: "POST",
+    ifMatch: `"${version}"`,
+    body: {
+      title,
+      titleZh: overrides.titleZh ?? `${title} 中文`,
+      icon: overrides.icon ?? "🔤",
+      description: overrides.description ?? "A topic.",
+      descriptionZh: overrides.descriptionZh ?? "一个主题。",
+    },
+  })
+
+  expect(response.status).toBe(201)
+  return (await response.json()) as WriteResult<AdminTopic>
+}
+
+async function createPack(
+  topicId: string,
+  title: string,
+  titleZh = `${title} 中文`,
+): Promise<WriteResult<AdminPack>> {
+  const version = await currentVersion()
+  const response = await call("/v1/admin/packs", {
+    token: teacherToken,
+    method: "POST",
+    ifMatch: `"${version}"`,
+    body: { topicId, title, titleZh },
+  })
+
+  expect(response.status).toBe(201)
+  return (await response.json()) as WriteResult<AdminPack>
+}
+
+function insertWord(id: string): void {
+  worker.query(
+    `INSERT INTO words (id, text, phonetic, part_of_speech, meaning_en, meaning_zh, definition_en, definition_zh, examples, image, emoji, level, tags, created_at, updated_at, archived_at) VALUES ('${id}', '${id}', '/x/', 'noun', 'm', 'm', 'd', 'd', '[{"en":"It is ${id}.","zh":"它。"}]', NULL, NULL, 1, '[]', 0, 0, NULL);`,
+  )
+}
+
+function addToPack(packId: string, wordId: string, position = 1): void {
+  worker.query(
+    `INSERT INTO pack_words (pack_id, word_id, position) VALUES ('${packId}', '${wordId}', ${position});`,
+  )
+}
+
+describe("creating topics", () => {
+  it("derives the id, stores the row, and bumps the content version", async () => {
+    const before = await currentVersion()
+    const result = await createTopic("Craft & Build", {
+      titleZh: "手工与建造",
+      icon: "🔨",
+    })
+
+    expect(result.topic?.id).toBe("craft-build")
+    expect(result.topic?.archivedAt).toBeNull()
+    expect(result.contentVersion).not.toBe(before)
+    expect(result.warnings.every((issue) => issue.severity === "warning")).toBe(
+      true,
+    )
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.topics.find((topic) => topic.id === "craft-build"),
+    ).toMatchObject({
+      title: "Craft & Build",
+      titleZh: "手工与建造",
+      icon: "🔨",
+      archivedAt: null,
+    })
+
+    expect(await currentVersion()).toBe(result.contentVersion)
+
+    const content = await call("/v1/content")
+    expect(content.headers.get("etag")).toBe(`"${result.contentVersion}"`)
+  })
+
+  it("suffixes a duplicate title instead of colliding", async () => {
+    const first = await createTopic("Duplicate Topic")
+    const second = await createTopic("Duplicate Topic")
+
+    expect(first.topic?.id).toBe("duplicate-topic")
+    expect(second.topic?.id).toBe("duplicate-topic-2")
+  })
+
+  it("returns the downgraded empty-topic warning without blocking", async () => {
+    const result = await createTopic("Empty Topic")
+
+    expect(result.warnings.map((issue) => issue.code)).toContain(
+      "topic-no-packs",
+    )
+    expect(
+      result.warnings.find((issue) => issue.code === "topic-no-packs")?.severity,
+    ).toBe("warning")
+  })
+})
+
+describe("creating packs", () => {
+  it("derives <topicId>-<n> and skips numbers used by archived packs", async () => {
+    const topic = (await createTopic("Pack Numbers")).topic!
+
+    const first = (await createPack(topic.id, "First")).pack!
+    expect(first.id).toBe(`${topic.id}-1`)
+
+    const version = await currentVersion()
+    const archived = await call(`/v1/admin/packs/${first.id}/archive`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${version}"`,
+    })
+    expect(archived.status).toBe(200)
+
+    const second = (await createPack(topic.id, "Second")).pack!
+    const third = (await createPack(topic.id, "Third")).pack!
+
+    expect(second.id).toBe(`${topic.id}-2`)
+    expect(third.id).toBe(`${topic.id}-3`)
+  })
+
+  it("returns the downgraded empty-pack warning without blocking", async () => {
+    const topic = (await createTopic("Warning Topic")).topic!
+    const result = await createPack(topic.id, "Empty Pack")
+
+    expect(result.warnings.map((issue) => issue.code)).toContain(
+      "pack-no-words",
+    )
+    expect(
+      result.warnings.find((issue) => issue.code === "pack-no-words")?.severity,
+    ).toBe("warning")
+  })
+})
+
+describe("editing topics and packs", () => {
+  it("changes the stored fields and never the generated id", async () => {
+    const topic = (await createTopic("Edit Me")).topic!
+
+    const response = await call(`/v1/admin/topics/${topic.id}`, {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${await currentVersion()}"`,
+      body: {
+        title: "Edited Topic",
+        titleZh: "已编辑",
+        icon: "🔧",
+        description: "Edited.",
+        descriptionZh: "已编辑。",
+      },
+    })
+    const result = (await response.json()) as WriteResult<AdminTopic>
+
+    expect(response.status).toBe(200)
+    expect(result.topic?.id).toBe(topic.id)
+    expect(result.topic?.title).toBe("Edited Topic")
+    expect(result.topic?.icon).toBe("🔧")
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(snapshot.topics.find((row) => row.id === topic.id)?.title).toBe(
+      "Edited Topic",
+    )
+  })
+
+  it("edits a pack title and keeps its topic immutable", async () => {
+    const topic = (await createTopic("Pack Edit Topic")).topic!
+    const pack = (await createPack(topic.id, "Original Pack")).pack!
+
+    const edited = await call(`/v1/admin/packs/${pack.id}`, {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${await currentVersion()}"`,
+      body: { title: "Renamed Pack" },
+    })
+    const result = (await edited.json()) as WriteResult<AdminPack>
+
+    expect(edited.status).toBe(200)
+    expect(result.pack?.id).toBe(pack.id)
+    expect(result.pack?.title).toBe("Renamed Pack")
+    expect(result.pack?.topicId).toBe(topic.id)
+
+    const moved = await call(`/v1/admin/packs/${pack.id}`, {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${await currentVersion()}"`,
+      body: { topicId: "another-topic" },
+    })
+    expect(moved.status).toBe(422)
+  })
+})
+
+describe("ordering", () => {
+  it("renumbers packs contiguously and the child app sees the new order", async () => {
+    const topic = (await createTopic("Order Topic")).topic!
+    const first = (await createPack(topic.id, "First")).pack!
+    const second = (await createPack(topic.id, "Second")).pack!
+    const third = (await createPack(topic.id, "Third")).pack!
+
+    const response = await call("/v1/admin/packs/order", {
+      token: teacherToken,
+      method: "PUT",
+      ifMatch: `"${await currentVersion()}"`,
+      body: { topicId: topic.id, ids: [third.id, first.id, second.id] },
+    })
+
+    expect(response.status).toBe(200)
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.packs
+        .filter((pack) => pack.topicId === topic.id)
+        .map((pack) => [pack.id, pack.sortOrder]),
+    ).toEqual([
+      [third.id, 1],
+      [first.id, 2],
+      [second.id, 3],
+    ])
+
+    const content = await publicBundle()
+    expect(
+      content.packs
+        .filter((pack) => pack.topicId === topic.id)
+        .map((pack) => [pack.id, pack.order]),
+    ).toEqual([
+      [third.id, 1],
+      [first.id, 2],
+      [second.id, 3],
+    ])
+  })
+
+  it("renumbers topics and rejects an order list that omits a live topic", async () => {
+    const first = (await createTopic("Order Topic A")).topic!
+    const second = (await createTopic("Order Topic B")).topic!
+
+    const version = await currentVersion()
+    const rejected = await call("/v1/admin/topics/order", {
+      token: teacherToken,
+      method: "PUT",
+      ifMatch: `"${version}"`,
+      body: { ids: [second.id] },
+    })
+
+    expect(rejected.status).toBe(422)
+    expect(await currentVersion()).toBe(version)
+
+    const snapshot = await snapshotFor(teacherToken)
+    const liveIds = snapshot.topics
+      .filter((topic) => topic.archivedAt === null)
+      .map((topic) => topic.id)
+    const reversed = [...liveIds].reverse()
+
+    const accepted = await call("/v1/admin/topics/order", {
+      token: teacherToken,
+      method: "PUT",
+      ifMatch: `"${version}"`,
+      body: { ids: reversed },
+    })
+
+    expect(accepted.status).toBe(200)
+
+    const after = await snapshotFor(teacherToken)
+    expect(
+      after.topics
+        .filter((topic) => topic.archivedAt === null)
+        .map((topic) => topic.id),
+    ).toEqual(reversed)
+    expect(first.id).not.toBe(second.id)
+  })
+})
+
+describe("archiving and restoring", () => {
+  it("hides an archived topic, its packs, and its words from /v1/content", async () => {
+    const topic = (await createTopic("Hidden Topic")).topic!
+    const pack = (await createPack(topic.id, "Hidden Pack")).pack!
+
+    insertWord("t-w-hidden")
+    addToPack(pack.id, "t-w-hidden")
+
+    const before = await publicBundle()
+    expect(before.topics.map((row) => row.id)).toContain(topic.id)
+    expect(before.words.map((row) => row.id)).toContain("t-w-hidden")
+
+    const archived = await call(`/v1/admin/topics/${topic.id}/archive`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+    })
+    expect(archived.status).toBe(200)
+
+    const hidden = await publicBundle()
+    expect(hidden.topics.map((row) => row.id)).not.toContain(topic.id)
+    expect(hidden.packs.map((row) => row.id)).not.toContain(pack.id)
+    expect(hidden.words.map((row) => row.id)).not.toContain("t-w-hidden")
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.topics.find((row) => row.id === topic.id)?.archivedAt,
+    ).toEqual(expect.any(Number))
+    expect(snapshot.packs.find((row) => row.id === pack.id)).toBeDefined()
+    expect(snapshot.words.find((row) => row.id === "t-w-hidden")).toBeDefined()
+    expect(
+      snapshot.memberships.find((row) => row.packId === pack.id)?.wordIds,
+    ).toEqual(["t-w-hidden"])
+
+    const restored = await call(`/v1/admin/topics/${topic.id}/restore`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+    })
+    expect(restored.status).toBe(200)
+
+    const visible = await publicBundle()
+    expect(visible.topics.map((row) => row.id)).toContain(topic.id)
+    expect(visible.words.map((row) => row.id)).toContain("t-w-hidden")
+  })
+
+  it("archiving a pack hides only that pack and keeps its words in the library", async () => {
+    const topic = (await createTopic("Pack Archive Topic")).topic!
+    const archivedPack = (await createPack(topic.id, "Archived Pack")).pack!
+    const livePack = (await createPack(topic.id, "Live Pack")).pack!
+
+    insertWord("t-w-pack-only")
+    addToPack(archivedPack.id, "t-w-pack-only")
+    insertWord("t-w-pack-other")
+    addToPack(livePack.id, "t-w-pack-other")
+
+    const archived = await call(
+      `/v1/admin/packs/${archivedPack.id}/archive`,
+      {
+        token: teacherToken,
+        method: "POST",
+        ifMatch: `"${await currentVersion()}"`,
+      },
+    )
+    expect(archived.status).toBe(200)
+
+    const content = await publicBundle()
+    expect(content.topics.map((row) => row.id)).toContain(topic.id)
+    expect(content.packs.map((row) => row.id)).toContain(livePack.id)
+    expect(content.packs.map((row) => row.id)).not.toContain(archivedPack.id)
+    expect(content.words.map((row) => row.id)).not.toContain("t-w-pack-only")
+    expect(content.words.map((row) => row.id)).toContain("t-w-pack-other")
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.words.find((row) => row.id === "t-w-pack-only")?.id,
+    ).toBe("t-w-pack-only")
+    expect(
+      snapshot.packs.find((row) => row.id === archivedPack.id)?.archivedAt,
+    ).toEqual(expect.any(Number))
+  })
+
+  it("refuses to edit an archived row until it is restored", async () => {
+    const topic = (await createTopic("Archived Edit Topic")).topic!
+
+    await call(`/v1/admin/topics/${topic.id}/archive`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+    })
+
+    const refused = await call(`/v1/admin/topics/${topic.id}`, {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${await currentVersion()}"`,
+      body: { title: "Too Early" },
+    })
+    expect(refused.status).toBe(409)
+    expect(
+      ((await refused.json()) as { error?: { code?: string } }).error?.code,
+    ).toBe("archived")
+
+    await call(`/v1/admin/topics/${topic.id}/restore`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+    })
+
+    const accepted = await call(`/v1/admin/topics/${topic.id}`, {
+      token: teacherToken,
+      method: "PATCH",
+      ifMatch: `"${await currentVersion()}"`,
+      body: { title: "Restored And Edited" },
+    })
+    expect(accepted.status).toBe(200)
+  })
+
+  it("does not bump the version for a no-op archive or restore", async () => {
+    const topic = (await createTopic("No-op Topic")).topic!
+
+    const first = await call(`/v1/admin/topics/${topic.id}/archive`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${await currentVersion()}"`,
+    })
+    const firstResult = (await first.json()) as WriteResult<AdminTopic>
+    const second = await call(`/v1/admin/topics/${topic.id}/archive`, {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${firstResult.contentVersion}"`,
+    })
+    const secondResult = (await second.json()) as WriteResult<AdminTopic>
+
+    expect(second.status).toBe(200)
+    expect(secondResult.contentVersion).toBe(firstResult.contentVersion)
+    expect(await currentVersion()).toBe(firstResult.contentVersion)
+  })
+})
+
+describe("concurrency", () => {
+  it("rejects a write carrying a stale content version", async () => {
+    const stale = await currentVersion()
+    await createTopic("Stale First")
+
+    const response = await call("/v1/admin/topics", {
+      token: teacherToken,
+      method: "POST",
+      ifMatch: `"${stale}"`,
+      body: {
+        title: "Stale Second",
+        titleZh: "第二个",
+        icon: "🔤",
+        description: "d",
+        descriptionZh: "d",
+      },
+    })
+
+    expect(response.status).toBe(409)
+    expect(
+      ((await response.json()) as { error?: { code?: string } }).error?.code,
+    ).toBe("conflict")
+
+    const snapshot = await snapshotFor(teacherToken)
+    expect(
+      snapshot.topics.some((row) => row.id === "stale-second"),
+    ).toBe(false)
   })
 })
