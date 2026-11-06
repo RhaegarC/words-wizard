@@ -6,8 +6,8 @@ vocabulary through short, game-like sessions with a virtual word buddy.
 **Status:** [docs/PRD.md](docs/PRD.md) is v0.3, the Mission 2 online architecture: Microsoft Entra
 ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (see
 [docs/features/archive/mission-2/00-mission-2-sprint.md](docs/features/archive/mission-2/00-mission-2-sprint.md)). Mission 3, the
-teacher/admin content portal, shipped as features 28–31, recorded in
-[docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
+teacher/admin content portal, begins with feature 28 in
+[docs/features/00-mission-3-sprint.md](docs/features/00-mission-3-sprint.md): a second front end
 under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
 and Worker API. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
@@ -34,9 +34,8 @@ and its toolchain is independent of the production app.
   imported once on first boot and then deleted.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
 - **Cloudflare Pages + Worker** hosting, with hash routing.
-- **Illustrations:** word images uploaded by teachers to a dedicated R2 bucket and served through
-  the Worker (emoji fallback until one is uploaded), plus 8 buddy portraits, AI-generated and
-  human-reviewed.
+- **Illustrations:** word images served from R2 URLs (emoji fallback until authored) plus 8 buddy
+  portraits, AI-generated and human-reviewed.
 
 ## Repository layout
 
@@ -81,18 +80,14 @@ pnpm install
 | Variable | Local value |
 |---|---|
 | `VITE_ENTRA_CLIENT_ID` | the SPA application (client) id |
-| `VITE_ENTRA_TENANT_ID` | `common` — any Entra tenant and personal Microsoft accounts — or one tenant id to restrict sign-in |
-| `VITE_PORTAL_ENTRA_TENANT_ID` | admin portal only: the **home tenant id** (a GUID); the portal is single-tenant |
+| `VITE_ENTRA_TENANT_ID` | the Entra tenant id |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
 | `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
 
 `.env` is gitignored. The Worker reads its own vars from
-`src/worker/wrangler.jsonc`; replace `EXPECTED_AUDIENCE` and `EXPECTED_TENANT` there (the client id
-and the **home tenant** id) for local sign-in. The issuer and JWKS URL already name the `common`
-authority, matching `VITE_ENTRA_TENANT_ID=common`, so any Entra tenant and personal Microsoft
-account can sign in; `EXPECTED_TENANT` stays the home tenant because only its app-role assignments
-are trusted. Those values are public configuration, never secrets.
+`src/worker/wrangler.jsonc`; replace the `REPLACE_WITH_*` placeholders with the same tenant
+and client for local sign-in. Those values are public configuration, never secrets.
 
 Content and progress live in D1, so apply migrations and start both processes:
 
@@ -103,10 +98,9 @@ pnpm dev          # terminal 2, http://localhost:8443
 ```
 
 The dev server serves on **http://localhost:8443**. The admin portal is a separate app on
-**http://localhost:8444** (`pnpm dev:portal`) against the same Worker and `src/.env`, with
-`VITE_PORTAL_ENTRA_TENANT_ID` set to the home tenant id; the portal is single-tenant, so a
-personal or other-tenant account cannot sign in there. It needs `http://localhost:8444/`
-registered as a redirect URI and listed in the Worker's `ALLOWED_ORIGINS`. The package and build configs live in `src/`; the child React app and its
+**http://localhost:8444** (`pnpm dev:portal`) against the same Worker and `src/.env`; it needs
+`http://localhost:8444/` registered as a redirect URI and listed in the Worker's
+`ALLOWED_ORIGINS`. The package and build configs live in `src/`; the child React app and its
 assets live in `src/page/`, the admin portal in `src/portal/`, and pure domain code in
 `src/shared/`. The repository root stays clean.
 
@@ -230,14 +224,8 @@ Workers Builds settings:
 The Pages build needs `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`,
 `VITE_ENTRA_SCOPE`, and `VITE_API_BASE_URL` in its environment; it optionally
 takes `VITE_AVATAR_BASE_URL` to read photos from the R2 domain instead of the
-Worker. The **admin portal's** Pages project additionally needs
-`VITE_PORTAL_ENTRA_TENANT_ID` set to the home tenant id; it does not read
-`VITE_ENTRA_TENANT_ID`. They are public configuration. The Worker reads its vars from
-`src/worker/wrangler.jsonc`, the D1 database id goes in
-`d1_databases[0].database_id`, and the two buckets — `words-wizard-avatars`
-(`AVATARS`) and `words-wizard-images` (`WORD_IMAGES`) — go in `r2_buckets`.
-Create both before the first deploy; see
-[docs/operations.md](docs/operations.md#r2-and-avatars).
+Worker. They are public configuration. The Worker reads its vars from `src/worker/wrangler.jsonc`, and the D1
+database id goes in `d1_databases[0].database_id`.
 
 Pull requests to `develop` run `.github/workflows/ci.yml`: frozen pnpm install,
 `typecheck`, `test`, `build`, `build:portal`, and `check:dist`. A second job runs

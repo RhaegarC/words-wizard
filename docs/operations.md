@@ -15,10 +15,7 @@ and `wrangler d1 migrations apply --local`). Feature 26 re-ran `pnpm typecheck`,
 `pnpm test`, `pnpm build`, and `pnpm check:dist` on 2026-11-05; the host tier
 boots the real Worker in `wrangler dev` with a local D1 and a local R2 under a
 temporary `--persist-to` directory, and covers avatar upload, replacement,
-removal, and public serving. Feature 31 re-ran those commands on 2026-11-06; its
-host tier additionally covers word-image upload, replacement with the old object
-gone, removal, rejection without a write, and public serving against the second
-emulated bucket. Feature 28 re-ran those commands plus
+removal, and public serving. Feature 28 re-ran those commands plus
 `pnpm build:portal` on 2026-11-06; its host tier boots the same Worker with real
 RS256 tokens and covers the admin staff boundary and snapshot. The custom
 domains, production D1 database, R2 bucket, Workers Builds connection, both
@@ -35,18 +32,14 @@ are configured by the operator and were not run from the repository.
 | Production D1 | `words-wizard`, binding `DB` |
 | Test D1 | `words-wizard-test`, used only by the gated remote tier |
 | Avatars | Cloudflare R2 `words-wizard-avatars`, binding `AVATARS`, public read at `https://avatars.nioh.uk` |
-| Word images | Cloudflare R2 `words-wizard-images`, binding `WORD_IMAGES`, read through `<api>/v1/images/...` |
 | Auth | Microsoft Entra ID, SPA redirect + PKCE, no client secret |
 | Deploy | Cloudflare Git integration for both Pages and Workers Builds |
 | CI | GitHub Actions: checks on PRs, gated remote D1 run, no deploy |
 
 ## Entra ID
 
-1. Register a **single-page application** in the home tenant. Under **Supported account types**,
-   choose **Accounts in any organizational directory and personal Microsoft accounts**
-   (`AzureADandPersonalMicrosoftAccount`), matching the `common` authority the child app uses.
-   The admin portal is single-tenant and names the home tenant instead (step 5).
-   Add all four redirect URIs under **Authentication → Single-page application**:
+1. Register a **single-page application** in the tenant and add all four
+   redirect URIs under **Authentication → Single-page application**:
    - `https://words.nioh.uk/`
    - `http://localhost:8443/`
    - `https://admin.words.nioh.uk/`
@@ -63,11 +56,8 @@ are configured by the operator and were not run from the repository.
    issuer (`…/v2.0`) and the client id as `aud`; a v1 token fails both.
 4. Grant admin consent for the tenant so no user hits a consent prompt.
 5. Put the tenant and client ids into the Worker vars and the Pages build
-   environment. The child app's Pages project sets `VITE_ENTRA_TENANT_ID`
-   (`common`); the admin portal's sets `VITE_PORTAL_ENTRA_TENANT_ID` to the
-   **home tenant id** and ignores the child app's tenant variable. There is
-   **no client secret**: the browser app is public and uses authorization code
-   + PKCE.
+   environment. There is **no client secret**: the browser app is public and
+   uses authorization code + PKCE.
 6. Define the **app roles** `user`, `teacher`, and `admin` in the application
    manifest (`appRoles`, one entry each, `allowedMemberTypes` `User`), and
    assign the role to the account through **Enterprise applications →
@@ -76,16 +66,14 @@ are configured by the operator and were not run from the repository.
    the claim — or with an unassigned role — stores `user`. The Worker also
    enforces the role on every `/v1/admin` route directly from the verified
    token: `teacher` and `admin` pass, a signed-in `user` gets `403 forbidden`,
-   and an anonymous caller gets `401`. The admin portal's sign-in is restricted
-   to the home tenant, so only a home-tenant `user` reaches Access Denied; the
-   portal is not the enforcement point.
+   and an anonymous caller gets `401`. The admin portal shows Access Denied for
+   a `user` but is not the enforcement point.
    To change a role, update the assignment in Entra. The next request carrying
    a fresh token syncs it; the old token keeps its old role until it expires
    (MSAL caches tokens for up to an hour).
 
-**The supported account types and all six steps are load-bearing.** A
-registration that signs users in but exposes no API on the configured
-Application ID URI produces a valid redirect
+**All six steps are load-bearing.** A registration that signs users in but
+exposes no API on the configured Application ID URI produces a valid redirect
 and then fails the silent token request with `invalid_scope`; the page shows
 the generic retry screen because the failure happens before any API call. That
 symptom was reported as [bug 02](bugs/02-token-cache-after-login.md) and
@@ -109,23 +97,13 @@ The Worker validates the access token against the tenant's JWKS endpoint:
 
 | Worker var | Value |
 |---|---|
-| `JWKS_URL` | `https://login.microsoftonline.com/common/discovery/v2.0/keys` |
-| `TOKEN_ISSUER` | `https://login.microsoftonline.com/common/v2.0` |
+| `JWKS_URL` | `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys` |
+| `TOKEN_ISSUER` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
 | `EXPECTED_AUDIENCE` | the API application (client) id |
-| `EXPECTED_TENANT` | the **home tenant** id — the only tenant whose app roles are trusted |
+| `EXPECTED_TENANT` | the tenant id |
 | `ALLOWED_ORIGINS` | `https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444` |
 
-The `common` issuer selects multi-tenant validation: a token from any Entra
-tenant or personal Microsoft account is accepted when its `tid` is a GUID and
-its issuer is the template with that `tid` in place of `common`. Roles are
-honoured only from `EXPECTED_TENANT`, so a customer tenant's administrator
-cannot assign itself the admin portal. A tenant-specific `JWKS_URL`, or a
-non-GUID `EXPECTED_TENANT`, beside a `common` issuer is refused at startup.
-To restrict sign-in to one tenant, name that tenant in `TOKEN_ISSUER` and
-`JWKS_URL` instead. The admin portal does this on the client side with
-`VITE_PORTAL_ENTRA_TENANT_ID`; the child app remains multi-tenant by design.
-
-`src/worker/wrangler.jsonc` holds these vars (the client id and home tenant are
+`src/worker/wrangler.jsonc` holds these vars (the committed values are
 placeholders until the operator replaces them). They are configuration, not
 secrets.
 
@@ -191,8 +169,7 @@ not a secret):
 
 ```jsonc
 "r2_buckets": [
-  { "binding": "AVATARS", "bucket_name": "words-wizard-avatars" },
-  { "binding": "WORD_IMAGES", "bucket_name": "words-wizard-images" }
+  { "binding": "AVATARS", "bucket_name": "words-wizard-avatars" }
 ]
 ```
 
@@ -210,38 +187,6 @@ route whose `AVATARS` binding is missing fails with `config_missing` naming
 
 Local development and the host tier get an emulated bucket from
 `wrangler dev --persist-to <dir>`; no credentials or real bucket are needed.
-
-### Word images
-
-Word pictures live in a **second** bucket, so the avatar bucket and its keys
-stay untouched. Create it and confirm the `WORD_IMAGES` binding in
-`src/worker/wrangler.jsonc`:
-
-```bash
-cd src
-pnpm exec wrangler r2 bucket create words-wizard-images
-```
-
-No custom domain is needed: the Worker serves the bucket at
-`GET /v1/images/*`, and the stored `words.image` URL is built from the request
-origin, so the public API host is correct with no separate configuration.
-Objects are written under `word-images/<wordId>/<uuid>.<png|jpg|webp>` by the
-two staff routes; the public route validates the key shape before reading R2
-and answers `404` for anything the upload route could not have written.
-Images are capped at 2 MiB and stored with
-`Cache-Control: public, max-age=31536000, immutable`; replacing one writes a
-new key, so a stale cache never serves the old picture. A missing binding
-fails the route with `config_missing` naming `WORD_IMAGES`.
-
-When running `wrangler dev` locally, pass `--infer-origin-from-routes false`
-if you upload images. Otherwise wrangler rewrites the request origin to the
-configured production route, and the stored URL points at the live host
-instead of the local server.
-
-Deleting a word's image through the portal removes both the row value and the
-object. Deleting rows by hand does **not**: R2 has no foreign key to D1, so
-inspect `words.image`, derive the key after `/v1/images/`, and remove the
-object explicitly if a manual rollback retires a picture.
 
 ## Workers Builds
 
@@ -280,8 +225,7 @@ Connect the Pages project to the same repository:
 Set these production environment variables:
 
 - `VITE_ENTRA_CLIENT_ID`
-- `VITE_ENTRA_TENANT_ID` — `common` (any Entra tenant and personal Microsoft
-  accounts), or one tenant id to restrict sign-in
+- `VITE_ENTRA_TENANT_ID`
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
 - `VITE_AVATAR_BASE_URL` — optional; `https://avatars.nioh.uk`. Leave it unset
@@ -307,13 +251,9 @@ build contains the other.
 | Preview deployments | off |
 
 It reads the same production environment variables as the child app
-(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_SCOPE`, `VITE_API_BASE_URL`, optionally
-`VITE_AVATAR_BASE_URL`) **plus** `VITE_PORTAL_ENTRA_TENANT_ID`, the **home
-tenant id**; it does not read `VITE_ENTRA_TENANT_ID=common`. The portal is
-single-tenant: Entra refuses a personal Microsoft account or an account from
-another tenant at sign-in. A home-tenant member without a teacher/admin app
-role is stored as `user` and shows Access Denied. Attach the custom domain
-`admin.words.nioh.uk`; sign-in requires the redirect URI
+(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`, `VITE_ENTRA_SCOPE`,
+`VITE_API_BASE_URL`, optionally `VITE_AVATAR_BASE_URL`). Attach the custom
+domain `admin.words.nioh.uk`; sign-in requires the redirect URI
 `https://admin.words.nioh.uk/` on the shared registration. The portal never
 stores data of its own — it reads the same D1 database through the Worker.
 

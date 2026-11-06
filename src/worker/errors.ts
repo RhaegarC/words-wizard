@@ -209,6 +209,38 @@ function matchesPattern(pattern: string, path: string): boolean {
 }
 
 /**
+ * The methods a path accepts, or undefined when it is unknown. Exact paths win;
+ * a `:param` segment matches exactly one non-empty segment, so a wrong method
+ * on `/v1/admin/topics/:id` is a 405 while a longer path is still a 404.
+ */
+export function routeMethodsFor(
+  routes: Readonly<Record<string, readonly string[]>>,
+  path: string,
+): readonly string[] | undefined {
+  const exact = routes[path]
+  if (exact !== undefined) return exact
+
+  for (const [pattern, methods] of Object.entries(routes)) {
+    if (pattern.includes(":") && matchesPattern(pattern, path)) return methods
+  }
+
+  return undefined
+}
+
+function matchesPattern(pattern: string, path: string): boolean {
+  const patternParts = pattern.split("/")
+  const pathParts = path.split("/")
+
+  if (patternParts.length !== pathParts.length) return false
+
+  return patternParts.every((part, index) => {
+    const value = pathParts[index] ?? ""
+
+    return part.startsWith(":") ? value.length > 0 : part === value
+  })
+}
+
+/**
  * Installs the one error path shared by the Worker and by the small apps the
  * tests build. `routes` lets a 405 name the methods a known path accepts.
  */

@@ -1,12 +1,11 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
-> Status: **Mission 3 is complete.** Features 28–31 are done and archived; sub-tasks 32–33 remain
-> deliberately unspecced and deferred.
+> Status: **In progress — feature 28 (portal foundation) implemented; features 29–31 specced.**
 > Depends on: Mission 2 (features 21–27) repository work complete; production provisioning and the
 > content release gate are operator-owned.
-> Source of truth: [docs/PRD.md](../../../PRD.md) as amended by Mission 2 and this mission. The UI
-> shape is written for design in [docs/Portal.md](../../../Portal.md). Where this file and a later
-> Mission 3 feature doc disagree, the feature doc wins once its design is locked.
+> Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. The UI shape
+> is written for design in [docs/Portal.md](../Portal.md). Where this file and a later Mission 3
+> feature doc disagree, the feature doc wins once its design is locked.
 
 ## Goal
 
@@ -99,31 +98,31 @@ The design session resolved every decision that was open in the previous revisio
 
 ## Definition of Done (v1)
 
-- [x] A teacher or admin signs in with the same Entra identity as the child app and sees the
+- [ ] A teacher or admin signs in with the same Entra identity as the child app and sees the
       portal; a signed-in `user` sees Access Denied and is refused on every admin operation.
-- [x] Anonymous callers are refused before any read or write.
-- [x] Topics and packs can be created, edited, reordered, archived, and restored; archived items
+- [ ] Anonymous callers are refused before any read or write.
+- [ ] Topics and packs can be created, edited, reordered, archived, and restored; archived items
       appear in the Archived view and disappear from the child app.
-- [x] Words can be created and edited and added to or removed from packs; no screen deletes or
+- [ ] Words can be created and edited and added to or removed from packs; no screen deletes or
       archives a word.
-- [x] Pack membership is ordered, contiguous from 1, and the child app sees the same order.
-- [x] A word image can be uploaded, replaced, and removed, and it appears in the child app.
-- [x] Structural validation failures block a save; editorial warnings do not; both are visible.
-- [x] Every accepted change bumps the content version and the child app refetches it.
-- [x] Generated ids are read-only, collision-free, and never reused.
-- [x] No content change requires a migration file written by hand.
+- [ ] Pack membership is ordered, contiguous from 1, and the child app sees the same order.
+- [ ] A word image can be uploaded, replaced, and removed, and it appears in the child app.
+- [ ] Structural validation failures block a save; editorial warnings do not; both are visible.
+- [ ] Every accepted change bumps the content version and the child app refetches it.
+- [ ] Generated ids are read-only, collision-free, and never reused.
+- [ ] No content change requires a migration file written by hand.
 
 ## Sub-tasks
 
-Mission 2 ends at feature 27, so Mission 3 claims **28 onwards**. Features 28–31 had their own
-design files; all four now live beside this index in `archive/mission-3/`.
+Mission 2 ends at feature 27, so Mission 3 claims **28 onwards**. Features 28–31 have their own
+design files; this table is the index, and completed files move to `archive/` when they ship.
 
 | # | Sub-task | Status | Depends on |
 |---|----------|--------|------------|
-| 28 | [Admin portal foundation](28-admin-portal-foundation.md) — second Pages app, Entra sign-in reusing the existing registration, teacher/admin gate, portal shell and navigation, read-only content snapshot, local dev and CI build | Done | 25, 26 |
-| 29 | [Topics and packs](29-topics-and-packs.md) — create, edit, order, archive and restore; shared write mechanics; the Archived view | Done | 28 |
-| 30 | [Word library and pack membership](30-word-library-and-membership.md) — word create and edit (no delete or archive), searchable library, ordered pack contents | Done | 28, 29 |
-| 31 | [Word images](31-word-images.md) — upload, replace, and remove to a dedicated bucket; public image serving; child-app cache rule | Done | 30 |
+| 28 | [Admin portal foundation](28-admin-portal-foundation.md) — second Pages app, Entra sign-in reusing the existing registration, teacher/admin gate, portal shell and navigation, read-only content snapshot, local dev and CI build | Implemented | 25, 26 |
+| 29 | [Topics and packs](29-topics-and-packs.md) — create, edit, order, archive and restore; shared write mechanics; the Archived view | Specced | 28 |
+| 30 | [Word library and pack membership](30-word-library-and-membership.md) — word create and edit (no delete or archive), searchable library, ordered pack contents | Specced | 28, 29 |
+| 31 | [Word images](31-word-images.md) — upload, replace, and remove to a dedicated bucket; public image serving; child-app cache rule | Specced | 30 |
 | 32 | Artwork review and approval — review states, sign-off, and tracked approval | Not specced — deferred | 31 |
 | 33 | Release workflow — dataset `final` transition behind the validator, with a publish action | Not specced — deferred | 29–32 |
 

@@ -1,6 +1,6 @@
 # Feature 28 — Admin Portal Foundation
 
-> Priority: Must · Mission 3 · **Status: Specced — design locked; not implemented**
+> Priority: Must · Mission 3 · **Status: Implemented**
 > Depends on: 25 (deployment), 26 (roles and identity). Blocks: 29, 30, 31.
 > Source of truth: [Mission 3 sprint](00-mission-3-sprint.md) and the
 > [portal UI brief](../Portal.md).
@@ -74,19 +74,19 @@ account, and the admin bundle never ships to children.
 
 ## Acceptance criteria
 
-- [ ] `src/portal` builds with `pnpm build:portal` and typechecks with `pnpm typecheck`; CI builds
+- [x] `src/portal` builds with `pnpm build:portal` and typechecks with `pnpm typecheck`; CI builds
       it in the existing workflow.
-- [ ] The portal dev server runs on 8444 against the local Worker on 8787.
-- [ ] Sign-in uses the existing registration; the portal origin is a registered redirect URI.
-- [ ] A `teacher` or `admin` token reaches the portal shell; a `user` token shows Access Denied;
+- [x] The portal dev server runs on 8444 against the local Worker on 8787.
+- [x] Sign-in uses the existing registration; the portal origin is a registered redirect URI.
+- [x] A `teacher` or `admin` token reaches the portal shell; a `user` token shows Access Denied;
       no token shows sign-in.
-- [ ] Every `/v1/admin` route answers `401` anonymously and `403` for a `user` role, before any
+- [x] Every `/v1/admin` route answers `401` anonymously and `403` for a `user` role, before any
       read or write.
-- [ ] A wrong method on a parameterised admin path answers `405` with `Allow`.
-- [ ] `GET /v1/admin/content` returns archived rows and unassigned words; `GET /v1/admin/access`
+- [x] A wrong method on a parameterised admin path answers `405` with `Allow`.
+- [x] `GET /v1/admin/content` returns archived rows and unassigned words; `GET /v1/admin/access`
       returns the role.
-- [ ] The admin snapshot is never cached.
-- [ ] The admin bundle is absent from the child app's build.
+- [x] The admin snapshot is never cached.
+- [x] The admin bundle is absent from the child app's build.
 
 ## Test plan
 

@@ -6,9 +6,7 @@ to the same Worker as the child app. Deployment is **two Pages projects and one 
 portal has no API of its own, no service worker, and no locale bundle.
 
 Feature 28 ships the shell and the staff gate: sign-in, the Topics / Words / Archived navigation,
-and a read-only content snapshot. Feature 29 adds the topic and pack write screens. Feature 30 adds
-the word library, the word editor, and ordered pack membership. Feature 31 adds the word image
-card.
+and a read-only content snapshot. The vocabulary screens arrive in features 29–31.
 
 ## One-time setup
 
@@ -27,25 +25,16 @@ Connect a second Pages project to `RhaegarC/words-wizard`:
 Attach the custom domain `admin.words.nioh.uk`; TLS is automatic. Previews stay off for the same
 reason as the child app: an unreviewed build must not be publicly reachable.
 
-The portal reads the child app's build-time variables from the same `src/.env`, plus one of its
-own:
+The portal reads the **same build-time variables** as the child app, from the same `src/.env`:
 
 - `VITE_ENTRA_CLIENT_ID`
+- `VITE_ENTRA_TENANT_ID`
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
 - `VITE_AVATAR_BASE_URL` — optional; the portal currently renders no avatars
-- `VITE_PORTAL_ENTRA_TENANT_ID` — **the home tenant id**, a GUID
 
-The portal is **single-tenant**: it builds its MSAL authority from
-`VITE_PORTAL_ENTRA_TENANT_ID`, not from the child app's `VITE_ENTRA_TENANT_ID=common`. Entra
-therefore refuses a personal Microsoft account or an account from another tenant at sign-in,
-before any token reaches the portal — those accounts can never hold the home tenant's app
-roles. The value must be a GUID; `common`, `organizations`, `consumers`, or a domain name leaves
-the portal on its "not configured" card naming the key. Access Denied is therefore reserved for
-a **home-tenant member without a teacher/admin assignment**. The Worker still trusts app roles
-only from the home tenant named by `EXPECTED_TENANT`. There is no client secret. The existing
-Entra registration must also list the portal's redirect URIs —
-`https://admin.words.nioh.uk/` and `http://localhost:8444/` — or sign-in returns to an
+There is no client secret. The existing Entra registration must also list the portal's redirect
+URIs — `https://admin.words.nioh.uk/` and `http://localhost:8444/` — or sign-in returns to an
 unregistered origin. The registration checklist is in
 [operations.md → Entra ID](../operations.md#entra-id).
 
@@ -54,9 +43,8 @@ The portal origin must also be in the Worker's `ALLOWED_ORIGINS`
 
 ## Local development
 
-Use the same `src/.env` as the child app, with `VITE_PORTAL_ENTRA_TENANT_ID` added and set to the
-home tenant id. The portal inherits its redirect URI from the page origin at runtime, so running
-on `http://localhost:8444` asks Entra for `http://localhost:8444/`.
+Use the same `src/.env` as the child app. The portal inherits its redirect URI from the page origin
+at runtime, so running on `http://localhost:8444` asks Entra for `http://localhost:8444/`.
 
 Start the local Worker first, then the portal:
 
@@ -79,7 +67,7 @@ The shell draws one of four states; the API decides which, not the URL:
 |---|---|
 | Loading | restoring the MSAL session, or fetching the access role and snapshot |
 | Signed out | no Entra account; shows **Sign in with Microsoft**. An expired session says so first |
-| Access Denied | signed in to the home tenant, but the token's role is `user`; shows the address and **Sign out** |
+| Access Denied | signed in, but the token's role is `user`; shows the address and **Sign out** |
 | Staff | `teacher` or `admin`; shows the shell and the selected screen |
 
 Role precedence is `admin` > `teacher` > `user`, decoded from the access token's `roles` claim for
@@ -87,72 +75,20 @@ Role precedence is `admin` > `teacher` > `user`, decoded from the access token's
 token that clearly carries `user` skips the round trip and goes straight to Access Denied. A `403`
 from the API also lands on Access Denied; a `401` clears the session and shows the expired message.
 
-### Screens and routes
-
-| Route | Screen |
-|---|---|
-| `#/topics` (default) | topics list, in curated order, with pack and word counts |
-| `#/topics/new` | topic editor, create |
-| `#/topics/:id` | topic editor, edit; the id is read-only and there is an archive danger zone |
-| `#/topics/:id/packs` | packs in the topic, with move up/down that saves immediately |
-| `#/topics/:id/packs/new` | pack editor, create |
-| `#/packs/:id` | pack editor, edit; the topic is read-only |
-| `#/packs/:id/contents` | pack contents: the ordered word draft, add/remove/move, **Save changes** |
-| `#/words` | searchable word library: headword, Chinese meaning, phonetic, level, usage |
-| `#/words/new` · `#/words/new?pack=:id` | word editor, create (optionally straight into a pack) |
-| `#/words/:id` | word editor, edit; the id is read-only and there is no delete or archive control |
-| `#/archived/topics` · `#/archived/packs` | archived rows with a Restore action |
-
-An unknown fragment lands on Topics rather than a 404 screen; an unknown id shows a "does not
-exist" panel. `#/archived` without a tab shows Topics.
-
-Every write sends `If-Match` with the snapshot's `contentVersion`. A `409 conflict` loads the
-latest snapshot and shows a banner: the teacher reviews the change and saves again. A `409
-archived` means the row must be restored first. A `422` lists the validator's findings above the
-form and keeps the entered values. A successful save refetches the snapshot, so counts and order
-are never stale; editorial warnings are mentioned in the success notice.
-
-**Words are shared and kept.** The library lists every word, including one in no pack (marked
-*Not in any pack — hidden from children*) and archived history. Creating a word from a pack sends
-`packId` with the create and lands back on that pack's contents; the placement is one atomic
-batch. An edit changes every pack that holds the word, and the editor says so. There is no delete
-or archive action anywhere in the portal.
-
-**The word image card is separate from the form and saves immediately.** It appears only when
-editing an existing word (a new word has no id to key an object under). With no image it shows a
-drop-zone-style empty state and **Upload image**; with one it shows a preview plus **Replace image**
-and **Remove image**. The file picker accepts PNG, JPEG, and WebP. Uploading and removing each send
-the snapshot's `contentVersion` and refetch the snapshot on success, so the preview updates without
-a Save. A rejected file (wrong type, over 2 MB) stays on the card as an error; a `401`, `403`, or
-`409 conflict` goes to the shell, because it is session or stale-editor business rather than
-something the card can fix. The form itself never carries an `image` value; the emoji stays a
-separate text field and is the fallback whenever no image exists.
-
-**Pack contents is a draft.** The screen edits the whole ordered list locally. **Save changes**
-sends the full list (`PUT /v1/admin/packs/:id/membership`); **Discard changes** restores the saved
-order. While the draft differs, every in-app exit — sidebar, breadcrumb, back — asks before the
-draft is lost, and a reload or close triggers the browser's own prompt. A duplicate or unknown id
-is prevented by the picker, and a server `422` is shown above the list with the draft intact.
+The hash routes are `#/topics` (default), `#/words`, and `#/archived`. An unknown fragment lands on
+Topics rather than a 404 screen.
 
 ### Debug
 
-- The portal reads `GET /v1/admin/access` and `GET /v1/admin/content` and writes to
-  `/v1/admin/topics`, `/v1/admin/packs`, `/v1/admin/words`, and `/v1/admin/words/:id/image`. Filter
-  the Network tab on `localhost:8787`; a write carries `If-Match` with the snapshot version.
-- A word image stored locally should start with `http://localhost:8787` (or the dev server's
-  origin). If it starts with the production API host, `wrangler dev` was started without
-  `--infer-origin-from-routes false`; restart it and re-upload.
+- The portal fetches two endpoints: `GET /v1/admin/access` and `GET /v1/admin/content`. Filter the
+  Network tab on `localhost:8787`.
 - A CORS error means `ALLOWED_ORIGINS` does not list `http://localhost:8444`.
 - A `401` means the token failed validation — check the Worker auth values in
   [worker.md](worker.md#debug).
-- A `403` means the home-tenant account's Entra app role is `user` (or unassigned). Change the
-  assignment under **Enterprise applications → Users and groups**; the next fresh token carries
-  the new role.
-- A personal or other-tenant account must not complete sign-in at all. If it does, check
-  `VITE_PORTAL_ENTRA_TENANT_ID`: a `common` there is the configuration bug this portal refuses to
-  start with.
-- The portal renders "The portal is not configured" with the missing or invalid key name when a
-  required `VITE_*` value is absent.
+- A `403` means the account's Entra app role is `user` (or unassigned). Change the assignment under
+  **Enterprise applications → Users and groups**; the next fresh token carries the new role.
+- The portal renders "The portal is not configured" with the missing key name when a required
+  `VITE_*` value is absent.
 - `pnpm test` includes the portal's unit tests under `src/portal/test/`; `pnpm build:portal` alone
   checks the production build.
 
@@ -161,13 +97,7 @@ is prevented by the picker, and a server `422` is shown above the list with the 
 The portal's unit tier covers the parts that can be decided offline:
 
 - `role.test.ts` — role precedence and malformed-token handling;
-- `router.test.ts` — nested hash parsing, defaults, and href round-trips;
-- `order.test.ts` — moving an id up or down, including the edge no-ops;
-- `membership.test.ts` — appending without duplicates or mutation, removal, and order-sensitive
-  dirtiness for the pack-contents draft;
-- `api.test.ts` — the write client's verb, path, `If-Match`, and how 409/422 reach the screen,
-  including `createWord`, `updateWord`, `saveMembership`, the multipart image upload (no hand-set
-  `Content-Type`), and the image removal;
+- `router.test.ts` — hash parsing, defaults, and href building;
 - `access.test.ts` — the four-state machine;
 - `boundary.test.ts` — the portal imports only `page/auth/{config,msal,token,account,session}` from
   the child app, never a page provider, store, or API client; no child build can contain the
