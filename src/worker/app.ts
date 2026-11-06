@@ -44,6 +44,9 @@ export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/v1/admin/packs/:id": ["PATCH"],
   "/v1/admin/packs/:id/archive": ["POST"],
   "/v1/admin/packs/:id/restore": ["POST"],
+  "/v1/admin/words": ["POST"],
+  "/v1/admin/words/:id": ["PATCH"],
+  "/v1/admin/packs/:id/membership": ["PUT"],
 }
 
 /**

@@ -183,9 +183,10 @@ export function PacksList({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-[var(--admin-muted)]"
-                  title="Pack contents arrive with feature 30"
-                  disabled
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-[var(--admin-purple)] hover:bg-[var(--admin-purple-pale)]"
+                  onClick={() =>
+                    navigate({ screen: "packContents", packId: pack.id })
+                  }
                 >
                   Contents
                 </button>

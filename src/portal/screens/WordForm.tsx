@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 
 import type { AdminWord } from "../../shared/admin"
 import type {
@@ -6,7 +6,6 @@ import type {
   WordExamplePayload,
 } from "../../shared/adminWrite"
 import { MAX_EXAMPLES } from "../../shared/adminWrite"
-import { AdminRequestError } from "../api"
 import {
   FormField,
   INPUT_CLASS,
@@ -87,9 +86,6 @@ export function WordForm({
   )
   const [issues, setIssues] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
-  const [imageError, setImageError] = useState<string | null>(null)
-  const [imageBusy, setImageBusy] = useState(false)
-  const fileInput = useRef<HTMLInputElement>(null)
 
   if (wordId !== null && existing === undefined) {
     return <NotFoundPanel message="That word does not exist." />
@@ -237,61 +233,6 @@ export function WordForm({
     }
   }
 
-  function imageFailure(caught: unknown): void {
-    if (caught instanceof AdminRequestError) {
-      // Auth and a stale version are the shell's business; a rejected file is
-      // this card's.
-      if (
-        caught.status === 401 ||
-        caught.status === 403 ||
-        caught.code === "conflict"
-      ) {
-        report(caught)
-        return
-      }
-
-      setImageError(caught.message)
-      return
-    }
-
-    setImageError("The image could not be saved.")
-    report(caught)
-  }
-
-  async function uploadImage(file: File): Promise<void> {
-    if (existing === undefined) return
-
-    setImageBusy(true)
-    setImageError(null)
-
-    try {
-      await api.uploadWordImage(existing.id, file, snapshot.contentVersion)
-      await refresh()
-      notify("Image saved. Children see the new picture on their next refresh.")
-    } catch (caught) {
-      imageFailure(caught)
-    } finally {
-      setImageBusy(false)
-    }
-  }
-
-  async function removeImage(): Promise<void> {
-    if (existing === undefined || existing.image === null) return
-
-    setImageBusy(true)
-    setImageError(null)
-
-    try {
-      await api.removeWordImage(existing.id, snapshot.contentVersion)
-      await refresh()
-      notify("Image removed. The emoji is shown instead.")
-    } catch (caught) {
-      imageFailure(caught)
-    } finally {
-      setImageBusy(false)
-    }
-  }
-
   const back =
     packId !== undefined
       ? { label: `Back to ${pack?.title ?? "pack"}`, route: { screen: "packContents", packId } as const }
@@ -416,77 +357,6 @@ export function WordForm({
           </div>
         </Panel>
 
-        {existing === undefined ? null : (
-          <Panel>
-            <h2 className="text-sm font-extrabold">Image</h2>
-            <p className="mt-1 text-xs text-[var(--admin-muted)]">
-              The picture a child sees for this word. Without one, the emoji is
-              shown.
-            </p>
-
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              {existing.image === null ? (
-                <div className="grid h-32 w-32 place-items-center rounded-xl border border-dashed border-[var(--admin-line)] bg-[var(--admin-canvas)] p-3 text-center text-[11px] font-semibold text-[var(--admin-muted)]">
-                  No image yet
-                </div>
-              ) : (
-                <img
-                  src={existing.image}
-                  alt={existing.text}
-                  className="h-32 w-32 rounded-xl border border-[var(--admin-line)] object-cover"
-                />
-              )}
-
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  ref={fileInput}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className="hidden"
-                  disabled={imageBusy}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    event.target.value = ""
-                    if (file !== undefined) void uploadImage(file)
-                  }}
-                />
-                <button
-                  type="button"
-                  className={PRIMARY_BUTTON}
-                  disabled={imageBusy}
-                  onClick={() => fileInput.current?.click()}
-                >
-                  {imageBusy
-                    ? "Uploading…"
-                    : existing.image === null
-                      ? "Upload image"
-                      : "Replace image"}
-                </button>
-                {existing.image === null ? null : (
-                  <button
-                    type="button"
-                    className={SECONDARY_BUTTON}
-                    disabled={imageBusy}
-                    onClick={() => void removeImage()}
-                  >
-                    Remove image
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <p className="mt-3 text-[11px] text-[var(--admin-muted)]">
-              PNG, JPEG, or WebP, up to 2 MB. Each upload gets a fresh address,
-              so a replacement is never served from a stale cache.
-            </p>
-            {imageError === null ? null : (
-              <p className="mt-2 text-xs font-bold text-[var(--admin-coral)]">
-                {imageError}
-              </p>
-            )}
-          </Panel>
-        )}
-
         <Panel>
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-sm font-extrabold">Examples</h2>
@@ -554,9 +424,7 @@ export function WordForm({
             </FormField>
           </div>
           <p className="mt-4 text-xs text-[var(--admin-muted)]">
-            {existing === undefined
-              ? "Save the word first to add a picture. "
-              : ""}
+            Artwork is added from the word’s image control in a later step.
             Words are never deleted or archived; removing one from every pack
             hides it from children while it stays in the library.
           </p>

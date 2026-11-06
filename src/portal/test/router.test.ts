@@ -38,6 +38,25 @@ describe("parsePortalHash", () => {
     })
   })
 
+  it("reads the word library, a word editor, and create with a pack", () => {
+    expect(parsePortalHash("#/words/w-brave")).toEqual({
+      screen: "word",
+      wordId: "w-brave",
+    })
+    expect(parsePortalHash("#/words/new")).toEqual({ screen: "wordNew" })
+    expect(parsePortalHash("#/words/new?pack=craft-build-1")).toEqual({
+      screen: "wordNew",
+      packId: "craft-build-1",
+    })
+  })
+
+  it("reads a pack's contents as its own screen", () => {
+    expect(parsePortalHash("#/packs/craft-build-1/contents")).toEqual({
+      screen: "packContents",
+      packId: "craft-build-1",
+    })
+  })
+
   it("reads the two archived tabs", () => {
     expect(parsePortalHash("#/archived/topics")).toEqual({
       screen: "archived",
@@ -65,6 +84,10 @@ describe("parsePortalHash", () => {
     expect(parsePortalHash("#/nope")).toEqual({ screen: "topics" })
     expect(parsePortalHash("#/topics//packs")).toEqual({ screen: "topics" })
     expect(parsePortalHash("#/packs")).toEqual({ screen: "topics" })
+    expect(parsePortalHash("#/words/new/extra")).toEqual({ screen: "topics" })
+    expect(parsePortalHash("#/packs/craft-build-1/contents/extra")).toEqual({
+      screen: "topics",
+    })
   })
 
   it("defaults an unknown archived tab to topics", () => {
@@ -84,7 +107,11 @@ describe("routeHref", () => {
       { screen: "packs", topicId: "craft-build" },
       { screen: "packNew", topicId: "craft-build" },
       { screen: "pack", packId: "craft-build-1" },
+      { screen: "packContents", packId: "craft-build-1" },
       { screen: "words" },
+      { screen: "wordNew" },
+      { screen: "wordNew", packId: "craft-build-1" },
+      { screen: "word", wordId: "w-brave" },
       { screen: "archived", tab: "topics" },
       { screen: "archived", tab: "packs" },
     ] as const
@@ -95,6 +122,15 @@ describe("routeHref", () => {
       expect(href.startsWith("#/"), JSON.stringify(route)).toBe(true)
       expect(parsePortalHash(href), JSON.stringify(route)).toEqual(route)
     }
+  })
+
+  it("carries the pack into a create-with-pack href", () => {
+    expect(routeHref({ screen: "wordNew", packId: "craft-build-1" })).toBe(
+      "#/words/new?pack=craft-build-1",
+    )
+    expect(routeHref({ screen: "packContents", packId: "craft-build-1" })).toBe(
+      "#/packs/craft-build-1/contents",
+    )
   })
 
   it("spells the create and order paths the screens link to", () => {
@@ -125,5 +161,16 @@ describe("sectionOf", () => {
   it("marks the words and archived sections", () => {
     expect(sectionOf({ screen: "words" })).toBe("words")
     expect(sectionOf({ screen: "archived", tab: "packs" })).toBe("archived")
+  })
+
+  it("keeps word routes under Words but pack contents under Topics", () => {
+    expect(sectionOf({ screen: "wordNew" })).toBe("words")
+    expect(sectionOf({ screen: "wordNew", packId: "craft-build-1" })).toBe(
+      "words",
+    )
+    expect(sectionOf({ screen: "word", wordId: "w-brave" })).toBe("words")
+    expect(sectionOf({ screen: "packContents", packId: "craft-build-1" })).toBe(
+      "topics",
+    )
   })
 })
