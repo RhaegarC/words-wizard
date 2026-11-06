@@ -57,7 +57,7 @@ parallel from feature 04 because it is authoring work, not code.
 | 14 | [Settings, export & diagnostics](14-settings.md) | Done | 03, 05, 06, 09, 10 |
 | 15 | [PWA install, offline & updates](15-pwa-offline.md) | Done | 02, 05, 14 |
 | 16 | [Cloudflare Pages deployment & CI](16-cloudflare-pages.md) | Done | 01, 04, 15 |
-| 17 | [Content production: D1 vocabulary authoring](../17-content-production.md) | In progress — no D1 vocabulary rows yet; see the current feature file | 04 (authoring runs in parallel) |
+| 17 | [Content production: D1 vocabulary authoring](17-content-production.md) | Done — seed authored; operator owns review, artwork, and the release gate | 04 (authoring runs in parallel) |
 | 18 | [Spelling-first five-mode practice & 10-word sessions](18-spelling-practice-and-session-size.md) | Done | 07, 08 |
 | 19 | [Buddy portraits, settings return & detail polish](19-buddy-portraits-and-settings-polish.md) | Done | 03, 06, 12, 14, 15 |
 | 20 | [Five words a day & comprehensive practice](20-five-word-daily-and-comprehensive.md) | Done | 07, 08, 09, 12, 18 |

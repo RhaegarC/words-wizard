@@ -1,11 +1,10 @@
 # Mission 2 — Sprint Goal: "Your buddy follows you"
 
-> Status: **In progress — features 21–24 and 26 are merged; feature 25 is in review; production
-> provisioning and deployment remain with the operator.**
+> Status: **Repository work complete — features 21–27 are archived; content sign-off (17) and
+> production provisioning and deployment (25) are handled by the operator.**
 > Source of truth: [docs/PRD.md](../PRD.md) v0.3. Where the PRD and a Mission 2 feature doc
 > disagree, the Mission 2 doc wins.
-> Baseline: Mission 1 (features 01–20) is shipped on `develop`; feature 17 content production
-> continues inside this mission.
+> Baseline: Mission 1 (features 01–20) is shipped on `develop`.
 
 ## Goal
 
@@ -80,15 +79,16 @@ Browser (PWA, words.nioh.uk)
       request, and can upload, replace, or remove a profile photo stored in R2; the page shows the
       photo or initials with the display name in a top-right chip.
 - [ ] `wordsapi.nioh.uk/health` answers; `words.nioh.uk` serves the app; CORS rejects an unlisted
-      origin; a real Entra token is accepted and a forged one is rejected.
+      origin; a real Entra token is accepted and a forged one is rejected. *(Operator-owned.)*
 - [ ] The Worker and page deploy from Workers Builds / Pages Git integration with no Cloudflare
-      deploy secret in GitHub.
+      deploy secret in GitHub. *(Operator-owned.)*
 - [x] Tests follow the project's tier model: unit, model, local D1 database, host, and a
       credential-gated remote D1 run. The content-integrity gate assembles the bundle from D1 and
       runs `validateContent`.
 - [x] PRD v0.3, `docs/operations.md`, `docs/privacy.md`, the README, and this sprint index describe
       what actually shipped; Mission 1 docs are marked historical.
-- [ ] Feature 17's final-dataset gate passes against D1 before any public release.
+- [ ] Feature 17's final-dataset gate passes against D1 before any public release. *(Operator-owned
+      release gate; tracked outside this repository, so the box stays open.)*
 
 ## Phase 0 — repository restructure (chore PR, not a numbered feature)
 
@@ -124,10 +124,10 @@ A pure move with no behaviour change, merged to `develop` before feature 21 star
 | 22 | [D1 content store & content API](archive/22-d1-content-store.md) | Done | 21 |
 | 23 | [User profile, progress & session commit](archive/23-user-data-api.md) | Done | 21, 22 |
 | 24 | [Client online integration](archive/24-client-online-integration.md) | Done | 22, 23 |
-| 25 | [Deployment, domains & documentation](25-deployment-and-docs.md) | In progress — docs and CI; operator owns provisioning and deployment | 21–24 |
+| 25 | [Deployment, domains & documentation](archive/25-deployment-and-docs.md) | Done — repository work complete; operator owns provisioning and deployment | 21–24 |
 | 26 | [User profile, email & role sync](archive/26-user-profile.md) — token-derived email and role, uploaded avatar in R2, top-right identity chip | Done | 23, 24, 25 |
 | 27 | [Legacy device data import](archive/27-legacy-data-import.md) — automatic import of Mission 1 IndexedDB progress, counters, and metrics; Settings fallback card; legacy DB deleted only after success or discard | Done | 23, 24, 26 |
-| 17 | [Content production](17-content-production.md) — D1 vocabulary authoring via reviewed migrations | In progress — no D1 vocabulary rows yet | 22 |
+| 17 | [Content production](archive/17-content-production.md) — D1 vocabulary authoring via reviewed migrations | Done — seed authored; operator owns review, artwork, and the release gate | 22 |
 
 Completed feature files move to [`archive/`](archive/); the table keeps the row for history.
 
@@ -178,9 +178,10 @@ Phase 0  restructure (chore PR)
 - **Feature 27 replaced the Mission 1 deletion rule.** Boot no longer deletes `WordsWizardDB`;
   feature 27 imports the data into the signed-in account and deletes only after success or an
   explicit discard. The DoD line about deleting Dexie data at boot is superseded.
-- **Feature 17 must pass the final gate before release.** Mission 2 is functional with the current
-  empty D1 vocabulary, but it is not the product until the D1 content set is complete and
-  validated.
+- **Feature 17's final gate is still a release gate.** The repository ships the authored seed
+  (`docs/develop/content/InitData.sql`), but the dataset must not be marked `final` — and no public
+  release should go out — until the teacher review, artwork, and final integrity gate are complete.
+  That work is operator-owned and tracked outside the repository.
 - **Mission 1 docs are historical.** The archived Mission 1 sprint and PRD v0.2's "no backend / no
   accounts / offline" posture are superseded by PRD v0.3 and this sprint.
 
