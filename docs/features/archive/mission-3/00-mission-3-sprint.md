@@ -1,6 +1,6 @@
 # Mission 3 — Sprint Goal: "Teachers own the words"
 
-> Status: **In progress — feature 28 (portal foundation) implemented; features 29–31 specced.**
+> Status: **In progress — feature 28 (portal foundation) archived; features 29–31 specced.**
 > Depends on: Mission 2 (features 21–27) repository work complete; production provisioning and the
 > content release gate are operator-owned.
 > Source of truth: [docs/PRD.md](../PRD.md) as amended by Mission 2 and this mission. The UI shape
@@ -115,11 +115,12 @@ The design session resolved every decision that was open in the previous revisio
 ## Sub-tasks
 
 Mission 2 ends at feature 27, so Mission 3 claims **28 onwards**. Features 28–31 have their own
-design files; this table is the index, and completed files move to `archive/` when they ship.
+design files; this table is the index, and completed files move to `archive/mission-3/` when they
+ship.
 
 | # | Sub-task | Status | Depends on |
 |---|----------|--------|------------|
-| 28 | [Admin portal foundation](28-admin-portal-foundation.md) — second Pages app, Entra sign-in reusing the existing registration, teacher/admin gate, portal shell and navigation, read-only content snapshot, local dev and CI build | Implemented | 25, 26 |
+| 28 | [Admin portal foundation](archive/mission-3/28-admin-portal-foundation.md) — second Pages app, Entra sign-in reusing the existing registration, teacher/admin gate, portal shell and navigation, read-only content snapshot, local dev and CI build | Done | 25, 26 |
 | 29 | [Topics and packs](29-topics-and-packs.md) — create, edit, order, archive and restore; shared write mechanics; the Archived view | Specced | 28 |
 | 30 | [Word library and pack membership](30-word-library-and-membership.md) — word create and edit (no delete or archive), searchable library, ordered pack contents | Specced | 28, 29 |
 | 31 | [Word images](31-word-images.md) — upload, replace, and remove to a dedicated bucket; public image serving; child-app cache rule | Specced | 30 |
