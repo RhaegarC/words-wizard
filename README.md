@@ -81,14 +81,17 @@ pnpm install
 | Variable | Local value |
 |---|---|
 | `VITE_ENTRA_CLIENT_ID` | the SPA application (client) id |
-| `VITE_ENTRA_TENANT_ID` | the Entra tenant id |
+| `VITE_ENTRA_TENANT_ID` | `common` — any Entra tenant and personal Microsoft accounts — or one tenant id to restrict sign-in |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
 | `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
 
 `.env` is gitignored. The Worker reads its own vars from
-`src/worker/wrangler.jsonc`; replace the `REPLACE_WITH_*` placeholders with the same tenant
-and client for local sign-in. Those values are public configuration, never secrets.
+`src/worker/wrangler.jsonc`; replace `EXPECTED_AUDIENCE` and `EXPECTED_TENANT` there (the client id
+and the **home tenant** id) for local sign-in. The issuer and JWKS URL already name the `common`
+authority, matching `VITE_ENTRA_TENANT_ID=common`, so any Entra tenant and personal Microsoft
+account can sign in; `EXPECTED_TENANT` stays the home tenant because only its app-role assignments
+are trusted. Those values are public configuration, never secrets.
 
 Content and progress live in D1, so apply migrations and start both processes:
 

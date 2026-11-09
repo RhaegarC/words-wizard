@@ -35,8 +35,12 @@ The portal reads the **same build-time variables** as the child app, from the sa
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
 - `VITE_AVATAR_BASE_URL` — optional; the portal currently renders no avatars
 
-There is no client secret. The existing Entra registration must also list the portal's redirect
-URIs — `https://admin.words.nioh.uk/` and `http://localhost:8444/` — or sign-in returns to an
+`VITE_ENTRA_TENANT_ID` is `common`, the same multi-tenant authority the child app uses, so both
+front ends admit any Entra tenant and personal Microsoft accounts. The Worker still trusts app
+roles only from the home tenant named by `EXPECTED_TENANT`; a portal signed in from any other
+tenant is stored and treated as `user`, and sees Access Denied. There is no client secret. The
+existing Entra registration must also list the portal's redirect URIs —
+`https://admin.words.nioh.uk/` and `http://localhost:8444/` — or sign-in returns to an
 unregistered origin. The registration checklist is in
 [operations.md → Entra ID](../operations.md#entra-id).
 
