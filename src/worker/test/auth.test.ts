@@ -36,6 +36,13 @@ async function expectRejected(token: string): Promise<void> {
   await expect(verify(token)).rejects.toThrow()
 }
 
+async function expectRejectedFor(
+  verifier: ReturnType<typeof createTokenVerifier>,
+  token: string,
+): Promise<void> {
+  await expect(verifier(token)).rejects.toThrow()
+}
+
 describe("createTokenVerifier", () => {
   it("accepts a valid token and returns the oid principal", async () => {
     await expect(verify(await mintToken(key))).resolves.toEqual({
@@ -206,6 +213,119 @@ describe("createTokenVerifier", () => {
       await expectRejected(await mintToken(key, { oid: undefined }))
       await expectRejected(await mintToken(key, { oid: "" }))
       await expectRejected(await mintToken(key, { oid: 42 }))
+    })
+  })
+
+  /**
+   * A multi-tenant registration answers the common authority, and the token
+   * that comes back names the account's own home tenant. Roles, however, are
+   * assigned by each tenant's own administrator, so only the home tenant's
+   * roles may be trusted.
+   */
+  describe("multi-tenant authority", () => {
+    const OTHER_TENANT = "33333333-3333-3333-3333-333333333333"
+    const PERSONAL_TENANT = "9188040d-6c67-4c5b-b112-36a304b66dad"
+    const MULTI_ISSUER = "https://login.example.test/common/v2.0"
+    const MULTI_ENV = {
+      ...TEST_ENV,
+      JWKS_URL: "https://login.example.test/common/discovery/v2.0/keys",
+      TOKEN_ISSUER: MULTI_ISSUER,
+    }
+
+    let multiVerify: ReturnType<typeof createTokenVerifier>
+
+    beforeAll(() => {
+      multiVerify = createTokenVerifier(readConfig(MULTI_ENV), jwksFor(key))
+    })
+
+    function tokenFor(
+      tenant: string,
+      claims: Record<string, unknown> = {},
+    ): Promise<string> {
+      return mintToken(key, {
+        tid: tenant,
+        iss: `https://login.example.test/${tenant}/v2.0`,
+        ...claims,
+      })
+    }
+
+    it("accepts a token from any home tenant", async () => {
+      await expect(multiVerify(await tokenFor(OTHER_TENANT))).resolves.toEqual(
+        {
+          oid: "user-a",
+          email: null,
+          role: "user",
+        },
+      )
+    })
+
+    it("accepts the home tenant and a personal Microsoft account", async () => {
+      await expect(multiVerify(await tokenFor(TENANT))).resolves.toMatchObject(
+        { oid: "user-a" },
+      )
+      await expect(
+        multiVerify(await tokenFor(PERSONAL_TENANT)),
+      ).resolves.toMatchObject({ oid: "user-a" })
+    })
+
+    it("trusts roles only from the home tenant", async () => {
+      await expect(
+        multiVerify(await tokenFor(TENANT, { roles: ["admin"] })),
+      ).resolves.toMatchObject({ role: "admin" })
+      await expect(
+        multiVerify(await tokenFor(OTHER_TENANT, { roles: ["admin"] })),
+      ).resolves.toMatchObject({ role: "user" })
+      await expect(
+        multiVerify(await tokenFor(PERSONAL_TENANT, { roles: ["teacher"] })),
+      ).resolves.toMatchObject({ role: "user" })
+    })
+
+    it("rejects a tid that is not a GUID, including the common sentinel", async () => {
+      await expectRejectedFor(
+        multiVerify,
+        await mintToken(key, { tid: "common", iss: MULTI_ISSUER }),
+      )
+      await expectRejectedFor(
+        multiVerify,
+        await mintToken(key, {
+          tid: "not-a-tenant",
+          iss: "https://login.example.test/not-a-tenant/v2.0",
+        }),
+      )
+    })
+
+    it("rejects an issuer that disagrees with tid", async () => {
+      await expectRejectedFor(
+        multiVerify,
+        await mintToken(key, {
+          tid: TENANT,
+          iss: `https://login.example.test/${OTHER_TENANT}/v2.0`,
+        }),
+      )
+    })
+
+    it("rejects a v1 or another-cloud issuer even when tid is a GUID", async () => {
+      for (const iss of [
+        `https://sts.windows.net/${OTHER_TENANT}/`,
+        `https://login.microsoftonline.com/${OTHER_TENANT}/v2.0`,
+      ]) {
+        await expectRejectedFor(
+          multiVerify,
+          await mintToken(key, { tid: OTHER_TENANT, iss }),
+        )
+      }
+    })
+
+    it("keeps the audience, expiry, signature, scope, and oid checks", async () => {
+      for (const token of [
+        await tokenFor(OTHER_TENANT, { aud: "44444444-4444-4444-4444-444444444444" }),
+        await tokenFor(OTHER_TENANT, { exp: NOW - 300 }),
+        await tokenFor(OTHER_TENANT, { scp: "other_scope" }),
+        await tokenFor(OTHER_TENANT, { oid: undefined }),
+        await mintToken(otherKey, { tid: OTHER_TENANT, iss: `https://login.example.test/${OTHER_TENANT}/v2.0` }, key.kid),
+      ]) {
+        await expectRejectedFor(multiVerify, token)
+      }
     })
   })
 

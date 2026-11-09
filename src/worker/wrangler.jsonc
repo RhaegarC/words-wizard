@@ -1,11 +1,18 @@
+// Cloudflare Worker configuration. Paths are relative to this file.
+//
+// The Entra values below are public configuration, never secrets. The common
+// endpoints accept any Entra tenant and personal Microsoft accounts; the
+// operator replaces the client id and the home tenant id (docs/operations.md).
+// EXPECTED_TENANT stays the home tenant: it is the only tenant whose app-role
+// assignments this API trusts.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "words-wizard-api",
   "main": "index.ts",
   "compatibility_date": "2025-01-01",
   "vars": {
-    "JWKS_URL": "https://login.microsoftonline.com/3f18e889-b0e4-41ae-ad36-7d2f73d416ff/discovery/v2.0/keys",
-    "TOKEN_ISSUER": "https://login.microsoftonline.com/3f18e889-b0e4-41ae-ad36-7d2f73d416ff/v2.0",
+    "JWKS_URL": "https://login.microsoftonline.com/common/discovery/v2.0/keys",
+    "TOKEN_ISSUER": "https://login.microsoftonline.com/common/v2.0",
     "EXPECTED_AUDIENCE": "2fc2ab8a-4a9b-40b2-a4fa-a8a95fb7b969",
     "EXPECTED_TENANT": "3f18e889-b0e4-41ae-ad36-7d2f73d416ff",
     "ALLOWED_ORIGINS": "https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444"

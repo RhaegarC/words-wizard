@@ -38,10 +38,13 @@ export class AppError extends Error {
   }
 }
 
-/** A required Worker var is absent or blank; the request must not be served. */
+/**
+ * A required Worker var is absent, blank, or unusable; the request must not be
+ * served. `problem` says which, without changing the stable error code.
+ */
 export class ConfigError extends AppError {
-  constructor(readonly key: string) {
-    super("config_missing", 500, `Missing or blank configuration: ${key}`)
+  constructor(readonly key: string, problem = "Missing or blank") {
+    super("config_missing", 500, `${problem} configuration: ${key}`)
   }
 }
 

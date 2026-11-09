@@ -42,8 +42,10 @@ are configured by the operator and were not run from the repository.
 
 ## Entra ID
 
-1. Register a **single-page application** in the tenant and add all four
-   redirect URIs under **Authentication → Single-page application**:
+1. Register a **single-page application** in the home tenant. Under **Supported account types**,
+   choose **Accounts in any organizational directory and personal Microsoft accounts**
+   (`AzureADandPersonalMicrosoftAccount`), matching the `common` authority both front ends use.
+   Add all four redirect URIs under **Authentication → Single-page application**:
    - `https://words.nioh.uk/`
    - `http://localhost:8443/`
    - `https://admin.words.nioh.uk/`
@@ -76,8 +78,9 @@ are configured by the operator and were not run from the repository.
    a fresh token syncs it; the old token keeps its old role until it expires
    (MSAL caches tokens for up to an hour).
 
-**All six steps are load-bearing.** A registration that signs users in but
-exposes no API on the configured Application ID URI produces a valid redirect
+**The supported account types and all six steps are load-bearing.** A
+registration that signs users in but exposes no API on the configured
+Application ID URI produces a valid redirect
 and then fails the silent token request with `invalid_scope`; the page shows
 the generic retry screen because the failure happens before any API call. That
 symptom was reported as [bug 02](bugs/02-token-cache-after-login.md) and
@@ -101,13 +104,22 @@ The Worker validates the access token against the tenant's JWKS endpoint:
 
 | Worker var | Value |
 |---|---|
-| `JWKS_URL` | `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys` |
-| `TOKEN_ISSUER` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
+| `JWKS_URL` | `https://login.microsoftonline.com/common/discovery/v2.0/keys` |
+| `TOKEN_ISSUER` | `https://login.microsoftonline.com/common/v2.0` |
 | `EXPECTED_AUDIENCE` | the API application (client) id |
-| `EXPECTED_TENANT` | the tenant id |
+| `EXPECTED_TENANT` | the **home tenant** id — the only tenant whose app roles are trusted |
 | `ALLOWED_ORIGINS` | `https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444` |
 
-`src/worker/wrangler.jsonc` holds these vars (the committed values are
+The `common` issuer selects multi-tenant validation: a token from any Entra
+tenant or personal Microsoft account is accepted when its `tid` is a GUID and
+its issuer is the template with that `tid` in place of `common`. Roles are
+honoured only from `EXPECTED_TENANT`, so a customer tenant's administrator
+cannot assign itself the admin portal. A tenant-specific `JWKS_URL`, or a
+non-GUID `EXPECTED_TENANT`, beside a `common` issuer is refused at startup.
+To restrict sign-in to one tenant, name that tenant in `TOKEN_ISSUER` and
+`JWKS_URL` instead.
+
+`src/worker/wrangler.jsonc` holds these vars (the client id and home tenant are
 placeholders until the operator replaces them). They are configuration, not
 secrets.
 
@@ -262,7 +274,8 @@ Connect the Pages project to the same repository:
 Set these production environment variables:
 
 - `VITE_ENTRA_CLIENT_ID`
-- `VITE_ENTRA_TENANT_ID`
+- `VITE_ENTRA_TENANT_ID` — `common` (any Entra tenant and personal Microsoft
+  accounts), or one tenant id to restrict sign-in
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
 - `VITE_AVATAR_BASE_URL` — optional; `https://avatars.nioh.uk`. Leave it unset
@@ -288,9 +301,11 @@ build contains the other.
 | Preview deployments | off |
 
 It reads the same production environment variables as the child app
-(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`, `VITE_ENTRA_SCOPE`,
-`VITE_API_BASE_URL`, optionally `VITE_AVATAR_BASE_URL`). Attach the custom
-domain `admin.words.nioh.uk`; sign-in requires the redirect URI
+(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID=common`, `VITE_ENTRA_SCOPE`,
+`VITE_API_BASE_URL`, optionally `VITE_AVATAR_BASE_URL`); a portal signed in
+from a tenant other than the home one is stored as `user` and shows Access
+Denied. Attach the custom domain `admin.words.nioh.uk`; sign-in requires the
+redirect URI
 `https://admin.words.nioh.uk/` on the shared registration. The portal never
 stores data of its own — it reads the same D1 database through the Worker.
 
