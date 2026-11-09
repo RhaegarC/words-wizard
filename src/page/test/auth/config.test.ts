@@ -23,6 +23,15 @@ describe("readAuthConfig", () => {
     })
   })
 
+  it("builds the common authority for any tenant and personal accounts", () => {
+    expect(
+      readAuthConfig(
+        { ...ENV, VITE_ENTRA_TENANT_ID: "common" },
+        "https://words.example.test",
+      ).authority,
+    ).toBe("https://login.microsoftonline.com/common")
+  })
+
   it("strips trailing slashes from the API base url", () => {
     expect(
       readAuthConfig(

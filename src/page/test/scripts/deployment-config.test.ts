@@ -16,6 +16,7 @@ const prd = new URL("docs/PRD.md", repoRoot)
 const backlog = new URL("docs/features/backlog.md", repoRoot)
 const checkDeploy = new URL("check-deploy.mjs", scriptsDir)
 const wrangler = new URL("worker/wrangler.jsonc", new URL("../../../", import.meta.url))
+const envExample = new URL(".env.example", new URL("../../../", import.meta.url))
 
 function read(url: URL): string {
   return readFileSync(url, "utf8")
@@ -90,6 +91,16 @@ describe("deployment configuration", () => {
       expect(text, name).not.toContain("secrets.CLOUDFLARE_API_TOKEN")
       expect(text, name).not.toContain("secrets.CLOUDFLARE_ACCOUNT_ID")
     }
+  })
+
+  it("configures the SPA for any Entra tenant and personal accounts", () => {
+    expect(read(envExample)).toContain("VITE_ENTRA_TENANT_ID=common")
+    expect(read(wrangler)).toContain(
+      "https://login.microsoftonline.com/common/discovery/v2.0/keys",
+    )
+    expect(read(wrangler)).toContain(
+      "https://login.microsoftonline.com/common/v2.0",
+    )
   })
 
   it("records the Worker Builds migration contract", () => {

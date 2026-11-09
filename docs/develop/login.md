@@ -15,13 +15,14 @@ environment (production):
 | Variable | Meaning |
 |---|---|
 | `VITE_ENTRA_CLIENT_ID` | the SPA application (client) id |
-| `VITE_ENTRA_TENANT_ID` | the tenant id |
+| `VITE_ENTRA_TENANT_ID` | `common` for any Entra tenant and personal accounts, or one tenant id |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | the Worker origin (`http://localhost:8787` locally) |
 
 From them it derives:
 
-- authority — `https://login.microsoftonline.com/<tenant-id>`;
+- authority — `https://login.microsoftonline.com/<tenant-id>`, which is
+  `https://login.microsoftonline.com/common` for the multi-tenant registration;
 - redirect URI — `<origin>/`, the page root, also used after sign-out;
 - scopes — `openid`, `profile`, and the API scope.
 
@@ -82,10 +83,13 @@ Screens never touch MSAL. They call `getAccessToken` from the auth context, whic
 Every `/v1/me*` route runs `requireAuth` before its handler. `src/worker/auth.ts`:
 
 1. parses `Authorization: Bearer <jwt>` (scheme case-insensitive);
-2. verifies the signature against the tenant's remote JWKS with RS256;
-3. requires issuer `…/v2.0`, audience = the client id, and claims `exp`, `oid`, `tid`, `scp`;
-4. checks `tid` = configured tenant and `scp` contains `access_as_user`;
-5. requires a non-empty `oid`, which becomes the principal.
+2. resolves signing keys from the configured JWKS — the shared `common` set for a multi-tenant
+   registration — and requires RS256;
+3. requires audience = the client id, claims `exp`, `oid`, `tid`, `scp`, and issuer `…/v2.0`;
+4. pins `tid` and the issuer to one tenant, or, when the issuer is the `common` template, requires
+   a GUID `tid` and an issuer equal to the template with that tenant in place of `common`;
+5. requires `scp` to contain `access_as_user`;
+6. requires a non-empty `oid`, which becomes the principal.
 
 Any failure is a `401` before the handler runs. `/health` and `/v1/content` stay public.
 
@@ -96,8 +100,10 @@ Any failure is a `401` before the handler runs. `/health` and `/v1/content` stay
 - **email** — the `email` claim, else `preferred_username`; a blank or non-string claim is
   `null`. The sync never clears a stored email, so a token without the claim (some personal
   accounts) leaves the last known address in place.
-- **role** — the `roles` claim. `admin` beats `teacher`, which beats `user`; an absent or
-  unknown claim is `user`.
+- **role** — the `roles` claim, trusted only when `tid` equals the home tenant
+  (`EXPECTED_TENANT`). `admin` beats `teacher`, which beats `user`; an absent or unknown claim is
+  `user`. In a multi-tenant deployment another tenant's administrator could assign its own users
+  this application's roles, so a token it issues resolves to `user` regardless of its claim.
 
 `ensureUser` runs on **every authenticated request** and syncs both into `users.email` and
 `profiles.role`. The token is authoritative in both directions: assigning `admin` promotes the
@@ -108,8 +114,9 @@ role change in Entra does not appear until the cached token expires or is refres
 and back in forces a new token. The old token still verifies, so the old role is not a security
 gap — it is the role that token was issued for.
 
-The role authorises nothing yet. It is stored for the planned teacher/admin portal and must not
-be used as a UI permission gate before that feature defines what each role may do.
+The Worker enforces the role on every `/v1/admin` route directly from the verified token;
+`teacher` and `admin` pass, a signed-in `user` gets `403`. The portal's Access Denied screen is
+not the enforcement point.
 
 ### 8. Sign-out
 
@@ -251,7 +258,8 @@ registration. Verify a person's effective role by decoding their access token, o
 | Entra redirect | `AADSTS50011` / "redirect URI mismatch" | both SPA redirect URIs registered |
 | Token request | generic screen after a valid redirect | Application ID URI, scope, admin consent, v2 token version |
 | Token cache | console `TypeError` from MSAL | account passed to `acquireTokenSilent` keeps `homeAccountId` |
-| Worker | `401` from `/v1/me` | issuer/audience/tenant vars, `scp` includes `access_as_user` |
+| Entra redirect | `AADSTS50020` for an outside account | `VITE_ENTRA_TENANT_ID=common`, not a tenant id |
+| Worker | `401` from `/v1/me` | issuer/audience/tenant vars, `scp` includes `access_as_user`; with a `common` issuer, `JWKS_URL` and the home tenant must both be valid |
 | Profile role | `profile.role` stays `user` after promotion | `appRoles` defined and assigned, then a fresh token (MSAL caches for an hour) |
 | API client | sign-out loop after a `401` | `EXPECTED_AUDIENCE` and `TOKEN_ISSUER` match the access token |
 

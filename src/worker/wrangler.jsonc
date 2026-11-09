@@ -1,18 +1,20 @@
 // Cloudflare Worker configuration. Paths are relative to this file.
 //
-// The Entra values below are placeholders on purpose: the operator replaces
-// them with the tenant id, client id, issuer, and JWKS URL in docs/operations.md.
-// Nothing here is secret.
+// The Entra values below are public configuration, never secrets. The common
+// endpoints accept any Entra tenant and personal Microsoft accounts; the
+// operator replaces the client id and the home tenant id (docs/operations.md).
+// EXPECTED_TENANT stays the home tenant: it is the only tenant whose app-role
+// assignments this API trusts.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "words-wizard-api",
   "main": "index.ts",
   "compatibility_date": "2025-01-01",
   "vars": {
-    "JWKS_URL": "https://login.microsoftonline.com/REPLACE_WITH_TENANT_ID/discovery/v2.0/keys",
-    "TOKEN_ISSUER": "https://login.microsoftonline.com/REPLACE_WITH_TENANT_ID/v2.0",
+    "JWKS_URL": "https://login.microsoftonline.com/common/discovery/v2.0/keys",
+    "TOKEN_ISSUER": "https://login.microsoftonline.com/common/v2.0",
     "EXPECTED_AUDIENCE": "REPLACE_WITH_CLIENT_ID",
-    "EXPECTED_TENANT": "REPLACE_WITH_TENANT_ID",
+    "EXPECTED_TENANT": "REPLACE_WITH_HOME_TENANT_ID",
     "ALLOWED_ORIGINS": "https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444"
   },
   // The binding exists from feature 21 so later code and migrations have a
