@@ -8,16 +8,24 @@ deployment workflow and no Cloudflare deploy token are involved.
 
 ### Configure
 
-The Worker reads its vars from `src/worker/wrangler.jsonc`. Replace the `REPLACE_WITH_*`
-placeholders with the same tenant and client the page uses, or local sign-in cannot be validated:
+The Worker reads its vars from `src/worker/wrangler.jsonc`. Replace `EXPECTED_AUDIENCE` and
+`EXPECTED_TENANT` (the API client id and the **home tenant** id); the issuer and key-set values are
+already the `common` ones:
 
 | Var | Value |
 |---|---|
-| `JWKS_URL` | `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys` |
-| `TOKEN_ISSUER` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
+| `JWKS_URL` | `https://login.microsoftonline.com/common/discovery/v2.0/keys` |
+| `TOKEN_ISSUER` | `https://login.microsoftonline.com/common/v2.0` |
 | `EXPECTED_AUDIENCE` | the API application (client) id |
-| `EXPECTED_TENANT` | the tenant id |
+| `EXPECTED_TENANT` | the home tenant id — the only tenant whose app roles are trusted |
 | `ALLOWED_ORIGINS` | must include `http://localhost:8443` and `http://localhost:8444` |
+
+A `TOKEN_ISSUER` carrying `/common/v2.0` selects multi-tenant mode: tokens from any Entra tenant
+and personal Microsoft accounts are accepted, `tid` must be a GUID, and the issuer must be the
+template with that `tid` in place of `common`. Roles are honoured only when `tid` is
+`EXPECTED_TENANT`. A `common` issuer paired with a tenant-specific `JWKS_URL`, or with an
+`EXPECTED_TENANT` that is not a GUID, is refused at startup (`config_missing`). To restrict
+sign-in to one tenant, name that tenant in `TOKEN_ISSUER` and `JWKS_URL` as well.
 
 The `d1_databases[0].database_id` placeholder does not matter locally: `--local` never contacts a
 remote database, and the id is only used before a deploy. The `r2_buckets` bindings `AVATARS` and
@@ -284,11 +292,12 @@ exact-matched. `https://admin.words.nioh.uk` and `http://localhost:8444` must be
   Use `--remote` only when you mean production, deliberately.
 
 - A `401` from a route the page calls means the access token failed validation. Check that
-  `EXPECTED_AUDIENCE` is the **API** client id (not the SPA client id), that `EXPECTED_TENANT` and
-  `TOKEN_ISSUER` name the same tenant, and that `JWKS_URL` is reachable. The SPA must request
-  `VITE_ENTRA_SCOPE` for that same API client id. A browser-side CORS failure instead means
-  `ALLOWED_ORIGINS` does not list the page origin — `http://localhost:8443` for the child app or
-  `http://localhost:8444` for the portal.
+  `EXPECTED_AUDIENCE` is the **API** client id (not the SPA client id), that `JWKS_URL` is
+  reachable, and that the issuer pair agrees: either `TOKEN_ISSUER` names one tenant (as does
+  `EXPECTED_TENANT`), or it is the `common` template with the shared key set and `EXPECTED_TENANT`
+  still names the home tenant. The SPA must request `VITE_ENTRA_SCOPE` for that same API client
+  id. A browser-side CORS failure instead means `ALLOWED_ORIGINS` does not list the page origin —
+  `http://localhost:8443` for the child app or `http://localhost:8444` for the portal.
 
 - A `403` on an admin route is correct for a signed-in account whose Entra app role is `user` or
   unassigned. Change the assignment; the next fresh token carries the new role.
