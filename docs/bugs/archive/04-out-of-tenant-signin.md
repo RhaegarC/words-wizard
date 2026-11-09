@@ -1,6 +1,6 @@
 # Bug 04 — Sign-in fails for an account from another Entra tenant
 
-> Severity: Normal · Status: In review — PR [#93](https://github.com/RhaegarC/words-wizard/pull/93)
+> Severity: Normal · Status: Fixed — PR [#93](https://github.com/RhaegarC/words-wizard/pull/93) merged
 > Reported: 2026-11-09 · Feature: 24 (client online integration) and 21 (worker foundation)
 
 ## Summary
@@ -115,5 +115,11 @@ unresolved.
 
 ## Verification
 
-Recorded in the pull request: `pnpm typecheck`, the full `pnpm test` run, `pnpm build`,
-`pnpm build:portal`, and `pnpm check:dist`.
+- `pnpm typecheck` — clean.
+- `pnpm test` — 77 files passed, 1 skipped; 1067 tests passed, 5 skipped (the skip is the
+  credential-gated remote tier).
+- `pnpm build`, `pnpm build:portal`, `pnpm check:dist` — pass.
+- Local Worker with the `REPLACE_WITH_HOME_TENANT_ID` placeholder answered
+  `500 config_missing` naming `EXPECTED_TENANT`, the guard behaving as designed. Replacing it and
+  `EXPECTED_AUDIENCE` with the home tenant and client id is the operator step; Cloudflare vars
+  carry the same values in production.
