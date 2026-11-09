@@ -8,20 +8,24 @@
   },
   "scripts": {
     "dev": "vite",
-    "validate:content": "tsx scripts/validate-content.ts",
-    "extract:wordlist": "node scripts/extract-wordlist.mjs",
-    "prebuild": "pnpm validate:content",
+    "extract:wordlist": "node page/scripts/extract-wordlist.mjs",
     "build": "vite build",
-    "check:dist": "node scripts/check-dist.mjs",
-    "check:deploy": "node scripts/check-deploy.mjs",
+    "check:dist": "node page/scripts/check-dist.mjs",
+    "check:deploy": "node page/scripts/check-deploy.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
+    "test:db:remote": "vitest run worker/test/remote.test.ts",
+    "worker:dev": "wrangler dev --config worker/wrangler.jsonc",
+    "worker:deploy": "wrangler deploy --config worker/wrangler.jsonc",
+    "worker:typecheck": "tsc --noEmit -p tsconfig.worker.json",
+    "typecheck": "tsc --noEmit -p tsconfig.page.json && tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.worker.json",
     "format": "oxfmt ."
   },
   "dependencies": {
-    "dexie": "^4.4.6",
+    "@azure/msal-browser": "^5.27.0",
+    "hono": "^4.13.14",
+    "jose": "^6.2.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -31,6 +35,8 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.4",
     "oxfmt": "^0.2.0",
     "pdf-parse": "1.1.1",
     "tailwindcss": "^4.0.0",
@@ -39,6 +45,7 @@
     "vite": "^8.0.5",
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "wrangler": "^4.155.0"
   }
 }

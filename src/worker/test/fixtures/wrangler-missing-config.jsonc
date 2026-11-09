@@ -1,0 +1,13 @@
+// Host-tier fixture: EXPECTED_TENANT is deliberately absent, so every request
+// must fail with the config_missing envelope instead of serving anonymously.
+{
+  "name": "words-wizard-api-test-missing-config",
+  "main": "../../index.ts",
+  "compatibility_date": "2025-01-01",
+  "vars": {
+    "JWKS_URL": "http://127.0.0.1:1/jwks",
+    "TOKEN_ISSUER": "https://login.example.test/tenant/v2.0",
+    "EXPECTED_AUDIENCE": "22222222-2222-2222-2222-222222222222",
+    "ALLOWED_ORIGINS": "https://words.nioh.uk"
+  }
+}
