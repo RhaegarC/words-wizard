@@ -1,6 +1,6 @@
 # Bug 04 — Sign-in fails for an account from another Entra tenant
 
-> Severity: Normal · Status: In progress
+> Severity: Normal · Status: In review — PR [#93](https://github.com/RhaegarC/words-wizard/pull/93)
 > Reported: 2026-11-09 · Feature: 24 (client online integration) and 21 (worker foundation)
 
 ## Summary
