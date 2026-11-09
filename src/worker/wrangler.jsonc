@@ -1,38 +1,28 @@
-// Cloudflare Worker configuration. Paths are relative to this file.
-//
-// The Entra values below are placeholders on purpose: the operator replaces
-// them with the tenant id, client id, issuer, and JWKS URL in docs/operations.md.
-// Nothing here is secret.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "words-wizard-api",
   "main": "index.ts",
   "compatibility_date": "2025-01-01",
   "vars": {
-    "JWKS_URL": "https://login.microsoftonline.com/REPLACE_WITH_TENANT_ID/discovery/v2.0/keys",
-    "TOKEN_ISSUER": "https://login.microsoftonline.com/REPLACE_WITH_TENANT_ID/v2.0",
-    "EXPECTED_AUDIENCE": "REPLACE_WITH_CLIENT_ID",
-    "EXPECTED_TENANT": "REPLACE_WITH_TENANT_ID",
+    "JWKS_URL": "https://login.microsoftonline.com/3f18e889-b0e4-41ae-ad36-7d2f73d416ff/discovery/v2.0/keys",
+    "TOKEN_ISSUER": "https://login.microsoftonline.com/3f18e889-b0e4-41ae-ad36-7d2f73d416ff/v2.0",
+    "EXPECTED_AUDIENCE": "2fc2ab8a-4a9b-40b2-a4fa-a8a95fb7b969",
+    "EXPECTED_TENANT": "3f18e889-b0e4-41ae-ad36-7d2f73d416ff",
     "ALLOWED_ORIGINS": "https://words.nioh.uk,http://localhost:8443"
   },
-  // The binding exists from feature 21 so later code and migrations have a
-  // stable name; the operator fills in the database id before deploying.
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "words-wizard",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "66f18da9-7155-4306-ac09-8fba93fc3a1b",
       "migrations_dir": "drizzle"
     }
   ],
-  // User-uploaded avatars. The bucket is created by the operator; the public
-  // custom domain is configured separately (docs/operations.md).
   "r2_buckets": [
     {
       "binding": "AVATARS",
       "bucket_name": "words-wizard-avatars"
     }
   ],
-  // Activated when the operator first deploys the Worker.
   "routes": [{ "pattern": "wordsapi.nioh.uk", "custom_domain": true }]
 }

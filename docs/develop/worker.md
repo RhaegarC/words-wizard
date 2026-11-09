@@ -191,7 +191,7 @@ Connect the Worker to `RhaegarC/words-wizard` with these settings:
 |---|---|
 | Root directory | `src` |
 | Install command | `pnpm install --frozen-lockfile` |
-| Deploy command | `wrangler d1 migrations apply DB --remote --config worker/wrangler.jsonc && wrangler deploy --config worker/wrangler.jsonc` |
+| Deploy command | `npx wrangler d1 migrations apply DB --remote --config worker/wrangler.jsonc && npx wrangler deploy --config worker/wrangler.jsonc` |
 | Production branch | `master` |
 | Preview builds | Off |
 
