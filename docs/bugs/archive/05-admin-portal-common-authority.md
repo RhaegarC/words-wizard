@@ -1,6 +1,6 @@
 # Bug 05 — Admin portal signs in personal and other-tenant accounts
 
-> Severity: Normal · Status: In review — PR [#96](https://github.com/RhaegarC/words-wizard/pull/96)
+> Severity: Normal · Status: Fixed — PR [#96](https://github.com/RhaegarC/words-wizard/pull/96) merged
 > Reported: 2026-11-10 · Feature: 28 (admin portal foundation)
 
 ## Summary
