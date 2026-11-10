@@ -44,7 +44,8 @@ are configured by the operator and were not run from the repository.
 
 1. Register a **single-page application** in the home tenant. Under **Supported account types**,
    choose **Accounts in any organizational directory and personal Microsoft accounts**
-   (`AzureADandPersonalMicrosoftAccount`), matching the `common` authority both front ends use.
+   (`AzureADandPersonalMicrosoftAccount`), matching the `common` authority the child app uses.
+   The admin portal is single-tenant and names the home tenant instead (step 5).
    Add all four redirect URIs under **Authentication → Single-page application**:
    - `https://words.nioh.uk/`
    - `http://localhost:8443/`
@@ -62,8 +63,11 @@ are configured by the operator and were not run from the repository.
    issuer (`…/v2.0`) and the client id as `aud`; a v1 token fails both.
 4. Grant admin consent for the tenant so no user hits a consent prompt.
 5. Put the tenant and client ids into the Worker vars and the Pages build
-   environment. There is **no client secret**: the browser app is public and
-   uses authorization code + PKCE.
+   environment. The child app's Pages project sets `VITE_ENTRA_TENANT_ID`
+   (`common`); the admin portal's sets `VITE_PORTAL_ENTRA_TENANT_ID` to the
+   **home tenant id** and ignores the child app's tenant variable. There is
+   **no client secret**: the browser app is public and uses authorization code
+   + PKCE.
 6. Define the **app roles** `user`, `teacher`, and `admin` in the application
    manifest (`appRoles`, one entry each, `allowedMemberTypes` `User`), and
    assign the role to the account through **Enterprise applications →
@@ -72,8 +76,9 @@ are configured by the operator and were not run from the repository.
    the claim — or with an unassigned role — stores `user`. The Worker also
    enforces the role on every `/v1/admin` route directly from the verified
    token: `teacher` and `admin` pass, a signed-in `user` gets `403 forbidden`,
-   and an anonymous caller gets `401`. The admin portal shows Access Denied for
-   a `user` but is not the enforcement point.
+   and an anonymous caller gets `401`. The admin portal's sign-in is restricted
+   to the home tenant, so only a home-tenant `user` reaches Access Denied; the
+   portal is not the enforcement point.
    To change a role, update the assignment in Entra. The next request carrying
    a fresh token syncs it; the old token keeps its old role until it expires
    (MSAL caches tokens for up to an hour).
@@ -117,7 +122,8 @@ honoured only from `EXPECTED_TENANT`, so a customer tenant's administrator
 cannot assign itself the admin portal. A tenant-specific `JWKS_URL`, or a
 non-GUID `EXPECTED_TENANT`, beside a `common` issuer is refused at startup.
 To restrict sign-in to one tenant, name that tenant in `TOKEN_ISSUER` and
-`JWKS_URL` instead.
+`JWKS_URL` instead. The admin portal does this on the client side with
+`VITE_PORTAL_ENTRA_TENANT_ID`; the child app remains multi-tenant by design.
 
 `src/worker/wrangler.jsonc` holds these vars (the client id and home tenant are
 placeholders until the operator replaces them). They are configuration, not
@@ -301,11 +307,13 @@ build contains the other.
 | Preview deployments | off |
 
 It reads the same production environment variables as the child app
-(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID=common`, `VITE_ENTRA_SCOPE`,
-`VITE_API_BASE_URL`, optionally `VITE_AVATAR_BASE_URL`); a portal signed in
-from a tenant other than the home one is stored as `user` and shows Access
-Denied. Attach the custom domain `admin.words.nioh.uk`; sign-in requires the
-redirect URI
+(`VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_SCOPE`, `VITE_API_BASE_URL`, optionally
+`VITE_AVATAR_BASE_URL`) **plus** `VITE_PORTAL_ENTRA_TENANT_ID`, the **home
+tenant id**; it does not read `VITE_ENTRA_TENANT_ID=common`. The portal is
+single-tenant: Entra refuses a personal Microsoft account or an account from
+another tenant at sign-in. A home-tenant member without a teacher/admin app
+role is stored as `user` and shows Access Denied. Attach the custom domain
+`admin.words.nioh.uk`; sign-in requires the redirect URI
 `https://admin.words.nioh.uk/` on the shared registration. The portal never
 stores data of its own — it reads the same D1 database through the Worker.
 
