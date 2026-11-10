@@ -5,6 +5,10 @@ import { Icon } from "../components/Icon"
 import { useAuth } from "../auth/AuthProvider"
 import { useLocale } from "../i18n/LocaleProvider"
 
+/** Microsoft's account-creation flow, opened in a new tab from sign-in. */
+const CREATE_ACCOUNT_URL =
+  "https://outlook.live.com/mail/?prompt=create_account"
+
 /**
  * The only screen reachable while signed out. Everything else needs a profile,
  * and a profile needs an identity, so this gate comes before the create screen.
@@ -84,6 +88,16 @@ export function SignInScreen() {
             {pending ? t("auth.signingIn") : t("auth.signIn")}{" "}
             <Icon name="arrow" />
           </button>
+
+          <a
+            className="button secondary wide signin-create"
+            href={CREATE_ACCOUNT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("auth.createAccount")}
+            <span className="sr-only"> ({t("auth.opensNewTab")})</span>
+          </a>
 
           <p className="field-hint signin-privacy">
             <Icon name="shield" size={15} /> {t("auth.privacy")}
