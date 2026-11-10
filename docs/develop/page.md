@@ -24,7 +24,8 @@ is automatic.
 Set these in **Settings → Environment variables → Production** for the build:
 
 - `VITE_ENTRA_CLIENT_ID` — the SPA application (client) id
-- `VITE_ENTRA_TENANT_ID` — the Entra tenant id
+- `VITE_ENTRA_TENANT_ID` — `common` for any Entra tenant and personal Microsoft accounts, or one
+  tenant id to restrict sign-in
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
 - `VITE_AVATAR_BASE_URL` — optional; `https://avatars.nioh.uk`. Unset means
@@ -52,13 +53,16 @@ pnpm install
 | Variable | Local value |
 |---|---|
 | `VITE_ENTRA_CLIENT_ID` | the SPA application (client) id |
-| `VITE_ENTRA_TENANT_ID` | the Entra tenant id |
+| `VITE_ENTRA_TENANT_ID` | `common`, or one tenant id to restrict sign-in |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
 | `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
 
-`VITE_API_BASE_URL` points at the local Worker, never at production. The Entra registration must
-list `http://localhost:8443/` as a redirect URI in addition to `https://words.nioh.uk/`, or
+`VITE_API_BASE_URL` points at the local Worker, never at production. With the registration set to
+**Accounts in any organizational directory and personal Microsoft accounts**, keep
+`VITE_ENTRA_TENANT_ID=common`; a GUID there pins MSAL to that tenant and returns `AADSTS50020` for
+every account outside it ([bug 04](../../bugs/archive/04-out-of-tenant-signin.md)). The Entra registration
+must list `http://localhost:8443/` as a redirect URI in addition to `https://words.nioh.uk/`, or
 sign-in returns to an unregistered origin. It must also expose the
 `api://<client-id>/access_as_user` scope and issue v2 access tokens; without those, sign-in
 succeeds and the first boot fails with the generic retry screen. The full registration checklist

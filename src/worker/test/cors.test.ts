@@ -5,6 +5,8 @@ import { TEST_ENV } from "./tokens"
 
 const ALLOWED = "https://words.nioh.uk"
 const LOCAL = "http://localhost:8443"
+const ADMIN = "https://admin.words.nioh.uk"
+const ADMIN_LOCAL = "http://localhost:8444"
 const UNLISTED = "https://evil.test"
 
 function app() {
@@ -30,6 +32,20 @@ describe("CORS", () => {
     )
 
     expect(response.headers.get("access-control-allow-origin")).toBe(LOCAL)
+  })
+
+  it("allows both admin portal origins", async () => {
+    for (const origin of [ADMIN, ADMIN_LOCAL]) {
+      const response = await app().request(
+        "/health",
+        { headers: { Origin: origin } },
+        TEST_ENV,
+      )
+
+      expect(response.headers.get("access-control-allow-origin"), origin).toBe(
+        origin,
+      )
+    }
   })
 
   it("sends no allow-origin for an unlisted origin", async () => {
@@ -84,10 +100,10 @@ describe("CORS", () => {
     expect(response.status).toBe(204)
     expect(response.headers.get("access-control-allow-origin")).toBe(ALLOWED)
     expect(response.headers.get("access-control-allow-methods")).toBe(
-      "GET,POST,PATCH,DELETE,OPTIONS",
+      "GET,POST,PATCH,PUT,DELETE,OPTIONS",
     )
     expect(response.headers.get("access-control-allow-headers")).toBe(
-      "Authorization, Content-Type, If-None-Match",
+      "Authorization, Content-Type, If-Match, If-None-Match",
     )
     expect(response.headers.get("access-control-max-age")).toBeTruthy()
     expect(response.headers.get("access-control-allow-credentials")).toBeNull()

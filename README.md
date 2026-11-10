@@ -6,8 +6,10 @@ vocabulary through short, game-like sessions with a virtual word buddy.
 **Status:** [docs/PRD.md](docs/PRD.md) is v0.3, the Mission 2 online architecture: Microsoft Entra
 ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (see
 [docs/features/archive/mission-2/00-mission-2-sprint.md](docs/features/archive/mission-2/00-mission-2-sprint.md)). Mission 3, the
-teacher/admin content portal, is scoped but not detailed in
-[docs/features/00-mission-3-sprint.md](docs/features/00-mission-3-sprint.md). The production app is
+teacher/admin content portal, shipped as features 28–31, recorded in
+[docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
+under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
+and Worker API. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
 and its toolchain is independent of the production app.
@@ -32,8 +34,9 @@ and its toolchain is independent of the production app.
   imported once on first boot and then deleted.
 - **Speech via the Web Speech API**, with IPA fallback when no suitable voice exists.
 - **Cloudflare Pages + Worker** hosting, with hash routing.
-- **Illustrations:** word images served from R2 URLs (emoji fallback until authored) plus 8 buddy
-  portraits, AI-generated and human-reviewed.
+- **Illustrations:** word images uploaded by teachers to a dedicated R2 bucket and served through
+  the Worker (emoji fallback until one is uploaded), plus 8 buddy portraits, AI-generated and
+  human-reviewed.
 
 ## Repository layout
 
@@ -42,7 +45,7 @@ and its toolchain is independent of the production app.
 | [docs/PRD.md](docs/PRD.md) | v0.3 product requirements — the document of record |
 | [docs/features/](docs/features/) | Mission 1–3 sprint indexes, the ordered feature specs, the backlog, and completed features under `archive/` |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
-| [src/](src/) | **Everything the app needs**: the package, `pnpm-lock.yaml`, TypeScript/Vite configs, `src/page/` (React SPA and assets), `src/shared/` (pure domain), `src/worker/` (API, added in feature 21), and the generated `src/dist/` build |
+| [src/](src/) | **Everything both apps need**: the package, `pnpm-lock.yaml`, TypeScript/Vite configs, `src/page/` (child React SPA and assets), `src/portal/` (admin portal SPA), `src/shared/` (pure domain), `src/worker/` (API, added in feature 21), and the generated `src/dist/` and `src/dist-portal/` builds |
 | Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |
 | [figma/](figma/) | Figma Make export, **read-only visual reference** — never edited or imported |
 
@@ -78,14 +81,18 @@ pnpm install
 | Variable | Local value |
 |---|---|
 | `VITE_ENTRA_CLIENT_ID` | the SPA application (client) id |
-| `VITE_ENTRA_TENANT_ID` | the Entra tenant id |
+| `VITE_ENTRA_TENANT_ID` | `common` — any Entra tenant and personal Microsoft accounts — or one tenant id to restrict sign-in |
+| `VITE_PORTAL_ENTRA_TENANT_ID` | admin portal only: the **home tenant id** (a GUID); the portal is single-tenant |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
 | `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
 
 `.env` is gitignored. The Worker reads its own vars from
-`src/worker/wrangler.jsonc`; replace the `REPLACE_WITH_*` placeholders with the same tenant
-and client for local sign-in. Those values are public configuration, never secrets.
+`src/worker/wrangler.jsonc`; replace `EXPECTED_AUDIENCE` and `EXPECTED_TENANT` there (the client id
+and the **home tenant** id) for local sign-in. The issuer and JWKS URL already name the `common`
+authority, matching `VITE_ENTRA_TENANT_ID=common`, so any Entra tenant and personal Microsoft
+account can sign in; `EXPECTED_TENANT` stays the home tenant because only its app-role assignments
+are trusted. Those values are public configuration, never secrets.
 
 Content and progress live in D1, so apply migrations and start both processes:
 
@@ -95,20 +102,26 @@ pnpm worker:dev   # terminal 1, http://localhost:8787
 pnpm dev          # terminal 2, http://localhost:8443
 ```
 
-The dev server serves on **http://localhost:8443**. The package and build configs live in
-`src/`; the React app and its assets live in `src/page/`, and pure domain code lives in
+The dev server serves on **http://localhost:8443**. The admin portal is a separate app on
+**http://localhost:8444** (`pnpm dev:portal`) against the same Worker and `src/.env`, with
+`VITE_PORTAL_ENTRA_TENANT_ID` set to the home tenant id; the portal is single-tenant, so a
+personal or other-tenant account cannot sign in there. It needs `http://localhost:8444/`
+registered as a redirect URI and listed in the Worker's `ALLOWED_ORIGINS`. The package and build configs live in `src/`; the child React app and its
+assets live in `src/page/`, the admin portal in `src/portal/`, and pure domain code in
 `src/shared/`. The repository root stays clean.
 
 | Command | What it does |
 |---|---|
-| `pnpm dev` | Vite dev server on port 8443 |
+| `pnpm dev` | Vite dev server on port 8443 (child app) |
+| `pnpm dev:portal` | Vite dev server on port 8444 (admin portal) |
 | `pnpm worker:dev` | Wrangler dev server for the Worker on port 8787 |
 | `pnpm build` | Production build into `src/dist/` |
+| `pnpm build:portal` | Production build into `src/dist-portal/` |
 | `pnpm preview` | Serve the built `src/dist/` on port 8443 |
-| `pnpm test` | Vitest, single run (page, shared, and worker tests) |
+| `pnpm test` | Vitest, single run (page, portal, shared, and worker tests) |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm test:db:remote` | Remote D1 tier; skips unless `WORDS_TEST_*` is set |
-| `pnpm typecheck` | `tsc --noEmit` for the page, test, and worker projects |
+| `pnpm typecheck` | `tsc --noEmit` for the page, portal, test, and worker projects |
 | `pnpm worker:typecheck` | `tsc --noEmit` for the Worker only |
 | `pnpm check:dist` | Verify the built shell, assets, icons, locales, and `_headers` |
 | `pnpm check:deploy` | Post-deploy smoke check for Pages and the Worker |
@@ -158,6 +171,8 @@ The app uses **Vitest** across the tiers in the project's testing standard:
 - **Unit** — pure domain logic: XP and stage derivation, vitality and sleep, streak grace,
   Care Token ledger, SM-2 scheduling, session building, Monthly Review selection, Collection
   selectors, auth config, and i18n key completeness.
+- **Portal unit** — role derivation from the access token, hash routing, the shell's four-state
+  gate, and an import-boundary check that the portal never pulls in child-app modules.
 - **Model** — the Drizzle schema and the SQL it generates.
 - **Database** — a local D1 database through `wrangler`, including migrations and constraints.
 - **Host** — the Worker booted in-process against unreachable connection strings.
@@ -168,7 +183,7 @@ The app uses **Vitest** across the tiers in the project's testing standard:
   `src/page/test/scripts/deployment-config.test.ts`.
 
 Tests live in each area's `test/` folder, mirroring the code they exercise:
-`src/page/test/**/*.test.ts`, `src/shared/test/**/*.test.ts`, and
+`src/page/test/**/*.test.ts`, `src/portal/test/**/*.test.ts`, `src/shared/test/**/*.test.ts`, and
 `src/worker/test/**/*.test.ts`. The database and remote tiers skip visibly when their engine or
 credentials are unavailable; a skip is reported, not silent.
 
@@ -178,14 +193,16 @@ verified in the browser.
 
 ## Deployment
 
-**Cloudflare's Git integration** owns both deployments: Pages builds and serves the SPA at
-<https://words.nioh.uk>, and Workers Builds deploys the API at
+**Cloudflare's Git integration** owns all three deployments: one Pages project builds and serves
+the child SPA at <https://words.nioh.uk>, a second serves the admin portal at
+<https://admin.words.nioh.uk>, and Workers Builds deploys the API at
 <https://wordsapi.nioh.uk>. There is no GitHub deployment workflow and no Cloudflare
 deploy token in this repository. The full production setup is in
 [docs/operations.md](docs/operations.md), with per-project notes in
-[docs/develop/page.md](docs/develop/page.md) and [docs/develop/worker.md](docs/develop/worker.md).
+[docs/develop/page.md](docs/develop/page.md), [docs/develop/portal.md](docs/develop/portal.md),
+and [docs/develop/worker.md](docs/develop/worker.md).
 
-Pages project settings:
+Child app Pages project settings:
 
 - **Production branch:** `master`
 - **Root directory:** `src` (the package manifest lives there)
@@ -193,6 +210,15 @@ Pages project settings:
 - **Build output directory:** `dist`
 - **Environment:** Node 22 and pnpm 10, plus the four required `VITE_*` variables below (and the optional `VITE_AVATAR_BASE_URL`)
 - **Preview deployments:** off — a preview URL would publish before a release is reviewed
+
+Admin portal Pages project settings:
+
+- **Production branch:** `master`
+- **Root directory:** `src`
+- **Build command:** `pnpm build:portal`
+- **Build output directory:** `dist-portal`
+- **Environment:** the same Node 22/pnpm 10 and `VITE_*` variables as the child app
+- **Preview deployments:** off
 
 Workers Builds settings:
 
@@ -204,13 +230,19 @@ Workers Builds settings:
 The Pages build needs `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`,
 `VITE_ENTRA_SCOPE`, and `VITE_API_BASE_URL` in its environment; it optionally
 takes `VITE_AVATAR_BASE_URL` to read photos from the R2 domain instead of the
-Worker. They are public configuration. The Worker reads its vars from `src/worker/wrangler.jsonc`, and the D1
-database id goes in `d1_databases[0].database_id`.
+Worker. The **admin portal's** Pages project additionally needs
+`VITE_PORTAL_ENTRA_TENANT_ID` set to the home tenant id; it does not read
+`VITE_ENTRA_TENANT_ID`. They are public configuration. The Worker reads its vars from
+`src/worker/wrangler.jsonc`, the D1 database id goes in
+`d1_databases[0].database_id`, and the two buckets — `words-wizard-avatars`
+(`AVATARS`) and `words-wizard-images` (`WORD_IMAGES`) — go in `r2_buckets`.
+Create both before the first deploy; see
+[docs/operations.md](docs/operations.md#r2-and-avatars).
 
 Pull requests to `develop` run `.github/workflows/ci.yml`: frozen pnpm install,
-`typecheck`, `test`, `build`, and `check:dist`. A second job runs `pnpm test:db:remote`
-only when the three `WORDS_TEST_*` secrets exist; otherwise it reports a visible skip.
-Neither job deploys.
+`typecheck`, `test`, `build`, `build:portal`, and `check:dist`. A second job runs
+`pnpm test:db:remote` only when the three `WORDS_TEST_*` secrets exist; otherwise it reports a
+visible skip. Neither job deploys.
 
 `src/page/public/_headers` — copied into the build — carries the cache policy. Hash routing means
 no SPA rewrite is needed, so no `_redirects` file is used and a missing file keeps a real

@@ -1,4 +1,4 @@
-import type { Context, Hono, MiddlewareHandler } from "hono"
+import type { Hono, MiddlewareHandler } from "hono"
 
 import { MAX_IMPORT_BODY_BYTES, parseLegacyImport } from "../shared/legacyImport"
 import { validateServerSessionPayload } from "../shared/sessionPayload"
@@ -32,18 +32,16 @@ import {
 } from "./db/queries"
 import {
   ClockOutOfRangeError,
-  InvalidJsonError,
   ProfileNotFoundError,
   ValidationFailedError,
 } from "./errors"
 import {
-  MAX_BODY_BYTES,
   parseCareEvent,
   parseCreateProfile,
-  parseJsonBody,
   parseMetricEvent,
   parseProfilePatch,
 } from "./profileInput"
+import { readBody } from "./requestBody"
 
 /**
  * The six authenticated user-data routes (feature 23).
@@ -297,41 +295,6 @@ export function registerMeRoutes(
 
 /** Room for multipart boundaries and part headers around the 2 MiB file. */
 const MULTIPART_OVERHEAD = 64 * 1024
-
-/**
- * Read the body once, refusing a declared oversize before the text is
- * touched and the actual byte length before `JSON.parse`.
- */
-async function readBody(
-  c: Context<AppEnv>,
-  maxBytes: number = MAX_BODY_BYTES,
-): Promise<unknown> {
-  const declared = c.req.header("content-length")
-
-  if (declared !== undefined) {
-    const size = Number(declared)
-    if (Number.isFinite(size) && size > maxBytes) {
-      throw new ValidationFailedError(bodyTooLarge(maxBytes))
-    }
-  }
-
-  const text = await c.req.text()
-  const parsed = parseJsonBody(declared, text, maxBytes)
-
-  if (!parsed.ok) {
-    if (parsed.issue === "body-too-large") {
-      throw new ValidationFailedError(bodyTooLarge(maxBytes))
-    }
-    throw new InvalidJsonError()
-  }
-
-  return parsed.value
-}
-
-/** Name the applicable limit rather than a hard-coded 64 KB. */
-function bodyTooLarge(maxBytes: number): string {
-  return `Request body exceeds ${Math.round(maxBytes / 1024)} KB.`
-}
 
 function describe(issues: readonly string[]): string {
   return `The request body is not valid: ${[...new Set(issues)].join(", ")}.`

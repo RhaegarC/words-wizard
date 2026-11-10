@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/*
+ * The admin portal's brand tokens. They are the child app's purple palette,
+ * named for the admin surface so the two applications never depend on each
+ * other's CSS.
+ */
+:root {
+  --admin-purple: #7059dc;
+  --admin-purple-dark: #5942c0;
+  --admin-purple-pale: #eeeafd;
+  --admin-canvas: #f7f5fb;
+  --admin-ink: #302747;
+  --admin-muted: #777180;
+  --admin-line: #e9e5ed;
+  --admin-green: #1f9d63;
+  --admin-amber: #b7791f;
+  --admin-amber-pale: #fdf3e1;
+  --admin-coral: #d4574e;
+  --admin-coral-pale: #fdeeec;
+  --admin-blue: #2f6fd0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--admin-canvas);
+  color: var(--admin-ink);
+  font-family:
+    "Nunito Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

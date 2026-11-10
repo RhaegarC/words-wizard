@@ -193,5 +193,5 @@ switcher UI, parent/teacher dashboards, content CMS or admin UI, facilitator con
 account self-deletion, push notifications, badges/achievements, recorded audio, speech recognition,
 branch preview environments, and any analytics beyond the existing per-user counters. Deletion is
 an operator procedure, not a product feature. Role-based authorization and every gated route are
-deferred to [Mission 3](../../00-mission-3-sprint.md); feature 26 stores the role but enforces nothing
+deferred to [Mission 3](../mission-3/00-mission-3-sprint.md); feature 26 stores the role but enforces nothing
 with it. The admin portal is deferred there too.

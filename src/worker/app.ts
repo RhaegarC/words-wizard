@@ -1,11 +1,17 @@
 import { Hono } from "hono"
 import type { MiddlewareHandler } from "hono"
 
+import { registerAdminRoutes } from "./admin"
 import { createTokenVerifier } from "./auth"
 import type { TokenVerifier } from "./auth"
 import { AVATAR_CACHE_CONTROL, isAvatarKey } from "./avatar"
 import type { WorkerConfig } from "./config"
-import { readConfig, requireAvatars, requireDb } from "./config"
+import {
+  readConfig,
+  requireAvatars,
+  requireDb,
+  requireWordImages,
+} from "./config"
 import {
   contentEtag,
   ifNoneMatchMatches,
@@ -16,6 +22,7 @@ import type { AppEnv } from "./context"
 import { corsMiddleware } from "./cors"
 import { installErrorHandlers } from "./errors"
 import { registerMeRoutes } from "./me"
+import { WORD_IMAGE_CACHE_CONTROL, isWordImageKey } from "./wordImage"
 
 /**
  * Paths the Worker answers, with the methods each accepts. The error handler
@@ -31,6 +38,22 @@ export const ROUTES: Readonly<Record<string, readonly string[]>> = {
   "/v1/me/care": ["POST"],
   "/v1/me/import": ["POST"],
   "/v1/me/avatar": ["POST", "DELETE"],
+  "/v1/admin/content": ["GET"],
+  "/v1/admin/access": ["GET"],
+  "/v1/admin/topics": ["POST"],
+  "/v1/admin/topics/order": ["PUT"],
+  "/v1/admin/topics/:id": ["PATCH"],
+  "/v1/admin/topics/:id/archive": ["POST"],
+  "/v1/admin/topics/:id/restore": ["POST"],
+  "/v1/admin/packs": ["POST"],
+  "/v1/admin/packs/order": ["PUT"],
+  "/v1/admin/packs/:id": ["PATCH"],
+  "/v1/admin/packs/:id/archive": ["POST"],
+  "/v1/admin/packs/:id/restore": ["POST"],
+  "/v1/admin/words": ["POST"],
+  "/v1/admin/words/:id": ["PATCH"],
+  "/v1/admin/words/:id/image": ["POST", "DELETE"],
+  "/v1/admin/packs/:id/membership": ["PUT"],
 }
 
 /**
@@ -110,9 +133,31 @@ export function createApp(options: AppOptions = {}): Hono<AppEnv> {
     c.header("Cache-Control", AVATAR_CACHE_CONTROL)
     return c.body(object.body)
   })
+  // Public: a word picture is fetched by an `<img>` that cannot send a token.
+  // Only the key shape the upload route writes is read, so a traversal or
+  // another prefix is refused before R2 is touched.
+  app.get("/v1/images/*", async (c) => {
+    const key = c.req.path.slice("/v1/images/".length)
+    if (!isWordImageKey(key)) return c.notFound()
+    const object = await requireWordImages(c.env).get(key)
+    if (object === null) return c.notFound()
+    c.header(
+      "Content-Type",
+      object.httpMetadata?.contentType ?? "application/octet-stream",
+    )
+    c.header("Cache-Control", WORD_IMAGE_CACHE_CONTROL)
+    return c.body(object.body)
+  })
+
   // Authenticated user data. Registered after the config and CORS middleware,
   // so a missing var fails before a token is even looked at.
   registerMeRoutes(app, {
+    verifierFor: options.verifierFor ?? configVerifier,
+  })
+
+  // Staff-only content. Registered behind the same verifier factory as the
+  // user routes, so a local test key set serves both.
+  registerAdminRoutes(app, {
     verifierFor: options.verifierFor ?? configVerifier,
   })
 

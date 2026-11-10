@@ -8,20 +8,29 @@ deployment workflow and no Cloudflare deploy token are involved.
 
 ### Configure
 
-The Worker reads its vars from `src/worker/wrangler.jsonc`. Replace the `REPLACE_WITH_*`
-placeholders with the same tenant and client the page uses, or local sign-in cannot be validated:
+The Worker reads its vars from `src/worker/wrangler.jsonc`. Replace `EXPECTED_AUDIENCE` and
+`EXPECTED_TENANT` (the API client id and the **home tenant** id); the issuer and key-set values are
+already the `common` ones:
 
 | Var | Value |
 |---|---|
-| `JWKS_URL` | `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys` |
-| `TOKEN_ISSUER` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
+| `JWKS_URL` | `https://login.microsoftonline.com/common/discovery/v2.0/keys` |
+| `TOKEN_ISSUER` | `https://login.microsoftonline.com/common/v2.0` |
 | `EXPECTED_AUDIENCE` | the API application (client) id |
-| `EXPECTED_TENANT` | the tenant id |
-| `ALLOWED_ORIGINS` | must include `http://localhost:8443` |
+| `EXPECTED_TENANT` | the home tenant id — the only tenant whose app roles are trusted |
+| `ALLOWED_ORIGINS` | must include `http://localhost:8443` and `http://localhost:8444` |
+
+A `TOKEN_ISSUER` carrying `/common/v2.0` selects multi-tenant mode: tokens from any Entra tenant
+and personal Microsoft accounts are accepted, `tid` must be a GUID, and the issuer must be the
+template with that `tid` in place of `common`. Roles are honoured only when `tid` is
+`EXPECTED_TENANT`. A `common` issuer paired with a tenant-specific `JWKS_URL`, or with an
+`EXPECTED_TENANT` that is not a GUID, is refused at startup (`config_missing`). To restrict
+sign-in to one tenant, name that tenant in `TOKEN_ISSUER` and `JWKS_URL` as well.
 
 The `d1_databases[0].database_id` placeholder does not matter locally: `--local` never contacts a
-remote database, and the id is only used before a deploy. The `r2_buckets` binding `AVATARS` is
-emulated the same way: uploads land in the local persistence directory and need no credentials. There is no local secret, so no
+remote database, and the id is only used before a deploy. The `r2_buckets` bindings `AVATARS` and
+`WORD_IMAGES` are emulated the same way: uploads land in the local persistence directory and need
+no credentials. There is no local secret, so no
 `.dev.vars` file is needed. To try an override without editing the file, pass it on the command
 line:
 
@@ -86,6 +95,34 @@ object is deleted again, so a failed request leaves neither a stale key nor an o
 Local uploads and the public reader work against the emulated bucket; `pnpm test` uses its own
 temporary persistence directory.
 
+### Word images
+
+Word pictures use a **separate** bucket, `words-wizard-images`, bound as `WORD_IMAGES`; the avatar
+bucket and its keys are never touched. Two staff routes and one public reader:
+
+| Route | Behaviour |
+|---|---|
+| `POST /v1/admin/words/:id/image` | multipart `file`, ≤2 MiB, JPEG/PNG/WebP by magic bytes; stores `word-images/<wordId>/<uuid>.<ext>`, sets `words.image`, deletes the previous object, bumps the content version |
+| `DELETE /v1/admin/words/:id/image` | clears `words.image`, deletes the object, bumps the version; removing an absent image is a version-neutral no-op |
+| `GET /v1/images/*` | public, no auth; validates the key shape before reading R2, serves the stored type with `Cache-Control: public, max-age=31536000, immutable` |
+
+`src/worker/wordImage.ts` owns the key shape, the URL derivation, and the size cap;
+`detectImageType` and the extension type come from `avatar.ts`, so both buckets accept the same
+three formats and trust neither the declared content type nor the filename. The upload checks
+`Content-Length` before parsing the multipart body and checks the file again afterwards; a rejected
+upload writes nothing and leaves the version alone.
+
+The stored URL is derived from the **request origin**: `<origin>/v1/images/<key>`. In production
+that is the public API host; locally it is the dev server's origin. `wrangler dev` rewrites the
+origin to the first configured custom-domain route unless it is started with
+`--infer-origin-from-routes false`, which is what the host-tier harness does — without it a stored
+image URL points at production and cannot be fetched on a developer machine.
+
+The object is written before the row update and deleted again if the batch fails; the previous
+object is deleted best-effort only after the row update succeeds, so a failed delete leaves no row
+pointing at a missing object. `requireWordImages(env)` throws `ConfigError("WORD_IMAGES")` when the
+binding is absent.
+
 ### Legacy import
 
 `POST /v1/me/import` merges a Mission 1 device export into the token owner's rows.
@@ -119,6 +156,115 @@ share one atomic `db.batch` (≤33 statements); progress is written in chunks of
 because D1 caps bound parameters at 100. Progress is therefore not one atomic batch: a failed run
 leaves a valid prefix and the retry converges.
 
+### Admin routes
+
+`src/worker/admin.ts` owns the staff boundary. Every route under `/v1/admin` runs the same ordered
+chain **before any handler body**:
+
+1. `Cache-Control: no-store` — set first, so not even an error response is cacheable;
+2. `requireAuth` — an anonymous or invalid token is `401`;
+3. `requireRole(["teacher", "admin"])` — a valid token without a staff role is `403` with the
+   `forbidden` code and message *"This operation requires teacher or admin access."*
+
+The role comes from the **verified token's** `roles` claim (`admin` > `teacher` > `user`).
+`profiles.role` is never consulted, so a stale or tampered database row cannot grant access.
+
+| Route | Access | Response |
+|---|---|---|
+| `GET /v1/admin/access` | teacher, admin | `{ role }` for the signed-in caller |
+| `GET /v1/admin/content` | teacher, admin | one content snapshot (see below) |
+| `POST /v1/admin/topics` | teacher, admin | create a topic; the id is derived (`201`) |
+| `PATCH /v1/admin/topics/:id` | teacher, admin | edit bilingual title, icon, descriptions |
+| `POST /v1/admin/topics/:id/archive` · `/restore` | teacher, admin | flip `archived_at` |
+| `PUT /v1/admin/topics/order` | teacher, admin | renumber `sort_order` 1..N |
+| `POST /v1/admin/packs` | teacher, admin | create a pack under a topic (`201`) |
+| `PATCH /v1/admin/packs/:id` | teacher, admin | edit the bilingual title; the topic is immutable |
+| `POST /v1/admin/packs/:id/archive` · `/restore` | teacher, admin | flip `archived_at` |
+| `PUT /v1/admin/packs/order` | teacher, admin | renumber within a topic |
+| `POST /v1/admin/words` | teacher, admin | create a word; the id is derived (`201`); an optional `packId` adds it to that pack in the same batch |
+| `PATCH /v1/admin/words/:id` | teacher, admin | edit the word record; the id and `image` are not accepted |
+| `PUT /v1/admin/packs/:id/membership` | teacher, admin | replace the pack's ordered word list (`1..N`) |
+
+The snapshot differs from the public `/v1/content` bundle because the portal must edit what the
+child app cannot see:
+
+| Field | Contents |
+|---|---|
+| `contentVersion`, `dataset` | the same values `/v1/content` reports |
+| `topics`, `packs` | **archived rows included**, each with `archivedAt`; ordered by `sortOrder` (packs grouped by their topic's order) |
+| `words` | every word, including words assigned to no pack, each with `archivedAt`; ordered by id |
+| `memberships` | one entry **per pack**, including empty packs, with `wordIds` in `position` order |
+
+The pure mapper is `toAdminSnapshot(rows)` in `src/worker/adminContent.ts`; it shares the row reader,
+`toWord`, and the select columns with the public bundle so the two views cannot drift.
+
+**Write mechanics (feature 29).** `src/worker/adminWrite.ts` registers the write routes behind the
+same three middleware. The shared mechanics live in `src/shared/adminWrite.ts`, so the portal and
+the Worker agree on them:
+
+- **Ids are generated, never accepted.** Topic ids are `slugify(title)`; a collision gets `-2`,
+  `-3`, … across live and archived rows. Pack ids are `<topicId>-<n>`, the smallest positive number
+  not used by that topic's packs (archived included). A non-Latin title falls back to `topic-1`,
+  `topic-2`. Ids are immutable.
+- **Body rules run before the database.** The body is parsed against an allowlist of fields; an
+  unknown field (including `id` or, on a pack edit, `topicId`) is `422`. A blank required field is
+  `422`, and so is an empty patch. Malformed JSON is `400 invalid_json`.
+- **Concurrency.** A request may send `If-Match: "<contentVersion>"`. A version that is not the
+  stored one is `409 conflict`; the portal refetches the snapshot under the banner. The header is
+  optional so a script can write without one.
+- **Validation before writing.** The change is applied to the loaded rows in memory, mapped through
+  `toContentBundle`, and checked by the shared validator. Structural errors answer `422
+  validation_failed` with an `issues` array in the error envelope, and nothing is written.
+  Editorial warnings are returned in the successful response. `topic-no-packs` and `pack-no-words`
+  are downgraded to warnings because the editor is incremental.
+- **Atomic version bump.** The row write and
+  `UPDATE content_meta SET content_version = <patch+1>` share one `db.batch`, so the public `ETag`
+  changes exactly when content does. A rejected or no-op write bumps nothing.
+- **Archive is soft and idempotent.** Only `archived_at` changes; a pack under an archived topic
+  keeps `archivedAt: null` and is hidden by its ancestor in the read model. Archiving or restoring
+  a row already in that state is a no-op. Editing an archived row is `409 archived`.
+- **Ordering is a permutation.** The body lists every live id exactly once; a missing or extra id
+  is `422`. Renumbering to the current order is a no-op.
+
+**Word library and membership (feature 30).**
+
+- **Word ids.** `w-<slugify(headword)>`, then `w-…-2`, `w-…-3` on collision across active and
+  archived rows; a headword with no ASCII slug falls back to `w-1`, `w-2`. The id is read-only and
+  never reused.
+- **One headword, one word.** `text` is unique case-insensitively across every word, archived
+  included, enforced by `words_text_nocase`. The route checks it against the loaded rows first, so a
+  duplicate is `409 conflict` with the colliding id — not a constraint failure reported as a server
+  error. An edit may keep its own headword. An archived word cannot be edited (`409 archived`).
+- **No delete, no archive.** There is no word delete or archive route, and no such method is
+  registered, so `DELETE /v1/admin/words/:id` answers `405` with `Allow: PATCH`. Removing a word
+  from every pack is how it stops reaching children; the row and its library entry stay.
+- **Create with a pack.** `POST /v1/admin/words` accepts an optional `packId`. The word insert, the
+  `pack_words` insert at the next position, and the version bump share one `db.batch`; an archived
+  pack or a pack under an archived topic is `409 archived` before anything is written. The response
+  carries `word` and, when a pack was named, `membership`.
+- **Membership is a full ordered replace.** `PUT /v1/admin/packs/:id/membership` takes
+  `{ "ids": [...] }` in the intended order. The write deletes the pack's rows and inserts `1..N` in
+  one atomic batch — `(pack_id, position)` is the primary key, so an in-place renumber cannot be
+  partial. Inserts are chunked at 33 rows per statement to stay inside D1's 100-parameter cap.
+- **Membership rules.** Duplicate ids (`duplicate-id`), unknown words, and archived words are `422
+  validation_failed`, as is a list longer than 500. An archived pack or a pack under an archived
+  topic is `409 archived`. Saving the current order is a no-op that bumps nothing; any accepted
+  change bumps the pack's `updated_at` and the content version.
+- **Words and the public bundle.** A word in no live pack is omitted from `/v1/content` but stays
+  in `/v1/admin/content` and every pack that still holds it. An edit to a shared word changes every
+  pack's appearance, because packs reference the one row. `image` is written only by feature 31's
+  upload route; create and edit reject it as an unknown field.
+
+**405 with `Allow`.** `ROUTES` declares the methods for each admin path. `routeMethodsFor` in
+`src/worker/errors.ts` matches the exact path first, then registered `:param` patterns, so a wrong
+method on `/v1/admin/topics/:id` answers `405` with `Allow: PATCH`, while `POST
+/v1/admin/topics/order` answers `405` with `Allow: PUT`, not `404`.
+
+**CORS.** `ALLOWED_METHODS` now includes `PUT`, and `ALLOWED_HEADERS` includes `If-Match` and
+`If-None-Match`, so the portal's later conditional writes preflight cleanly. Origins stay
+exact-matched. `https://admin.words.nioh.uk` and `http://localhost:8444` must be listed in
+`ALLOWED_ORIGINS`.
+
 ### Debug
 
 - The dev server logs each request and any stack trace to its terminal.
@@ -146,10 +292,15 @@ leaves a valid prefix and the retry converges.
   Use `--remote` only when you mean production, deliberately.
 
 - A `401` from a route the page calls means the access token failed validation. Check that
-  `EXPECTED_AUDIENCE` is the **API** client id (not the SPA client id), that `EXPECTED_TENANT` and
-  `TOKEN_ISSUER` name the same tenant, and that `JWKS_URL` is reachable. The SPA must request
-  `VITE_ENTRA_SCOPE` for that same API client id. A browser-side CORS failure instead means
-  `ALLOWED_ORIGINS` does not list the page origin.
+  `EXPECTED_AUDIENCE` is the **API** client id (not the SPA client id), that `JWKS_URL` is
+  reachable, and that the issuer pair agrees: either `TOKEN_ISSUER` names one tenant (as does
+  `EXPECTED_TENANT`), or it is the `common` template with the shared key set and `EXPECTED_TENANT`
+  still names the home tenant. The SPA must request `VITE_ENTRA_SCOPE` for that same API client
+  id. A browser-side CORS failure instead means `ALLOWED_ORIGINS` does not list the page origin —
+  `http://localhost:8443` for the child app or `http://localhost:8444` for the portal.
+
+- A `403` on an admin route is correct for a signed-in account whose Entra app role is `user` or
+  unassigned. Change the assignment; the next fresh token carries the new role.
 
 - `pnpm worker:typecheck` type-checks the Worker alone. `pnpm test` runs the Worker tests against
   their own temporary D1 directories and never touches this local database.

@@ -13,7 +13,8 @@ export const TEST_ENV = {
   TOKEN_ISSUER: ISSUER,
   EXPECTED_AUDIENCE: AUDIENCE,
   EXPECTED_TENANT: TENANT,
-  ALLOWED_ORIGINS: "https://words.nioh.uk,http://localhost:8443",
+  ALLOWED_ORIGINS:
+    "https://words.nioh.uk,http://localhost:8443,https://admin.words.nioh.uk,http://localhost:8444",
 } as const
 
 export interface TestKey {

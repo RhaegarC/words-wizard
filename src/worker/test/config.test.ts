@@ -33,7 +33,13 @@ describe("readConfig", () => {
       tokenIssuer: TEST_ENV.TOKEN_ISSUER,
       expectedAudience: TEST_ENV.EXPECTED_AUDIENCE,
       expectedTenant: TEST_ENV.EXPECTED_TENANT,
-      allowedOrigins: ["https://words.nioh.uk", "http://localhost:8443"],
+      multiTenant: false,
+      allowedOrigins: [
+        "https://words.nioh.uk",
+        "http://localhost:8443",
+        "https://admin.words.nioh.uk",
+        "http://localhost:8444",
+      ],
     })
   })
 
@@ -100,5 +106,41 @@ describe("readConfig", () => {
       readConfig(env({ JWKS_URL: "  https://login.example.test/jwks  " }))
         .jwksUrl,
     ).toBe("https://login.example.test/jwks")
+  })
+
+  describe("multi-tenant authority", () => {
+    const MULTI_ENV = {
+      ...TEST_ENV,
+      JWKS_URL: "https://login.example.test/common/discovery/v2.0/keys",
+      TOKEN_ISSUER: "https://login.example.test/common/v2.0",
+    }
+
+    it("selects multi-tenant mode for a common issuer template", () => {
+      expect(readConfig(env(MULTI_ENV))).toMatchObject({ multiTenant: true })
+    })
+
+    it("keeps single-tenant mode for an issuer naming one tenant", () => {
+      expect(readConfig(env()).multiTenant).toBe(false)
+    })
+
+    it("refuses a common issuer with a tenant-specific key set", () => {
+      const error = configError(() =>
+        readConfig(
+          env({ ...MULTI_ENV, JWKS_URL: "https://login.example.test/tenant/jwks" }),
+        ),
+      )
+
+      expect(error.key).toBe("JWKS_URL")
+      expect(error.message).toContain("JWKS_URL")
+    })
+
+    it("refuses a common issuer when the home tenant is not a GUID", () => {
+      const error = configError(() =>
+        readConfig(env({ ...MULTI_ENV, EXPECTED_TENANT: "common" })),
+      )
+
+      expect(error.key).toBe("EXPECTED_TENANT")
+      expect(error.message).toContain("EXPECTED_TENANT")
+    })
   })
 })
