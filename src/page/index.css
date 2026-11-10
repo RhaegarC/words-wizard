@@ -264,6 +264,13 @@ a:focus-visible,
   width: 100%;
 }
 
+/* Sign-in offers account creation beside the primary Microsoft button. */
+.signin-create {
+  min-height: 44px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;

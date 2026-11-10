@@ -32,6 +32,8 @@
   "auth.title": "Sign in to Words Wizard",
   "auth.lead": "Your words and progress follow you to any device.",
   "auth.signIn": "Sign in with Microsoft",
+  "auth.createAccount": "Don't have an account? Create one",
+  "auth.opensNewTab": "opens in a new tab",
   "auth.signingIn": "Taking you to sign in…",
   "auth.offline": "You need to be online to sign in.",
   "auth.privacy": "We use your Microsoft account only to recognise your progress. No email, no tracking.",

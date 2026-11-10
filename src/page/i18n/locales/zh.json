@@ -32,6 +32,8 @@
   "auth.title": "登录单词魔法师",
   "auth.lead": "你的单词和进度会跟随你到任何设备。",
   "auth.signIn": "使用 Microsoft 登录",
+  "auth.createAccount": "还没有账户？创建一个",
+  "auth.opensNewTab": "在新标签页中打开",
   "auth.signingIn": "正在前往登录…",
   "auth.offline": "需要联网才能登录。",
   "auth.privacy": "我们只用你的 Microsoft 账户识别学习进度，不会读取邮箱，也不会追踪。",
