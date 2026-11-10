@@ -31,8 +31,8 @@ export interface AuthConfig {
 }
 
 export class AuthConfigError extends Error {
-  constructor(readonly key: AuthEnvKey) {
-    super(`Missing or blank configuration: ${key}`)
+  constructor(readonly key: string, problem = "Missing or blank") {
+    super(`${problem} configuration: ${key}`)
     this.name = "AuthConfigError"
   }
 }
