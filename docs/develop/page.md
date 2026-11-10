@@ -61,7 +61,7 @@ pnpm install
 `VITE_API_BASE_URL` points at the local Worker, never at production. With the registration set to
 **Accounts in any organizational directory and personal Microsoft accounts**, keep
 `VITE_ENTRA_TENANT_ID=common`; a GUID there pins MSAL to that tenant and returns `AADSTS50020` for
-every account outside it ([bug 04](../../bugs/04-out-of-tenant-signin.md)). The Entra registration
+every account outside it ([bug 04](../../bugs/archive/04-out-of-tenant-signin.md)). The Entra registration
 must list `http://localhost:8443/` as a redirect URI in addition to `https://words.nioh.uk/`, or
 sign-in returns to an unregistered origin. It must also expose the
 `api://<client-id>/access_as_user` scope and issue v2 access tokens; without those, sign-in
