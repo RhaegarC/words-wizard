@@ -82,6 +82,7 @@ pnpm install
 |---|---|
 | `VITE_ENTRA_CLIENT_ID` | the SPA application (client) id |
 | `VITE_ENTRA_TENANT_ID` | `common` — any Entra tenant and personal Microsoft accounts — or one tenant id to restrict sign-in |
+| `VITE_PORTAL_ENTRA_TENANT_ID` | admin portal only: the **home tenant id** (a GUID); the portal is single-tenant |
 | `VITE_ENTRA_SCOPE` | `api://<client-id>/access_as_user` |
 | `VITE_API_BASE_URL` | `http://localhost:8787` |
 | `VITE_AVATAR_BASE_URL` | optional; unset means `http://localhost:8787/v1/avatars` |
@@ -102,9 +103,10 @@ pnpm dev          # terminal 2, http://localhost:8443
 ```
 
 The dev server serves on **http://localhost:8443**. The admin portal is a separate app on
-**http://localhost:8444** (`pnpm dev:portal`) against the same Worker and `src/.env`; it needs
-`http://localhost:8444/` registered as a redirect URI and listed in the Worker's
-`ALLOWED_ORIGINS`. The package and build configs live in `src/`; the child React app and its
+**http://localhost:8444** (`pnpm dev:portal`) against the same Worker and `src/.env`, with
+`VITE_PORTAL_ENTRA_TENANT_ID` set to the home tenant id; the portal is single-tenant, so a
+personal or other-tenant account cannot sign in there. It needs `http://localhost:8444/`
+registered as a redirect URI and listed in the Worker's `ALLOWED_ORIGINS`. The package and build configs live in `src/`; the child React app and its
 assets live in `src/page/`, the admin portal in `src/portal/`, and pure domain code in
 `src/shared/`. The repository root stays clean.
 
@@ -228,7 +230,9 @@ Workers Builds settings:
 The Pages build needs `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_TENANT_ID`,
 `VITE_ENTRA_SCOPE`, and `VITE_API_BASE_URL` in its environment; it optionally
 takes `VITE_AVATAR_BASE_URL` to read photos from the R2 domain instead of the
-Worker. They are public configuration. The Worker reads its vars from
+Worker. The **admin portal's** Pages project additionally needs
+`VITE_PORTAL_ENTRA_TENANT_ID` set to the home tenant id; it does not read
+`VITE_ENTRA_TENANT_ID`. They are public configuration. The Worker reads its vars from
 `src/worker/wrangler.jsonc`, the D1 database id goes in
 `d1_databases[0].database_id`, and the two buckets — `words-wizard-avatars`
 (`AVATARS`) and `words-wizard-images` (`WORD_IMAGES`) — go in `r2_buckets`.

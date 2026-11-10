@@ -27,19 +27,24 @@ Connect a second Pages project to `RhaegarC/words-wizard`:
 Attach the custom domain `admin.words.nioh.uk`; TLS is automatic. Previews stay off for the same
 reason as the child app: an unreviewed build must not be publicly reachable.
 
-The portal reads the **same build-time variables** as the child app, from the same `src/.env`:
+The portal reads the child app's build-time variables from the same `src/.env`, plus one of its
+own:
 
 - `VITE_ENTRA_CLIENT_ID`
-- `VITE_ENTRA_TENANT_ID`
 - `VITE_ENTRA_SCOPE` — `api://<client-id>/access_as_user`
 - `VITE_API_BASE_URL` — `https://wordsapi.nioh.uk`
 - `VITE_AVATAR_BASE_URL` — optional; the portal currently renders no avatars
+- `VITE_PORTAL_ENTRA_TENANT_ID` — **the home tenant id**, a GUID
 
-`VITE_ENTRA_TENANT_ID` is `common`, the same multi-tenant authority the child app uses, so both
-front ends admit any Entra tenant and personal Microsoft accounts. The Worker still trusts app
-roles only from the home tenant named by `EXPECTED_TENANT`; a portal signed in from any other
-tenant is stored and treated as `user`, and sees Access Denied. There is no client secret. The
-existing Entra registration must also list the portal's redirect URIs —
+The portal is **single-tenant**: it builds its MSAL authority from
+`VITE_PORTAL_ENTRA_TENANT_ID`, not from the child app's `VITE_ENTRA_TENANT_ID=common`. Entra
+therefore refuses a personal Microsoft account or an account from another tenant at sign-in,
+before any token reaches the portal — those accounts can never hold the home tenant's app
+roles. The value must be a GUID; `common`, `organizations`, `consumers`, or a domain name leaves
+the portal on its "not configured" card naming the key. Access Denied is therefore reserved for
+a **home-tenant member without a teacher/admin assignment**. The Worker still trusts app roles
+only from the home tenant named by `EXPECTED_TENANT`. There is no client secret. The existing
+Entra registration must also list the portal's redirect URIs —
 `https://admin.words.nioh.uk/` and `http://localhost:8444/` — or sign-in returns to an
 unregistered origin. The registration checklist is in
 [operations.md → Entra ID](../operations.md#entra-id).
@@ -49,8 +54,9 @@ The portal origin must also be in the Worker's `ALLOWED_ORIGINS`
 
 ## Local development
 
-Use the same `src/.env` as the child app. The portal inherits its redirect URI from the page origin
-at runtime, so running on `http://localhost:8444` asks Entra for `http://localhost:8444/`.
+Use the same `src/.env` as the child app, with `VITE_PORTAL_ENTRA_TENANT_ID` added and set to the
+home tenant id. The portal inherits its redirect URI from the page origin at runtime, so running
+on `http://localhost:8444` asks Entra for `http://localhost:8444/`.
 
 Start the local Worker first, then the portal:
 
@@ -73,7 +79,7 @@ The shell draws one of four states; the API decides which, not the URL:
 |---|---|
 | Loading | restoring the MSAL session, or fetching the access role and snapshot |
 | Signed out | no Entra account; shows **Sign in with Microsoft**. An expired session says so first |
-| Access Denied | signed in, but the token's role is `user`; shows the address and **Sign out** |
+| Access Denied | signed in to the home tenant, but the token's role is `user`; shows the address and **Sign out** |
 | Staff | `teacher` or `admin`; shows the shell and the selected screen |
 
 Role precedence is `admin` > `teacher` > `user`, decoded from the access token's `roles` claim for
@@ -139,10 +145,14 @@ is prevented by the picker, and a server `422` is shown above the list with the 
 - A CORS error means `ALLOWED_ORIGINS` does not list `http://localhost:8444`.
 - A `401` means the token failed validation — check the Worker auth values in
   [worker.md](worker.md#debug).
-- A `403` means the account's Entra app role is `user` (or unassigned). Change the assignment under
-  **Enterprise applications → Users and groups**; the next fresh token carries the new role.
-- The portal renders "The portal is not configured" with the missing key name when a required
-  `VITE_*` value is absent.
+- A `403` means the home-tenant account's Entra app role is `user` (or unassigned). Change the
+  assignment under **Enterprise applications → Users and groups**; the next fresh token carries
+  the new role.
+- A personal or other-tenant account must not complete sign-in at all. If it does, check
+  `VITE_PORTAL_ENTRA_TENANT_ID`: a `common` there is the configuration bug this portal refuses to
+  start with.
+- The portal renders "The portal is not configured" with the missing or invalid key name when a
+  required `VITE_*` value is absent.
 - `pnpm test` includes the portal's unit tests under `src/portal/test/`; `pnpm build:portal` alone
   checks the production build.
 
