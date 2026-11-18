@@ -1,6 +1,6 @@
 # Bug 06 — My Words collection stays empty after a session
 
-> Severity: Normal · Status: In review — PR [#104](https://github.com/RhaegarC/words-wizard/pull/104)
+> Severity: Normal · Status: Fixed — PR [#104](https://github.com/RhaegarC/words-wizard/pull/104) merged
 > Reported: 2026-11-18 · Feature: 12 (My Words) with 22 (content store) and 24 (client online integration)
 
 ## Summary
