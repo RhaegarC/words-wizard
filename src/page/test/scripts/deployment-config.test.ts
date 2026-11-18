@@ -108,7 +108,7 @@ describe("deployment configuration", () => {
     const config = read(wrangler)
 
     expect(doc).toContain(
-      "wrangler d1 migrations apply DB --remote --config worker/wrangler.jsonc && wrangler deploy --config worker/wrangler.jsonc",
+      "npx wrangler d1 migrations apply DB --remote --config worker/wrangler.jsonc && npx wrangler deploy --config worker/wrangler.jsonc",
     )
     expect(config).toContain('"migrations_dir": "drizzle"')
     expect(config).toContain('"pattern": "wordsapi.nioh.uk"')
