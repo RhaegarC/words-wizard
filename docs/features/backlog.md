@@ -1,48 +1,21 @@
 # Backlog
 
-Ideas that are not yet features. `/implement` and `/next` ignore this file — only numbered
-`docs/features/NN-name.md` files claim a priority slot. Promote an item with `/capture feature NN`,
-which stress-tests it into a real spec.
+Ideas that are not yet features. Will added to the application in future.
 
-## Phase 2 candidates
+## Features List
 
-| Idea | Why it is not specced yet |
-|---|---|
-| **Badges / achievements** | PRD §13 puts badges in Phase 2. Needs a badge catalogue, trigger rules, and art before it can claim a slot. |
-| **Tricky Words** | Phase 2 per PRD §11. Auto-populated from mistakes; the data already exists as `wrongCount`. |
-| **Additional topics and packs** | Content is the critical path for a reviewed launch set (feature 17); more topics wait until that set is proven. |
-| **Richer stage animations** | Cosmetic; the five-stage art and progress bar are enough for v1. |
-| **Spaced-repetition refinements** | SM-2-lite is deliberately simple; tune only after real retention data from Monthly Review. |
-| **Notification-free reminders** | In-app only in v1 (PRD §7.2). A reminder needs a return-visit hook without push permission. |
-
-## Phase 3 candidates
-
-| Idea | Why it is not specced yet |
-|---|---|
-| **Facilitator panel** | Focus list, mute/skip a word, custom word lists (PRD §11). Custom words raise the content-validation question: the validator cannot check an allowlist for user-authored content. |
-| **JSON import** | Export ships in v1 (feature 14); import needs a schema-version migration and conflict rules. |
-| **Story mode** | A different content and pacing model; not an extension of the session engine. |
-| **Timed challenges** | Contradicts the "no punishing timers" stance of PRD §10 unless designed as an opt-in. |
-| **Speaking practice / pronunciation scoring** | Needs a speech-recognition model and raises content-size and privacy questions. |
-| **Phrases and sentences** | The word schema supports `examples`, but the session modes assume a single word; packs of phrases need a new mode contract. |
-| **Native packaging** | PWA is the delivery model (PRD §4.4); Capacitor adds stores, signing, and review. |
-
-## Future
-
-| Idea | Why it is not specced yet |
-|---|---|
-| **Co-op / team mode** | Requires a social design and consent model the product explicitly avoids in v1. |
-| **Parent dashboard** | Requires a reporting model, an admin portal, and a privacy review; PRD §2 lists it as a non-goal. |
-| **Recorded audio** | Web Speech + IPA covers v1; recorded audio is 300+ files and a content-rights question. The schema reserves `audioUrl?: string`. |
-
-## Rejected for v1 (do not re-propose without new information)
-
-| Idea | Why it was rejected |
-|---|---|
-| Offline practice or a guest profile | PRD §4.19: the app is online-only; a failed API call shows retry. Installation is not a durability gate. |
-| Telemetry, analytics, or crash reporting | PRD §4.16: per-user counters in D1 only. |
-| Leaderboards or class dashboards | PRD §2 non-goal: social features and teacher reporting are out. |
-| Speech recognition / pronunciation scoring | PRD §2 non-goal. |
-| Push notifications or background jobs | In-app warnings only; no notifications in v1 (PRD §7.2). |
-| Hard install gate | PRD §4.4: a strong prompt, never a block. |
-| Multiple profiles per identity or a profile picker | PRD §3: one profile per Entra identity in v1; siblings need two accounts. |
+| No | Priority | Title | Description |
+|---|---|---|---|
+| 01 | H | **Remove Buddy** | Buddy related features should be removed, which is only used for off-line mode. |
+| 02 | H | **Free Practice** | Let use select unlocaked packs of current topic to practice freely. | 
+| 03 | H | **Badges / achievements** | Achievements system including items for user such as points, levels, badges, medals and trophies. |
+| 04 | M | **Daily Checkin** | User get points on daily checkin and practice. Achievements for consencutive check-ins, week,month, year and so on. |
+| 05 | H | **Exam Mode**| Add exams for topic leve, focus on spelling part. |
+| 06 | M | **Topic Status** | Add satatus for topic-user: None/Learning/Completed. Mark to compleate after all the exam items passed. |
+| 07 | M | **Words import** | Import new words in admin portal with duplication vaidation, and AI generated contents such as icons, meanings and examples. |
+| 07 | M | **Pack Validation** | Avoid duplicated words in same topic, different packs. Add validation for pack saving. |
+| 09 | L | **Timed challenges** | Try to spell more words with a limited time. Achievement related. |
+| 10 | L | **Notification-free reminders** | A reminder needs a return-visit hook without push permission. |
+| 11 | L | **Co-op / team mode** | Requires a social design and consent model. |
+| 12 | L | **Parent dashboard** | Requires a reporting model, an admin portal, and a privacy review. |
+| 13 | L | **Class Mode** | Manage classes in admin portal, assing tasks and exams. |
