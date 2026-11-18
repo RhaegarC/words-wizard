@@ -24,10 +24,6 @@ import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 import type { WordsTab } from "../router/routes"
 
-const WORDS = getAllWords()
-const TOPICS = getTopics()
-const TOPICS_BY_ID = new Map(TOPICS.map((topic) => [topic.id, topic]))
-
 const STATUS_KEYS = {
   new: "words.newStatus",
   learning: "words.learning",
@@ -51,6 +47,10 @@ export function WordsScreen({
   const { progress, failed } = useProfileProgress(profile.id)
   const [filters, setFilters] = useState<WordFilters>(DEFAULT_FILTERS)
   const listRef = useRef<HTMLUListElement>(null)
+  // Read at render: boot fetches the bundle after this module is evaluated.
+  const words = getAllWords()
+  const topics = getTopics()
+  const topicsById = new Map(topics.map((topic) => [topic.id, topic]))
   // StrictMode runs the effect twice; the ref keeps the metric at one per open.
   const recordedTab = useRef<WordsTab | null>(null)
 
@@ -78,8 +78,8 @@ export function WordsScreen({
   const definitionFor = (word: CollectedWord["word"], active: Locale) =>
     active === "zh" ? word.definitionZh : word.definitionEn
 
-  const collected = progress === null ? null : getCollected(progress, WORDS)
-  const mastered = progress === null ? null : getMastered(progress, WORDS)
+  const collected = progress === null ? null : getCollected(progress, words)
+  const mastered = progress === null ? null : getMastered(progress, words)
   const heading = t(
     tab === "collection" ? "words.collectionTitle" : "words.wordBookTitle",
   )
@@ -102,7 +102,7 @@ export function WordsScreen({
     )
   } else if (tab === "collection") {
     const entries = collected ?? []
-    const counts = countByStatus(progress, WORDS)
+    const counts = countByStatus(progress, words)
     const topicCounts = countByTopic(entries)
     const visible = applyFilters(entries, filters, Date.now())
 
@@ -125,7 +125,7 @@ export function WordsScreen({
               </h2>
               <ul className="words-topic-counts">
                 {topicCounts.map(({ topicId, count }) => {
-                  const topic = TOPICS_BY_ID.get(topicId)
+                  const topic = topicsById.get(topicId)
 
                   if (topic === undefined) {
                     return null
@@ -164,7 +164,7 @@ export function WordsScreen({
                   }
                 >
                   <option value="">{t("words.allTopics")}</option>
-                  {TOPICS.map((topic) => (
+                  {topics.map((topic) => (
                     <option key={topic.id} value={topic.id}>
                       {locale === "zh" ? topic.titleZh : topic.title}
                     </option>

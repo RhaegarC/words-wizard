@@ -24,8 +24,6 @@ const STATE_KEYS: Record<CharacterCondition, MessageKey> = {
   sleeping: "character.sleeping",
 }
 
-const CONTENT = getHomeContent()
-
 /**
  * PRD §7.2, §7.5. Home is a derivation of the stored profile and progress;
  * `buildHomeView` owns every threshold and date rule, so this screen only
@@ -50,7 +48,8 @@ export function HomeScreen({
           profile,
           progress,
           introductions,
-          content: CONTENT,
+          // Read at render: boot fetches the bundle after this module loads.
+          content: getHomeContent(),
           now: Date.now(),
           config,
         })
