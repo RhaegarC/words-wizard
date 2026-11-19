@@ -62,6 +62,8 @@ export interface SessionSeed {
   localDate: string
   kind: SessionKind
   contentVersion: string
+  /** The chosen pack for a free session; absent for daily and monthly. */
+  scope?: string
 }
 
 export interface BuildSessionInput {
@@ -127,12 +129,14 @@ export function sessionSeed(
   now: number,
   kind: SessionKind,
   contentVersion: string,
+  scope?: string,
 ): SessionSeed {
   return {
     profileId,
     localDate: localDateKey(now),
     kind,
     contentVersion,
+    ...(scope === undefined ? {} : { scope }),
   }
 }
 
@@ -461,8 +465,16 @@ export function buildSessionResult(state: SessionState): SessionResult | null {
     })
   }
 
+  const scope = state.seed.scope === undefined ? [] : [state.seed.scope]
+
   return {
-    id: `${state.seed.profileId}:${state.seed.kind}:${state.seed.localDate}:${state.startedAt}`,
+    id: [
+      state.seed.profileId,
+      state.seed.kind,
+      ...scope,
+      state.seed.localDate,
+      state.startedAt,
+    ].join(":"),
     kind: state.seed.kind,
     startedAt: state.startedAt,
     completedAt: state.completedAt,
@@ -566,20 +578,33 @@ function selectNewEntries(input: BuildSessionInput): SessionEntry[] {
   return []
 }
 
+function unlockedPacks(input: BuildSessionInput): Pack[] {
+  return unlockedPacksFor(
+    input.profile.currentTopicId,
+    input.packs,
+    input.introductions,
+  )
+}
+
 /**
  * The selected topic's unlocked packs, in order. The first pack is always
  * open; each later pack opens once every word of the pack before it has been
  * introduced to this user in that pack.
+ *
+ * Exported for the free-practice picker, which applies the same unlock rule
+ * without building a daily session.
  */
-function unlockedPacks(input: BuildSessionInput): Pack[] {
-  const topicId = input.profile.currentTopicId
-
+export function unlockedPacksFor(
+  topicId: string | null,
+  packs: readonly Pack[],
+  introductions: readonly IntroductionWrite[],
+): Pack[] {
   if (topicId === null) {
     return []
   }
 
-  const introduced = introductionSet(input.introductions)
-  const ordered = input.packs
+  const introduced = introductionSet(introductions)
+  const ordered = packs
     .filter((pack) => pack.topicId === topicId)
     .sort(
       (left, right) =>
@@ -730,9 +755,13 @@ function advance(state: SessionState, now: number): SessionState {
 
 /** The session's stable string form; also the base of every exercise seed. */
 export function sessionSeedKey(seed: SessionSeed): string {
-  return [seed.profileId, seed.localDate, seed.kind, seed.contentVersion].join(
-    "|",
-  )
+  return [
+    seed.profileId,
+    seed.localDate,
+    seed.kind,
+    seed.contentVersion,
+    ...(seed.scope === undefined ? [] : [seed.scope]),
+  ].join("|")
 }
 
 /** One exercise's seed: the session, its word, and its mode. */

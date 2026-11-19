@@ -1,7 +1,7 @@
 # Mission 4 — Sprint Goal: "Practice freely, prove mastery, collect the proof"
 
-> Status: **Mission 4 is specced; implementation has not started.** Features 34–37 have design
-> files and move to Done as their implementation PRs merge.
+> Status: **In progress — feature 34 is implemented; features 35–37 are specced.** Each feature
+> moves to Done as its implementation PR merges.
 > Depends on: Mission 2 (features 21–27) and Mission 3 (features 28–31) repository work complete.
 > Buddy removal (backlog item 01) is deliberately not part of this mission; Buddy remains a live
 > online feature.
@@ -84,7 +84,7 @@ and deferred by Mission 3.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 34 | [Free Practice](34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Specced | — |
+| 34 | [Free Practice](34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Implemented | — |
 | 35 | [Exam Mode](35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Specced | 34 |
 | 36 | [Topic Status](36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Specced | 35 |
 | 37 | [Badges and achievements](37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Specced | 34–36 |

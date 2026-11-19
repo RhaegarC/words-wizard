@@ -195,6 +195,7 @@ async function createProfile(
 function commitPayload(
   overrides: {
     sessionId?: string
+    kind?: string
     words?: string[]
     introductions?: Array<{
       packId: string
@@ -211,7 +212,7 @@ function commitPayload(
   return {
     session: {
       id: overrides.sessionId ?? "session-default",
-      kind: "daily",
+      kind: overrides.kind ?? "daily",
       localDate: "2026-10-30",
       contentVersion: "0.3.0",
       xpEarned: 7,
@@ -561,6 +562,34 @@ describe("session commit", () => {
         "user_id = 'user-session' AND session_id = 'session-first'",
       ),
     ).toBe(2)
+  })
+
+  it("stores a free session with no introductions", async () => {
+    const oid = "user-session-free"
+    await createProfile(oid)
+
+    const response = await call("/v1/me/sessions", {
+      token: await token(oid),
+      method: "POST",
+      body: commitPayload({
+        sessionId: "session-free",
+        kind: "free",
+        introductions: [],
+        metrics: {
+          [METRIC_NAMES.sessionCompleted]: 1,
+          [METRIC_NAMES.xpEarned]: 7,
+        },
+      }),
+    })
+
+    expect(response.status).toBe(200)
+    expect(
+      count(
+        "sessions",
+        "user_id = 'user-session-free' AND id = 'session-free' AND kind = 'free'",
+      ),
+    ).toBe(1)
+    expect(count("pack_introductions", "user_id = 'user-session-free'")).toBe(0)
   })
 
   it("replays the identical payload without counting anything twice", async () => {

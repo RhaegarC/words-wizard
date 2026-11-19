@@ -444,10 +444,11 @@ describe("user tables", () => {
   )
 
   it(
-    "refuses a session kind outside daily and monthly",
+    "refuses a session kind outside daily, monthly and free",
     () => {
       execute(userInsert("db-user-kind"))
       execute(sessionInsert("db-user-kind", "db-session-ok"))
+      execute(sessionInsert("db-user-kind", "db-session-free", "free"))
 
       expectRefused(
         sessionInsert("db-user-kind", "db-session-bad", "weekly"),

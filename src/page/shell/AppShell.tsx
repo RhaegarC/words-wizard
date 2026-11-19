@@ -30,7 +30,7 @@ const NAV: readonly NavItem[] = [
   },
   {
     id: "session",
-    route: { id: "session" },
+    route: { id: "session-hub" },
     label: "home.practice",
     icon: "sparkle",
   },
@@ -57,6 +57,11 @@ function activeNav(route: Route): NavId | null {
     case "session-intro":
     case "session-exercise":
     case "session-summary":
+    case "session-hub":
+    case "session-free":
+    case "session-free-pack":
+    case "session-free-exercise":
+    case "session-free-summary":
       return "session"
     case "words":
     case "word-detail":

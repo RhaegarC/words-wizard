@@ -96,7 +96,7 @@ describe("session record", () => {
     // the API provider's profile id is the token's 36-character GUID oid.
     const oid = "ccb380dd-25b7-43ea-a371-6b2ffe52cfcd"
 
-    for (const kind of ["daily", "monthly"] as const) {
+    for (const kind of ["daily", "monthly", "free"] as const) {
       expect(
         issues((p) => {
           p.session.kind = kind
@@ -106,7 +106,13 @@ describe("session record", () => {
     }
   })
 
-  it("accepts only the two session kinds", () => {
+  it("accepts daily, monthly, and free session kinds", () => {
+    for (const kind of ["daily", "monthly", "free"] as const) {
+      expect(issues((p) => (p.session.kind = kind))).not.toContain(
+        "session-kind-invalid",
+      )
+    }
+
     expect(issues((p) => (p.session.kind = "weekly" as "daily"))).toContain(
       "session-kind-invalid",
     )
