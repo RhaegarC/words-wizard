@@ -180,6 +180,13 @@ export async function startWorker(
     "127.0.0.1",
     "--port",
     String(port),
+    // The inspector proxy binds a direct socket at the inspector port, and
+    // wrangler defaults that to a fixed 9229. Every test file in this tier
+    // boots its own Worker, so the default lets one instance win and the rest
+    // die with "Address already in use". Port 0 lets the OS pick one per
+    // instance; nothing in the tier attaches a debugger.
+    "--inspector-port",
+    "0",
     "--persist-to",
     persistDir,
     // Without this, wrangler dev rewrites request.url and Host to the first

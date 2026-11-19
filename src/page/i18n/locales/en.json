@@ -113,6 +113,9 @@
   "topics.selected": "Selected",
   "topics.packCount_one": "{count} pack",
   "topics.packCount_other": "{count} packs",
+  "topics.status.none": "None",
+  "topics.status.learning": "Learning",
+  "topics.status.completed": "Completed",
   "topics.mastered_one": "{count} word mastered",
   "topics.mastered_other": "{count} words mastered",
 

@@ -1,6 +1,6 @@
 # Feature 36 — Topic Status
 
-> Priority: Must · Mission 4 · **Status: Specced**
+> Priority: Must · Mission 4 · **Status: Implemented**
 > Depends on: 35 (the persisted exam completion signal). Blocks: none.
 > Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
 
@@ -71,17 +71,17 @@ introductions as `none` until a normal session introduces a word.
 
 ## Acceptance criteria
 
-- [ ] A topic with no introductions shows None; after one committed introduction it shows Learning.
-- [ ] A topic shows Completed only after every exam part has passed, and never returns to
+- [x] A topic with no introductions shows None; after one committed introduction it shows Learning.
+- [x] A topic shows Completed only after every exam part has passed, and never returns to
       Learning or None.
-- [ ] The topic picker and the hub exam card agree for the same topic.
-- [ ] A demoted or weaker word does not change the status.
-- [ ] Words shared by several packs in one topic count once for Learning; unknown or archived packs
+- [x] The topic picker and the hub exam card agree for the same topic.
+- [x] A demoted or weaker word does not change the status.
+- [x] Words shared by several packs in one topic count once for Learning; unknown or archived packs
       do not count.
-- [ ] A legacy import without introductions leaves the topic None until a normal session
+- [x] A legacy import without introductions leaves the topic None until a normal session
       introduces a word.
-- [ ] Content growth on a completed topic does not clear Completed.
-- [ ] Both locales cover the three labels and the gate copy.
+- [x] Content growth on a completed topic does not clear Completed.
+- [x] Both locales cover the three labels and the gate copy.
 
 ## Test plan
 
@@ -98,6 +98,42 @@ introductions as `none` until a normal session introduces a word.
 
 PRD §6.5/§7.8/Appendix A (status and entry points); privacy (completion is part of the exam record);
 the topic picker and hub copy in both locales when the feature lands.
+
+## Implementation notes
+
+- `src/shared/topicStatus.ts` owns `deriveTopicStatus`. Completed is checked first from any
+  matching exam's `completedAt`; otherwise the function intersects the topic's live packs with its
+  introduction rows. It never reads word-level progress, so demotion, strength and legacy import
+  rows cannot change the result. A completed topic stays Completed even when its live packs are
+  gone; a topic with no introductions and no live packs is None.
+- `src/page/components/useTopicStatus.ts` reads introductions and `getExams()` together for the
+  topic picker, and exposes `useIntroductions` for the hub (which already reads its gate through
+  `getExam`). Both screens call the same pure function while rendering, so their badges agree and
+  content is never captured at module scope.
+- The topic picker shows a loading state while the two reads are in flight and `errors.generic` if
+  either fails. Every live topic card carries a `topics.status.*` badge beside the existing pack
+  count and selected treatment.
+- The hub exam card shows the same badge and always renders `exam.gate`
+  (`introduced / total`); its disabled state still follows the Worker's `gate.unlocked`, not the
+  client's status.
+- No schema, migration, Worker route, PRD or privacy change was needed: completion is feature 35's
+  `topic_exam_progress.completed_at`, and PRD §7.8 and Appendix A already describe the status.
+
+## Verification
+
+- `pnpm typecheck` — clean.
+- `pnpm test` — 84 files passed, 1 skipped; 1132 tests passed, 5 skipped (the credential-gated
+  remote tier). The host-tier harness now passes `--inspector-port 0`: wrangler's inspector proxy
+  binds a direct socket at a fixed 9229 by default, so parallel test files each booting a Worker
+  collided on it. Not a feature change, but it is what made this suite reliably green.
+- Shared unit tier — None/Learning/Completed boundaries, shared word across packs, unknown and
+  other-topic packs, archived topic, completed with new introductions, and other-topic exam state.
+- Host tier — a real Worker/D1 identity moves None → Learning on a committed introduction →
+  Completed on a passed exam, and stays Completed after a retake.
+- Page tier — both locale label sets and the hub gate copy.
+- `pnpm build`, `pnpm check:dist` — pass.
+- Manual browser pass (topic picker badges in both locales, hub card, fresh topic → Learning →
+  Completed → retake) is still pending.
 
 ## Out of scope
 

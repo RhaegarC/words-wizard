@@ -3,9 +3,11 @@ import type { AddressInfo } from "node:net"
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 
-import type { ExamResult, TopicExam } from "../../shared/exam"
+import type { ExamResult, TopicExam, TopicExamState } from "../../shared/exam"
 import { METRIC_NAMES } from "../../shared/metrics"
 import type { MeResponse } from "../../shared/me"
+import { deriveTopicStatus } from "../../shared/topicStatus"
+import type { Pack } from "../../shared/types"
 import { startWorker, workerConfig, type RunningWorker } from "./harness"
 import { TEST_ENV, createTestKey, mintToken, type TestKey } from "./tokens"
 
@@ -420,5 +422,91 @@ describe("topic exam", () => {
         `SELECT passed_parts, content_version FROM topic_exam_progress WHERE user_id = '${oid}' AND topic_id = 'x-t1'`,
       )[0],
     ).toEqual({ passed_parts: 1, content_version: "v2" })
+  })
+
+  it("derives the topic status from the stored introductions and exam", async () => {
+    const statusOid = "user-topic-status"
+    const packs: Pack[] = [
+      {
+        id: "x-p1",
+        title: "Pack 1",
+        titleZh: "包 1",
+        topicId: "x-t1",
+        wordIds: ["x-w1", "x-w2"],
+        order: 1,
+      },
+      {
+        id: "x-p2",
+        title: "Pack 2",
+        titleZh: "包 2",
+        topicId: "x-t1",
+        wordIds: ["x-w3"],
+        order: 2,
+      },
+    ]
+
+    const readStatus = async () => {
+      const [me, examResponse] = await Promise.all([
+        call("/v1/me", { token: await token(statusOid) }).then((response) =>
+          json<MeResponse>(response),
+        ),
+        call("/v1/me/exams", { token: await token(statusOid) }).then(
+          (response) => json<{ exams: TopicExamState[] }>(response),
+        ),
+      ])
+
+      return deriveTopicStatus({
+        topicId: "x-t1",
+        packs,
+        introductions: me.introductions,
+        exams: examResponse.exams,
+      })
+    }
+
+    await createProfile(statusOid)
+    await expect(readStatus()).resolves.toBe("none")
+
+    await introduce(statusOid, "status-intro-1", [
+      { packId: "x-p1", wordId: "x-w1" },
+    ])
+    await expect(readStatus()).resolves.toBe("learning")
+
+    await introduce(statusOid, "status-intro-2", [
+      { packId: "x-p1", wordId: "x-w2" },
+      { packId: "x-p2", wordId: "x-w3" },
+    ])
+
+    const open = await getExam(statusOid, "x-t1")
+    expect(open.gate.unlocked).toBe(true)
+
+    const passed = await submit(statusOid, {
+      topicId: "x-t1",
+      partIndex: 0,
+      attemptId: "status-pass",
+      contentVersion: open.contentVersion,
+      answers: [
+        { wordId: "x-w1", answer: "alpha" },
+        { wordId: "x-w2", answer: "bravo" },
+        { wordId: "x-w3", answer: "charlie" },
+      ],
+    })
+
+    expect(passed.result?.passed).toBe(true)
+    await expect(readStatus()).resolves.toBe("completed")
+
+    const retake = await submit(statusOid, {
+      topicId: "x-t1",
+      partIndex: 0,
+      attemptId: "status-retake",
+      contentVersion: open.contentVersion,
+      answers: [
+        { wordId: "x-w1", answer: "alpha" },
+        { wordId: "x-w2", answer: "bravo" },
+        { wordId: "x-w3", answer: "charlie" },
+      ],
+    })
+
+    expect(retake.result?.passed).toBe(true)
+    await expect(readStatus()).resolves.toBe("completed")
   })
 })
