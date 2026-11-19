@@ -1,9 +1,9 @@
 # Feature 37 — Badges and Achievements
 
-> Priority: Must · Mission 4 · **Status: Implemented**
+> Priority: Must · Mission 4 · **Status: Done — merged in [PR #115](https://github.com/RhaegarC/words-wizard/pull/115)**
 > Depends on: existing profile and metric counters (features 09, 23); 35 for the topic trophies;
 > 34 for the session-summary strip. Blocks: none.
-> Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
+> Source of truth: [Mission 4 sprint](../../00-mission-4-sprint.md).
 
 ## Summary
 
