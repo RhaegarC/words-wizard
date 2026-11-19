@@ -15,6 +15,8 @@ import {
   getContentMeta,
 } from "../content"
 import { progressProvider } from "../api/provider"
+import { readBadgeFacts } from "../api/badgeFacts"
+import { factsAfterSession, newlyEarned } from "@shared/badges"
 import type { PackIntroduction } from "@shared/me"
 import { DEVICE_KEYS } from "@shared/device"
 import { checkProfileAfterSession } from "../db/lifecycle"
@@ -159,6 +161,8 @@ export type CommitStatus = "idle" | "saving" | "done" | "queued" | "error"
 type CommitState = {
   status: CommitStatus
   summary: SessionSummary | null
+  /** Badges this saved session crossed; empty while saving, queued or failed. */
+  newBadges: readonly string[]
 }
 
 type SessionContextValue = {
@@ -175,6 +179,7 @@ type SessionContextValue = {
   exitOpen: boolean
   commitStatus: CommitStatus
   summary: SessionSummary | null
+  newBadges: readonly string[]
   dispatch: (action: SessionAction) => void
   start: () => void
   resume: () => void
@@ -225,6 +230,7 @@ export function SessionProvider({
   const [commit, setCommit] = useState<CommitState>({
     status: "idle",
     summary: null,
+    newBadges: [],
   })
   const discarded = useRef(false)
   // The in-memory half of the double-submit guard: the first commit wins,
@@ -548,25 +554,41 @@ export function SessionProvider({
       introductions: plan.introductions,
     })
 
-    setCommit({ status: "saving", summary: built.summary })
+    // Read the shelf before the commit: `getMetrics` answers from the cached
+    // snapshot, and the exam states a session cannot change are fetched in the
+    // same read. A failure only costs the "new badge" strip.
+    const factsBefore = readBadgeFacts(profile).catch((reason: unknown) => {
+      console.warn("[session] Could not read badge facts", reason)
+      return null
+    })
+
+    setCommit({ status: "saving", summary: built.summary, newBadges: [] })
 
     void commitSessionResult(progressProvider, result.id, built.payload)
-      .then((outcome) => {
+      .then(async (outcome) => {
         // A null outcome means the guard already sent this session.
         if (outcome === null) {
           return
         }
 
-        setCommit({
-          status: outcome === "queued" ? "queued" : "done",
-          summary: built.summary,
-        })
-
         // A queued commit is not on the server yet, so there is nothing fresh
         // to read back; the outbox replays it on the next boot.
         if (outcome === "queued") {
+          setCommit({
+            status: "queued",
+            summary: built.summary,
+            newBadges: [],
+          })
           return
         }
+
+        const before = await factsBefore
+        const newBadges =
+          before === null
+            ? []
+            : newlyEarned(before, factsAfterSession(before, built.payload))
+
+        setCommit({ status: "done", summary: built.summary, newBadges })
 
         // Feature 05's post-session check: the boot snapshot is stale, and a
         // missing profile must take the recovery path rather than keep a
@@ -586,7 +608,7 @@ export function SessionProvider({
       .catch((reason: unknown) => {
         console.error("[session] Could not save this session", reason)
         commitStarted.current = null
-        setCommit({ status: "error", summary: built.summary })
+        setCommit({ status: "error", summary: built.summary, newBadges: [] })
       })
   }, [onProfileLost, onProfileUpdated, plan.introductions, profile, progress, result])
 
@@ -610,6 +632,7 @@ export function SessionProvider({
       exitOpen,
       commitStatus: commit.status,
       summary: commit.summary,
+      newBadges: commit.newBadges,
       dispatch,
       start,
       resume,
