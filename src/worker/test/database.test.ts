@@ -356,13 +356,14 @@ VALUES ('${id}', '${oid}', '${kind}', '2026-10-30', '0.3.0', 0, 0, 0);`
 
 describe("user tables", () => {
   it(
-    "creates the eight user tables",
+    "creates the ten user tables",
     () => {
       const tables = query<{ name: string }>(
         "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name",
       ).map((row) => row.name)
 
       for (const table of [
+        "exam_attempts",
         "metric_events",
         "metrics",
         "pack_introductions",
@@ -370,6 +371,7 @@ describe("user tables", () => {
         "progress",
         "session_metrics",
         "sessions",
+        "topic_exam_progress",
         "users",
       ]) {
         expect(tables).toContain(table)
@@ -454,6 +456,71 @@ describe("user tables", () => {
         sessionInsert("db-user-kind", "db-session-bad", "weekly"),
         "SELECT COUNT(*) AS present FROM sessions WHERE id = 'db-session-bad'",
       )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "accepts the exam tables and enforces their checks",
+    () => {
+      execute(userInsert("db-user-exam"))
+      execute(topicInsert("db-topic-exam"))
+      execute(topicInsert("db-topic-exam-bad"))
+
+      execute(
+        `INSERT INTO topic_exam_progress (user_id, topic_id, passed_parts, part_count, content_version, attempts, last_attempt_at, completed_at, updated_at)
+         VALUES ('db-user-exam', 'db-topic-exam', 1, 2, 'v', 1, 0, NULL, 0);`,
+      )
+
+      expectRefused(
+        `INSERT INTO topic_exam_progress (user_id, topic_id, passed_parts, part_count, content_version, attempts, last_attempt_at, completed_at, updated_at)
+         VALUES ('db-user-exam', 'db-topic-exam-bad', 3, 2, 'v', 1, 0, NULL, 0);`,
+        "SELECT COUNT(*) AS present FROM topic_exam_progress WHERE topic_id = 'db-topic-exam-bad'",
+      )
+      expectRefused(
+        `INSERT INTO topic_exam_progress (user_id, topic_id, passed_parts, part_count, content_version, attempts, last_attempt_at, completed_at, updated_at)
+         VALUES ('db-user-exam', 'db-topic-exam-bad', 0, 0, 'v', 1, 0, NULL, 0);`,
+        "SELECT COUNT(*) AS present FROM topic_exam_progress WHERE topic_id = 'db-topic-exam-bad'",
+      )
+
+      execute(
+        `INSERT INTO exam_attempts (user_id, attempt_id, topic_id, part_index, passed, missed_word_id, at)
+         VALUES ('db-user-exam', 'db-attempt-ok', 'db-topic-exam', 0, 1, NULL, 0);`,
+      )
+      expectRefused(
+        `INSERT INTO exam_attempts (user_id, attempt_id, topic_id, part_index, passed, missed_word_id, at)
+         VALUES ('db-user-exam', 'db-attempt-bad', 'db-topic-exam', 0, 2, NULL, 0);`,
+        "SELECT COUNT(*) AS present FROM exam_attempts WHERE attempt_id = 'db-attempt-bad'",
+      )
+    },
+    TIMEOUT,
+  )
+
+  it(
+    "cascades exam rows from the user",
+    () => {
+      execute(userInsert("db-user-exam-cascade"))
+      execute(topicInsert("db-topic-exam-cascade"))
+      execute(
+        `INSERT INTO topic_exam_progress (user_id, topic_id, passed_parts, part_count, content_version, attempts, last_attempt_at, completed_at, updated_at)
+         VALUES ('db-user-exam-cascade', 'db-topic-exam-cascade', 0, 1, 'v', 1, 0, NULL, 0);`,
+      )
+      execute(
+        `INSERT INTO exam_attempts (user_id, attempt_id, topic_id, part_index, passed, missed_word_id, at)
+         VALUES ('db-user-exam-cascade', 'db-attempt-cascade', 'db-topic-exam-cascade', 0, 0, NULL, 0);`,
+      )
+      execute("DELETE FROM users WHERE oid = 'db-user-exam-cascade';")
+
+      expect(
+        query<{ n: number }>(
+          "SELECT COUNT(*) AS n FROM topic_exam_progress WHERE user_id = 'db-user-exam-cascade'",
+        )[0]?.n,
+      ).toBe(0)
+      expect(
+        query<{ n: number }>(
+          "SELECT COUNT(*) AS n FROM exam_attempts WHERE user_id = 'db-user-exam-cascade'",
+        )[0]?.n,
+      ).toBe(0)
     },
     TIMEOUT,
   )

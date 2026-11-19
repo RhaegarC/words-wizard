@@ -22,6 +22,9 @@ const PRD_15_COUNTERS = [
   "monthlyReview.strengthDelta",
   "revival.session",
   "revival.quickWake",
+  "exam.partPassed",
+  "exam.partFailed",
+  "exam.topicCompleted",
 ]
 
 describe("metric names", () => {

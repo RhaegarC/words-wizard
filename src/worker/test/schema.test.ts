@@ -9,6 +9,7 @@ import {
   avatarStages,
   avatars,
   contentMeta,
+  examAttempts,
   metricEvents,
   metrics,
   packIntroductions,
@@ -18,6 +19,7 @@ import {
   progress,
   sessionMetrics,
   sessions,
+  topicExamProgress,
   topics,
   users,
   words,
@@ -166,6 +168,8 @@ describe("user model", () => {
     sessions,
     sessionMetrics,
     metricEvents,
+    topicExamProgress,
+    examAttempts,
   ]
 
   /**
@@ -194,7 +198,7 @@ describe("user model", () => {
     }))
   }
 
-  it("declares the eight user tables", () => {
+  it("declares the ten user tables", () => {
     expect(userTables.map((table) => getTableConfig(table).name)).toEqual([
       "users",
       "profiles",
@@ -204,6 +208,8 @@ describe("user model", () => {
       "sessions",
       "session_metrics",
       "metric_events",
+      "topic_exam_progress",
+      "exam_attempts",
     ])
   })
 
@@ -224,6 +230,8 @@ describe("user model", () => {
       "name",
     ])
     expect(primaryKey(metricEvents)).toEqual(["user_id", "event_id"])
+    expect(primaryKey(topicExamProgress)).toEqual(["user_id", "topic_id"])
+    expect(primaryKey(examAttempts)).toEqual(["user_id", "attempt_id"])
   })
 
   it("stores the token-derived email on the user row", () => {
@@ -260,6 +268,17 @@ describe("user model", () => {
     expect(getTableConfig(sessions).checks.map((check) => check.name)).toEqual([
       "sessions_kind",
     ])
+
+    expect(
+      getTableConfig(topicExamProgress)
+        .checks.map((check) => check.name)
+        .sort(),
+    ).toEqual(["topic_exam_part_count", "topic_exam_passed_parts"])
+    expect(
+      getTableConfig(examAttempts)
+        .checks.map((check) => check.name)
+        .sort(),
+    ).toEqual(["exam_attempt_part", "exam_attempt_passed"])
   })
 
   it("cascades user-owned rows from users and never from content", () => {
@@ -282,6 +301,23 @@ describe("user model", () => {
     ])
     expect(foreignKeys(sessionMetrics)).toEqual([
       { target: "sessions", onDelete: "cascade" },
+    ])
+    expect(
+      foreignKeys(topicExamProgress).sort((left, right) =>
+        left.target.localeCompare(right.target),
+      ),
+    ).toEqual([
+      { target: "topics", onDelete: undefined },
+      { target: "users", onDelete: "cascade" },
+    ])
+    expect(
+      foreignKeys(examAttempts).sort((left, right) =>
+        left.target.localeCompare(right.target),
+      ),
+    ).toEqual([
+      { target: "topics", onDelete: undefined },
+      { target: "users", onDelete: "cascade" },
+      { target: "words", onDelete: undefined },
     ])
   })
 

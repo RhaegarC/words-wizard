@@ -22,4 +22,7 @@ export const METRIC_LABEL_KEYS: Record<MetricName, MessageKey> = {
   [METRIC_NAMES.reviewStrengthDelta]: "settings.counter.reviewStrengthDelta",
   [METRIC_NAMES.revivalSession]: "settings.counter.revivalSession",
   [METRIC_NAMES.revivalQuickWake]: "settings.counter.revivalQuickWake",
+  [METRIC_NAMES.examPartPassed]: "settings.counter.examPartPassed",
+  [METRIC_NAMES.examPartFailed]: "settings.counter.examPartFailed",
+  [METRIC_NAMES.examTopicCompleted]: "settings.counter.examTopicCompleted",
 }

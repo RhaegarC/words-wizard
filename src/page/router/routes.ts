@@ -41,6 +41,9 @@ export type Route =
   | { id: "session-hub" }
   | { id: "session-free" }
   | FreePracticeRoute
+  | { id: "session-exam" }
+  | { id: "session-exam-part"; index: number }
+  | { id: "session-exam-summary" }
   | WordsRoute
   | WordDetailRoute
   | { id: "character" }
@@ -68,6 +71,9 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "session-free-pack", packId: "craft-1" },
   { id: "session-free-exercise", packId: "craft-1" },
   { id: "session-free-summary", packId: "craft-1" },
+  { id: "session-exam" },
+  { id: "session-exam-part", index: 0 },
+  { id: "session-exam-summary" },
   { id: "words", tab: "collection" },
   { id: "words", tab: "wordbook" },
   { id: "word-detail", wordId: "w-build" },
@@ -89,6 +95,7 @@ const SIMPLE_HASHES: Record<
     | "session-free-pack"
     | "session-free-exercise"
     | "session-free-summary"
+    | "session-exam-part"
   >,
   string
 > = {
@@ -100,6 +107,8 @@ const SIMPLE_HASHES: Record<
   "session-summary": "#/session/summary",
   "session-hub": "#/session/hub",
   "session-free": "#/session/free",
+  "session-exam": "#/session/exam",
+  "session-exam-summary": "#/session/exam/summary",
   character: "#/character",
   review: "#/review",
   "review-exercise": "#/review/exercise",
@@ -122,6 +131,9 @@ const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   "session-free-pack": "common.screen.sessionFree",
   "session-free-exercise": "common.screen.sessionFree",
   "session-free-summary": "common.screen.sessionFree",
+  "session-exam": "common.screen.sessionExam",
+  "session-exam-part": "common.screen.sessionExam",
+  "session-exam-summary": "common.screen.sessionExamSummary",
   "word-detail": "common.screen.wordDetail",
   character: "common.screen.character",
   review: "common.screen.review",
@@ -148,6 +160,10 @@ export function buildHash(route: Route): string {
     return route.from === "settings"
       ? "#/topics?from=settings"
       : SIMPLE_HASHES.topics
+  }
+
+  if (route.id === "session-exam-part") {
+    return `#/session/exam/part/${route.index}`
   }
 
   if (
@@ -256,6 +272,11 @@ export function parentOf(route: Route): Route | null {
       return { id: "session" }
     case "session-hub":
       return { id: "home" }
+    case "session-exam":
+      return { id: "session-hub" }
+    case "session-exam-part":
+    case "session-exam-summary":
+      return { id: "session-exam" }
     case "session-free":
       return { id: "session-hub" }
     case "session-free-pack":
@@ -346,6 +367,28 @@ function parseSession(segments: string[]): Route | null {
             : null
 
     return phase === null ? null : freePracticeRoute(segments[2], phase)
+  }
+
+  if (segments[1] === "exam") {
+    if (segments.length === 2) {
+      return { id: "session-exam" }
+    }
+
+    if (segments.length === 3 && segments[2] === "summary") {
+      return { id: "session-exam-summary" }
+    }
+
+    if (segments.length === 4 && segments[2] === "part") {
+      if (!/^\d+$/.test(segments[3])) {
+        return null
+      }
+
+      const index = Number(segments[3])
+
+      return Number.isSafeInteger(index) && index >= 0
+        ? { id: "session-exam-part", index }
+        : null
+    }
   }
 
   return null

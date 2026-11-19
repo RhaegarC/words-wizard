@@ -3,6 +3,12 @@ import type {
   LegacyImportPayload,
   LegacyImportResponse,
 } from "@shared/legacyImport"
+import type {
+  ExamResult,
+  ExamSubmission,
+  TopicExam,
+  TopicExamState,
+} from "@shared/exam"
 import type { PackIntroduction, MeResponse, ServerProfile } from "@shared/me"
 import type { MetricName } from "@shared/metrics"
 import type {
@@ -141,6 +147,33 @@ export class ApiProgressProvider implements ProgressProvider {
     }
 
     return (await this.ensureSnapshot()).introductions
+  }
+
+  async getExams(): Promise<TopicExamState[]> {
+    this.requireIdentity()
+
+    const response = await this.client.request<{ exams: TopicExamState[] }>(
+      "/v1/me/exams",
+    )
+
+    return response.exams
+  }
+
+  async getExam(topicId: string): Promise<TopicExam> {
+    this.requireIdentity()
+
+    return this.client.request<TopicExam>(
+      `/v1/me/exams/${encodeURIComponent(topicId)}`,
+    )
+  }
+
+  async submitExam(submission: ExamSubmission): Promise<ExamResult> {
+    this.requireIdentity()
+
+    return this.client.request<ExamResult>("/v1/me/exams", {
+      method: "POST",
+      body: submission,
+    })
   }
 
   async getMetrics(profileId: string): Promise<Metric[]> {

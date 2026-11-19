@@ -356,7 +356,7 @@ describe("profile creation", () => {
     })
 
     expect(count("profiles", "user_id = 'user-create'")).toBe(1)
-    expect(count("metrics", "user_id = 'user-create'")).toBe(14)
+    expect(count("metrics", "user_id = 'user-create'")).toBe(17)
   })
 
   it("returns the existing profile and applies nothing on a second create", async () => {
