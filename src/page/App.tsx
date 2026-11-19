@@ -26,6 +26,9 @@ import { buildHash, titleKeyFor, type Route } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
+import { ExamLandingScreen } from "./screens/ExamLandingScreen"
+import { ExamPartScreen } from "./screens/ExamPartScreen"
+import { ExamSummaryScreen } from "./screens/ExamSummaryScreen"
 import { FreePracticeLandingScreen } from "./screens/FreePracticeLandingScreen"
 import { FreePracticePickerScreen } from "./screens/FreePracticePickerScreen"
 import { HomeScreen } from "./screens/HomeScreen"
@@ -45,6 +48,7 @@ import { WordDetailScreen } from "./screens/WordDetailScreen"
 import { WordsScreen } from "./screens/WordsScreen"
 import { SessionProvider } from "./session/SessionProvider"
 import { AppShell } from "./shell/AppShell"
+import { ExamProvider } from "./exam/ExamProvider"
 
 const DEV_ROUTE_TABLE_HASH = "#/__routes"
 
@@ -346,8 +350,8 @@ export default function App() {
       <SessionExerciseScreen />
     ) : route.id === "session-summary" ? (
       <SessionSummaryScreen />
-    ) : route.id === "session-hub" ? (
-      <PracticeHubScreen />
+    ) : route.id === "session-hub" && profile ? (
+      <PracticeHubScreen profile={profile} />
     ) : route.id === "session-free" && profile ? (
       <FreePracticePickerScreen profile={profile} />
     ) : route.id === "session-free-pack" ? (
@@ -356,6 +360,12 @@ export default function App() {
       <SessionExerciseScreen />
     ) : route.id === "session-free-summary" ? (
       <SessionSummaryScreen />
+    ) : route.id === "session-exam" ? (
+      <ExamLandingScreen />
+    ) : route.id === "session-exam-part" ? (
+      <ExamPartScreen key={route.index} index={route.index} />
+    ) : route.id === "session-exam-summary" ? (
+      <ExamSummaryScreen />
     ) : route.id === "review" ? (
       <ReviewLandingScreen />
     ) : route.id === "review-exercise" ? (
@@ -400,12 +410,24 @@ export default function App() {
     route.id === "review-exercise" ||
     route.id === "review-summary"
 
+  const inExam =
+    route.id === "session-exam" ||
+    route.id === "session-exam-part" ||
+    route.id === "session-exam-summary"
+
   // The provider sits outside the shell so its exit dialog covers the whole
   // frame, and stays mounted as the session moves between its own routes.
   return (
     <UpdateProvider>
       <RouterProvider value={router}>
-        {inSession && profile ? (
+        {inExam && profile ? (
+          <ExamProvider
+            key={profile.currentTopicId ?? "no-topic"}
+            profile={profile}
+          >
+            {shell}
+          </ExamProvider>
+        ) : inSession && profile ? (
           <SessionProvider
             // A switch between session families or free packs starts clean.
             key={sessionProviderKey(route)}

@@ -1,6 +1,12 @@
 import type { Metric, Profile, Progress, SessionKind } from "./types"
 import type { MetricName } from "./metrics"
 import type { CareAction, PackIntroduction } from "./me"
+import type {
+  ExamResult,
+  ExamSubmission,
+  TopicExam,
+  TopicExamState,
+} from "./exam"
 import type { LegacyImportOutcome, LegacyImportPayload } from "./legacyImport"
 
 /** A profile as created by feature 06; the API fixes the id from the token. */
@@ -77,6 +83,12 @@ export interface ProgressProvider {
     delta?: number,
   ): Promise<void>
   getMetrics(profileId: string): Promise<Metric[]>
+  /** Every topic exam state for the signed-in identity. */
+  getExams(): Promise<TopicExamState[]>
+  /** One topic's gate, server-built parts and stored state. */
+  getExam(topicId: string): Promise<TopicExam>
+  /** Submit one exam part; the Worker owns the outcome and metrics. */
+  submitExam(submission: ExamSubmission): Promise<ExamResult>
   /** The server applies the same pure Care rules as the page. */
   applyCare(action: CareAction): Promise<Profile>
   /** Store a photo and return the profile carrying its new key. */

@@ -487,6 +487,14 @@ a:focus-visible,
   line-height: 1.65;
 }
 
+.exam-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 18px 0;
+}
+
 .name-field {
   display: block;
   max-width: 390px;

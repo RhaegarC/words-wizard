@@ -418,9 +418,9 @@ procedure, run against production only with explicit approval.
    personal data in the log.
 
 The cascade covers `profiles`, `progress`, `pack_introductions`, `metrics`,
-`sessions`, `session_metrics`, and `metric_events`. Content tables are not
-user-owned and are not touched. R2 has no foreign key to D1, which is why step 4
-is a separate manual action.
+`sessions`, `session_metrics`, `metric_events`, `topic_exam_progress`, and
+`exam_attempts`. Content tables are not user-owned and are not touched. R2 has
+no foreign key to D1, which is why step 4 is a separate manual action.
 
 ## Secrets
 

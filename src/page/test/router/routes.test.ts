@@ -114,6 +114,39 @@ describe("parseHash / buildHash", () => {
     expect(parseHash("#/session/free/%20")).toBeNull()
   })
 
+  it("builds and parses the exam family", () => {
+    expect(buildHash({ id: "session-exam" })).toBe("#/session/exam")
+    expect(parseHash("#/session/exam")).toEqual({ id: "session-exam" })
+
+    const part = { id: "session-exam-part" as const, index: 0 }
+    expect(buildHash(part)).toBe("#/session/exam/part/0")
+    expect(parseHash("#/session/exam/part/0")).toEqual(part)
+    expect(parseHash("#/session/exam/part/3")).toEqual({
+      id: "session-exam-part",
+      index: 3,
+    })
+
+    expect(buildHash({ id: "session-exam-summary" })).toBe(
+      "#/session/exam/summary",
+    )
+    expect(parseHash("#/session/exam/summary")).toEqual({
+      id: "session-exam-summary",
+    })
+
+    expect(parentOf({ id: "session-exam" })).toEqual({ id: "session-hub" })
+    expect(parentOf(part)).toEqual({ id: "session-exam" })
+    expect(parentOf({ id: "session-exam-summary" })).toEqual({
+      id: "session-exam",
+    })
+  })
+
+  it("rejects malformed exam part indexes", () => {
+    expect(parseHash("#/session/exam/part")).toBeNull()
+    expect(parseHash("#/session/exam/part/one")).toBeNull()
+    expect(parseHash("#/session/exam/part/-1")).toBeNull()
+    expect(parseHash("#/session/exam/part/0/extra")).toBeNull()
+  })
+
   it("carries the settings origin through the topic picker", () => {
     expect(buildHash({ id: "topics", from: "settings" })).toBe(
       "#/topics?from=settings",

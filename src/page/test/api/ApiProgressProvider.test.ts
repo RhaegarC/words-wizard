@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { DEVICE_KEYS } from "@shared/device"
+import type {
+  ExamResult,
+  ExamSubmission,
+  TopicExam,
+  TopicExamState,
+} from "@shared/exam"
 import type { MeResponse, ServerProfile } from "@shared/me"
 import { METRIC_NAMES } from "@shared/metrics"
 import type { SessionCommitPayload } from "@shared/provider"
@@ -202,6 +208,59 @@ describe("ApiProgressProvider", () => {
         updatedAt: NOW,
       },
     ])
+  })
+
+  it("reads exam states and submits a part through the exam routes", async () => {
+    const state: TopicExamState = {
+      topicId: "craft",
+      passedParts: 1,
+      partCount: 2,
+      contentVersion: "v1",
+      attempts: 1,
+      lastAttemptAt: NOW,
+      completedAt: null,
+    }
+    const exam: TopicExam = {
+      topicId: "craft",
+      contentVersion: "v1",
+      state: null,
+      gate: { introduced: 2, total: 2, unlocked: true },
+      parts: [{ index: 0, wordIds: ["w-1"] }],
+      stale: false,
+    }
+    const result: ExamResult = {
+      passed: true,
+      missedWordId: null,
+      correctSpelling: null,
+      state: {
+        passedParts: 1,
+        partCount: 1,
+        contentVersion: "v1",
+        attempts: 1,
+        lastAttemptAt: NOW,
+        completedAt: NOW,
+      },
+    }
+    const submission: ExamSubmission = {
+      topicId: "craft",
+      partIndex: 0,
+      attemptId: "attempt-1",
+      contentVersion: "v1",
+      answers: [{ wordId: "w-1", answer: "one" }],
+    }
+    const { client, provider } = makeProvider({
+      "GET /v1/me/exams": () => ({ exams: [state] }),
+      "GET /v1/me/exams/craft": () => exam,
+      "POST /v1/me/exams": () => result,
+    })
+
+    await expect(provider.getExams()).resolves.toEqual([state])
+    await expect(provider.getExam("craft")).resolves.toEqual(exam)
+    await expect(provider.submitExam(submission)).resolves.toEqual(result)
+    expect(client.request).toHaveBeenCalledWith("/v1/me/exams", {
+      method: "POST",
+      body: submission,
+    })
   })
 
   it("returns null before a profile exists", async () => {

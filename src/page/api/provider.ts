@@ -41,6 +41,9 @@ export const progressProvider: ProgressProvider = {
   incrementMetric: (profileId, name, delta) =>
     requireProvider().incrementMetric(profileId, name, delta),
   getMetrics: (profileId) => requireProvider().getMetrics(profileId),
+  getExams: () => requireProvider().getExams(),
+  getExam: (topicId) => requireProvider().getExam(topicId),
+  submitExam: (submission) => requireProvider().submitExam(submission),
   applyCare: (action) => requireProvider().applyCare(action),
   uploadAvatar: (file) => requireProvider().uploadAvatar(file),
   removeAvatar: () => requireProvider().removeAvatar(),

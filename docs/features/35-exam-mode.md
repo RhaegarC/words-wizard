@@ -1,6 +1,6 @@
 # Feature 35 — Exam Mode
 
-> Priority: Must · Mission 4 · **Status: Specced**
+> Priority: Must · Mission 4 · **Status: Implemented**
 > Depends on: 34 (the practice hub and route conventions), 22 (content), 23–24 (API and client).
 > Blocks: 36 (topic completion), 37 (topic trophies).
 > Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
@@ -100,6 +100,10 @@ All routes sit under the existing `/v1/me/*` authentication and `Cache-Control: 
 }
 ```
 
+The client may instead submit `{ "missedWordId": "w-chisel" }` when it detects a miss locally; the
+Worker validates that the word belongs to the part, records the failed attempt and returns the
+correct spelling. A pass is always re-validated from `answers`.
+
 The server compares each answer to the expected spelling after a single shared normalization
 (trim, case-fold, collapse internal whitespace), then returns:
 
@@ -164,23 +168,23 @@ The server compares each answer to the expected spelling after a single shared n
 
 ## Acceptance criteria
 
-- [ ] The exam is unavailable until every distinct topic word has an introduction; the hub shows
+- [x] The exam is unavailable until every distinct topic word has an introduction; the hub shows
       gate progress and the Worker enforces it.
-- [ ] Parts hold fewer than 50 words, are balanced, and follow the deterministic pack/position
+- [x] Parts hold fewer than 50 words, are balanced, and follow the deterministic pack/position
       order.
-- [ ] Parts are taken in order; a passed part persists across a reload and across a topic switch.
-- [ ] One typed attempt per word; no tiles, hints or reveal; a wrong spelling fails the part
+- [x] Parts are taken in order; a passed part persists across a reload and across a topic switch.
+- [x] One typed attempt per word; no tiles, hints or reveal; a wrong spelling fails the part
       immediately.
-- [ ] The fail screen shows the missed word and correct spelling; Retake restarts that part and
+- [x] The fail screen shows the missed word and correct spelling; Retake restarts that part and
       keeps earlier passes.
-- [ ] Passing the last part marks the topic Completed; a retake keeps it Completed.
-- [ ] The exam changes no progress, strength, review date, XP, streak, completed sessions or Care
+- [x] Passing the last part marks the topic Completed; a retake keeps it Completed.
+- [x] The exam changes no progress, strength, review date, XP, streak, completed sessions or Care
       Token state.
-- [ ] Exam state and attempts are stored server-side; no typed spelling answer is stored.
-- [ ] A replayed submission is idempotent; a stale unfinished exam returns `409 exam_stale` and
+- [x] Exam state and attempts are stored server-side; no typed spelling answer is stored.
+- [x] A replayed submission is idempotent; a stale unfinished exam returns `409 exam_stale` and
       resets cleanly; a completed exam survives content growth.
-- [ ] `exam.partPassed`, `exam.partFailed` and `exam.topicCompleted` are recorded.
-- [ ] The exam screens read content at render and both locales cover every new string.
+- [x] `exam.partPassed`, `exam.partFailed` and `exam.topicCompleted` are recorded.
+- [x] The exam screens read content at render and both locales cover every new string.
 
 ## Test plan
 
@@ -216,6 +220,41 @@ deletion cascade and the migration list); README; features 36 and 37.
   id is stored. This must stay true in the schema and the logs.
 - **Route and state ownership.** The exam does not use `SessionProvider`; its own reducer and
   screens must not duplicate the practice commit path.
+
+## Implementation notes
+
+- `src/shared/exam.ts` owns part construction (balanced, strictly under 50 words), spelling
+  normalization, submission validation and the first-miss rule. Both the Worker and the client use
+  the same rules.
+- `src/worker/db/exams.ts` reads the topic's ordered distinct words, the introduction gate and the
+  stored state, and writes one atomic batch: the `exam_attempts` marker, the
+  `topic_exam_progress` upsert and the metric markers/deltas. **No typed answer is stored.**
+  Migration 0004 creates both tables.
+- `GET /v1/me/exams/:topicId` returns the live `contentVersion` alongside the server-built parts.
+  An unfinished state whose version differs is stale: the next submit resets `passed_parts` and
+  returns `409 exam_stale`. A completed state stays completed; a retake under new content resets
+  the retake counters while `completed_at` survives.
+- The client detects a miss locally for immediate feedback and submits `missedWordId`; the Worker
+  records the failed attempt and returns the correct spelling. A full answer set is re-validated
+  server-side, so a pass cannot come from the client's check alone.
+- `ProgressProvider` gains `getExams`, `getExam` and `submitExam`. `ExamProvider` owns the current
+  topic's state; the landing, part and summary screens read it. The practice hub's exam card
+  follows the gate and stays disabled with `introduced / total` until it opens.
+- The exam summary intentionally omits the badge strip; feature 37 adds it.
+- `docs/operations.md` now includes the exam tables in the deletion cascade.
+
+## Verification
+
+- `pnpm typecheck` — clean.
+- `pnpm test` — 82 files passed, 1 skipped; 1118 tests passed, 5 skipped (the credential-gated
+  remote tier).
+- Model and database tiers — the two tables, their checks and cascade are asserted; migration 0004
+  applies to real local D1.
+- Host tier — locked gate, failed part, passed part, completion, replay, conflict, stale reset and
+  completed content growth, with a before/after `GET /v1/me` proving no progress or profile change.
+- `pnpm build`, `pnpm build:portal`, `pnpm check:dist` — pass.
+- Manual browser pass (multi-part exam, reload between parts, fail/retake, completion) is still
+  pending.
 
 ## Out of scope
 

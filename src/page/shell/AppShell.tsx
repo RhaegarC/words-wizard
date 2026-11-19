@@ -62,6 +62,9 @@ function activeNav(route: Route): NavId | null {
     case "session-free-pack":
     case "session-free-exercise":
     case "session-free-summary":
+    case "session-exam":
+    case "session-exam-part":
+    case "session-exam-summary":
       return "session"
     case "words":
     case "word-detail":
