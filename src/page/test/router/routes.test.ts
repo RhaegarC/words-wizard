@@ -9,6 +9,12 @@ describe("parseHash / buildHash", () => {
     }
   })
 
+  it("opens the badges screen from Home", () => {
+    expect(buildHash({ id: "badges" })).toBe("#/badges")
+    expect(parseHash("#/badges")).toEqual({ id: "badges" })
+    expect(parentOf({ id: "badges" })).toEqual({ id: "home" })
+  })
+
   it("builds the canonical hash for every route", () => {
     expect(buildHash({ id: "home" })).toBe("#/home")
     expect(buildHash({ id: "session-intro" })).toBe("#/session/intro")

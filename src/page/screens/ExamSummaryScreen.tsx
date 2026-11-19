@@ -1,3 +1,4 @@
+import { NewBadgeStrip } from "../components/NewBadgeStrip"
 import { getTopic } from "../content"
 import { useExam } from "../exam/ExamProvider"
 import { useLocale } from "../i18n/LocaleProvider"
@@ -10,7 +11,7 @@ import { useRouter } from "../router/RouterContext"
 export function ExamSummaryScreen() {
   const { locale, t } = useLocale()
   const { navigate } = useRouter()
-  const { topicId, ready, exam, error } = useExam()
+  const { topicId, ready, exam, error, newBadges } = useExam()
   const topic = topicId === null ? undefined : getTopic(topicId)
 
   if (!ready) {
@@ -77,6 +78,8 @@ export function ExamSummaryScreen() {
           <small>{t("exam.attemptsLabel")}</small>
         </span>
       </div>
+
+      <NewBadgeStrip ids={newBadges} />
 
       {completed ? (
         <button

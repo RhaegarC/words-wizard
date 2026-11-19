@@ -23,6 +23,7 @@ const FEATURE_FOR_ROUTE: Record<Route["id"], string> = {
   review: "13",
   "review-exercise": "13",
   "review-summary": "13",
+  badges: "37",
   settings: "14",
   create: "06",
   install: "15",

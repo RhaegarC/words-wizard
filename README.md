@@ -10,8 +10,8 @@ teacher/admin content portal, shipped as features 28–31, recorded in
 [docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
 under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
 and Worker API. Mission 4 is **in progress** — features 34 (Free Practice), 35 (Exam Mode) and 36
-(Topic Status) are done and archived, and badges (feature 37) remain specced, in
-[docs/features/00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md).
+(Topic Status) are done and archived, and badges (feature 37) are implemented and awaiting review,
+in [docs/features/00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md).
 Buddy remains a live feature. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,

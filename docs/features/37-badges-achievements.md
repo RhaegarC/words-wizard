@@ -1,6 +1,6 @@
 # Feature 37 — Badges and Achievements
 
-> Priority: Must · Mission 4 · **Status: Specced**
+> Priority: Must · Mission 4 · **Status: Implemented**
 > Depends on: existing profile and metric counters (features 09, 23); 35 for the topic trophies;
 > 34 for the session-summary strip. Blocks: none.
 > Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
@@ -107,29 +107,64 @@ interface BadgeFacts {
 
 ## Acceptance criteria
 
-- [ ] The catalogue contains exactly 15 medals and one trophy per live topic (five today — 20
+- [x] The catalogue contains exactly 15 medals and one trophy per live topic (five today — 20
       badges in the current content set) with the thresholds in the table above.
-- [ ] A badge unlocks at its threshold (`10` unlocks bronze Collection, `9` does not) and never
+- [x] A badge unlocks at its threshold (`10` unlocks bronze Collection, `9` does not) and never
       re-locks when a word is demoted, a streak ends, or a topic is retaken.
-- [ ] Adding a topic adds a locked trophy and does not re-lock any earned trophy.
-- [ ] Badges are derived on read: no achievements table, migration, earned date or seen state.
-- [ ] The Home card shows the featured badge and the next goal and opens the Badges screen.
-- [ ] The Badges screen groups medals by category and shows one trophy per topic.
-- [ ] A session or exam that crosses a threshold shows the newly earned badge(s) once.
-- [ ] The featured and next-goal rules are deterministic and covered by tests.
-- [ ] Both locales cover every badge name and description.
+- [x] Adding a topic adds a locked trophy and does not re-lock any earned trophy.
+- [x] Badges are derived on read: no achievements table, migration, earned date or seen state.
+- [x] The Home card shows the featured badge and the next goal and opens the Badges screen.
+- [x] The Badges screen groups medals by category and shows one trophy per topic.
+- [x] A session or exam that crosses a threshold shows the newly earned badge(s) once.
+- [x] The featured and next-goal rules are deterministic and covered by tests.
+- [x] Both locales cover every badge name and description.
 
 ## Test plan
 
 - **Unit** — every threshold at `n-1`, `n` and `n+1`; monotonicity across demotion, streak reset
   and content growth; per-topic trophy derivation; featured/next-goal tie-breaks; `newlyEarned` set
   differences and ordering.
-- **Page** — Home card states (none, medals only, trophies), screen grouping and locked treatment,
-  summary strip, route round-trip.
+- **Page** — the catalogue helper's live and archived trophies, localized copy, route round-trip
+  and locale completeness. The page tier has no DOM renderer, so card and strip markup is not
+  component-tested.
 - **Host / integration** — a session commit that crosses a Collection or Mastery threshold produces
   the new badge from the response facts; a passed exam produces the topic trophy.
 - **Manual** — unlock a medal and a topic trophy, confirm the Home card, the screen and the
   summary strip, then reload and confirm the badge persists on the screen without a "new" flag.
+
+## Implementation notes
+
+- `src/shared/badges.ts` owns the catalogue, derivation, progress, featured and next-goal rules and
+  the two fact transitions. `MEDAL_DEFINITIONS` is the static fifteen; `buildBadgeCatalogue(topicIds)`
+  appends one trophy per topic.
+- `src/page/api/badgeFacts.ts` reads `getMetrics` (answered from the cached `/v1/me` snapshot) and
+  `getExams()` together and folds them through `badgeFacts`.
+- `SessionProvider` starts that read *before* the commit and, only on a saved outcome, derives
+  `newlyEarned(before, factsAfterSession(before, payload))`. A queued commit has not reached the
+  server, so it shows no badge.
+- `ExamProvider` reads the shelf once when the exam opens and derives the trophy from the submit
+  response's `state.completedAt`. A retake leaves the fact set unchanged and therefore shows nothing.
+- The Home card uses `featuredBadge`/`nextGoal`; `#/badges` renders the five medal categories and
+  then the trophy group. A trophy's copy comes from content while the topic is live and from the
+  generic archived copy otherwise.
+
+## Verification
+
+2026-11-19 — `pnpm test`: 88 files passed, 1 skipped; 1178 tests passed, 5 skipped (the
+credential-gated remote tier). `pnpm typecheck`, `pnpm build` and `pnpm check:dist` passed.
+
+New coverage: `shared/test/badges.test.ts` (every threshold at `n-1`/`n`/`n+1` across the five
+facts, catalogue and trophy ids, monotonicity, featured and next-goal tie-breaks, `newlyEarned`,
+both fact transitions); `page/test/domain/badges.test.ts` (every medal and category key present in
+both locales); `page/test/domain/badgeView.test.ts` (live and archived trophy copy, id lookup);
+`worker/test/badges.test.ts` (a real session commit crossing Collection and Mastery, and a passed
+exam completing a topic, against a real Worker and D1). The route and i18n tests were extended for
+`#/badges`.
+
+The Home card, Badges screen and summary strips are built from those tested helpers and pass
+`typecheck`/`build`, but the page tier has no DOM renderer, so they carry no component test. The
+manual check remains: unlock a medal and a trophy, confirm the card, screen and strip, then reload
+and confirm the badges persist on the screen without the "new" strip.
 
 ## Documentation impact
 

@@ -4,13 +4,17 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react"
 
+import type { BadgeFacts } from "@shared/badges"
+import { factsAfterExamCompletion, newlyEarned } from "@shared/badges"
 import type { ExamResult, ExamSubmission, TopicExam } from "@shared/exam"
 import type { Profile } from "@shared/types"
 
+import { readBadgeFacts } from "../api/badgeFacts"
 import { ApiError } from "../api/client"
 import { progressProvider } from "../api/provider"
 
@@ -29,6 +33,8 @@ export interface ExamContextValue {
   readonly error: ExamError | null
   readonly result: ExamResult | null
   readonly submitting: boolean
+  /** The topic trophy this submission just completed, if any. */
+  readonly newBadges: readonly string[]
   reload: () => Promise<void>
   submit: (submission: ExamSubmission) => Promise<ExamResult | null>
   clearResult: () => void
@@ -49,6 +55,17 @@ export function ExamProvider({
   const [error, setError] = useState<ExamError | null>(null)
   const [result, setResult] = useState<ExamResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [newBadges, setNewBadges] = useState<readonly string[]>([])
+  // The shelf as it was when the exam opened. An exam changes only topic
+  // completion, so this is the whole "before" the summary strip needs.
+  const factsBefore = useRef<Promise<BadgeFacts | null> | null>(null)
+
+  useEffect(() => {
+    factsBefore.current = readBadgeFacts(profile).catch((reason: unknown) => {
+      console.warn("[exam] Could not read badge facts", reason)
+      return null
+    })
+  }, [profile])
 
   const reload = useCallback(async (): Promise<void> => {
     if (topicId === null) {
@@ -78,12 +95,30 @@ export function ExamProvider({
     async (submission: ExamSubmission): Promise<ExamResult | null> => {
       setSubmitting(true)
       setResult(null)
+      setNewBadges([])
 
       try {
         const next = await progressProvider.submitExam(submission)
 
         setResult(next)
         await reload()
+
+        if (topicId !== null && next.state.completedAt !== null) {
+          const before = await factsBefore.current
+
+          if (before !== null) {
+            setNewBadges(
+              newlyEarned(
+                before,
+                factsAfterExamCompletion(
+                  before,
+                  topicId,
+                  next.state.completedAt,
+                ),
+              ),
+            )
+          }
+        }
 
         return next
       } catch (caught: unknown) {
@@ -101,10 +136,13 @@ export function ExamProvider({
         setSubmitting(false)
       }
     },
-    [reload],
+    [reload, topicId],
   )
 
-  const clearResult = useCallback(() => setResult(null), [])
+  const clearResult = useCallback(() => {
+    setResult(null)
+    setNewBadges([])
+  }, [])
 
   const value = useMemo(
     () => ({
@@ -114,6 +152,7 @@ export function ExamProvider({
       error,
       result,
       submitting,
+      newBadges,
       reload,
       submit,
       clearResult,
@@ -125,6 +164,7 @@ export function ExamProvider({
       error,
       result,
       submitting,
+      newBadges,
       reload,
       submit,
       clearResult,

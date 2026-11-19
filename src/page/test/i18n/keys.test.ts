@@ -58,6 +58,7 @@ describe("locale files", () => {
       "modes",
       "words",
       "review",
+      "badges",
       "character",
       "settings",
       "auth",
