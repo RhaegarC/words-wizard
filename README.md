@@ -9,8 +9,8 @@ ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (s
 teacher/admin content portal, shipped as features 28–31, recorded in
 [docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
 under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
-and Worker API. Mission 4 is **in progress** — feature 34, Free Practice, is done and archived and
-feature 35, Exam Mode, is implemented; topic status and badges (features 36–37) remain specced, in
+and Worker API. Mission 4 is **in progress** — features 34 (Free Practice) and 35 (Exam Mode) are
+done and archived; topic status and badges (features 36–37) remain specced, in
 [docs/features/00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md). Buddy remains a live
 feature. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
