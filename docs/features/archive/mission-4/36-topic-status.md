@@ -1,8 +1,8 @@
 # Feature 36 — Topic Status
 
-> Priority: Must · Mission 4 · **Status: Implemented**
+> Priority: Must · Mission 4 · **Status: Done — merged in [PR #113](https://github.com/RhaegarC/words-wizard/pull/113)**
 > Depends on: 35 (the persisted exam completion signal). Blocks: none.
-> Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
+> Source of truth: [Mission 4 sprint](../../00-mission-4-sprint.md).
 
 ## Summary
 

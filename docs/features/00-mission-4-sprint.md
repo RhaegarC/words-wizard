@@ -1,8 +1,8 @@
 # Mission 4 — Sprint Goal: "Practice freely, prove mastery, collect the proof"
 
-> Status: **In progress — features 34 (Free Practice) and 35 (Exam Mode) are done and archived,
-> feature 36 (Topic Status) is implemented, and feature 37 is specced.** Each feature moves to Done
-> as its implementation PR merges.
+> Status: **In progress — features 34 (Free Practice), 35 (Exam Mode) and 36 (Topic Status) are
+> done and archived; feature 37 is specced.** Each feature moves to Done as its implementation PR
+> merges.
 > Depends on: Mission 2 (features 21–27) and Mission 3 (features 28–31) repository work complete.
 > Buddy removal (backlog item 01) is deliberately not part of this mission; Buddy remains a live
 > online feature.
@@ -87,11 +87,11 @@ and deferred by Mission 3.
 |---|---------|--------|------------|
 | 34 | [Free Practice](archive/mission-4/34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Done | — |
 | 35 | [Exam Mode](archive/mission-4/35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Done | 34 |
-| 36 | [Topic Status](36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Implemented | 35 |
+| 36 | [Topic Status](archive/mission-4/36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Done | 35 |
 | 37 | [Badges and achievements](37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Specced | 34–36 |
 
-Features 34–35 now live in `archive/mission-4/`; feature 36 remains beside this index while its PR
-is in review, and feature 37 is still specced.
+Features 34–36 now live in `archive/mission-4/`; feature 37 remains beside this index while it is
+specced.
 
 ## Sequencing caveats
 
@@ -106,7 +106,7 @@ is in review, and feature 37 is still specced.
 - **Migrations are ordered.** 34 adds `"free"` to the `sessions.kind` check (a SQLite table
   rebuild); 35 adds the exam tables. Each feature PR applies its migration before the client starts
   using it.
-- Features 34 and 35 have landed and are archived; features 36–37 follow in that order.
+- Features 34–36 have landed and are archived; feature 37 follows.
 
 ## Out of scope
 
