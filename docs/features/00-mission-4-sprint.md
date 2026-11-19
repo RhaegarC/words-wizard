@@ -1,7 +1,7 @@
 # Mission 4 — Sprint Goal: "Practice freely, prove mastery, collect the proof"
 
-> Status: **In progress — feature 34 is implemented; features 35–37 are specced.** Each feature
-> moves to Done as its implementation PR merges.
+> Status: **In progress — feature 34 (Free Practice) is done and archived; features 35–37 are
+> specced.** Each feature moves to Done as its implementation PR merges.
 > Depends on: Mission 2 (features 21–27) and Mission 3 (features 28–31) repository work complete.
 > Buddy removal (backlog item 01) is deliberately not part of this mission; Buddy remains a live
 > online feature.
@@ -84,10 +84,12 @@ and deferred by Mission 3.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 34 | [Free Practice](34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Implemented | — |
+| 34 | [Free Practice](archive/mission-4/34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Done | — |
 | 35 | [Exam Mode](35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Specced | 34 |
 | 36 | [Topic Status](36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Specced | 35 |
 | 37 | [Badges and achievements](37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Specced | 34–36 |
+
+Feature 34 now lives in `archive/mission-4/`; features 35–37 remain beside this index while active.
 
 ## Sequencing caveats
 
@@ -102,8 +104,7 @@ and deferred by Mission 3.
 - **Migrations are ordered.** 34 adds `"free"` to the `sessions.kind` check (a SQLite table
   rebuild); 35 adds the exam tables. Each feature PR applies its migration before the client starts
   using it.
-- This is a docs-only change: no source, tests, migrations, config or workflow files move until the
-  feature PRs.
+- Feature 34 landed first and is archived; features 35–37 follow in that order.
 
 ## Out of scope
 
