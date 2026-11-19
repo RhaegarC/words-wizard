@@ -776,6 +776,32 @@ a:focus-visible,
   font-weight: 800;
 }
 
+.topic-status {
+  display: inline-block;
+  margin: 10px 0 0 6px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  color: var(--muted);
+  background: #f0edf2;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.topic-status[data-status="learning"] {
+  color: #9a681d;
+  background: #fff2d2;
+}
+
+.topic-status[data-status="completed"] {
+  color: #347557;
+  background: #dff3e8;
+}
+
+.feature-copy .topic-status {
+  justify-self: start;
+  margin: 3px 0;
+}
+
 .topic-arrow {
   position: absolute;
   right: 18px;

@@ -113,6 +113,9 @@
   "topics.selected": "已选择",
   "topics.packCount_one": "{count} 个单词包",
   "topics.packCount_other": "{count} 个单词包",
+  "topics.status.none": "未开始",
+  "topics.status.learning": "学习中",
+  "topics.status.completed": "已完成",
   "topics.mastered_one": "已掌握 {count} 个单词",
   "topics.mastered_other": "已掌握 {count} 个单词",
 

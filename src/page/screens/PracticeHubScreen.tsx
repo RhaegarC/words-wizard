@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react"
 
 import type { TopicExam } from "@shared/exam"
+import { deriveTopicStatus } from "@shared/topicStatus"
 import type { Profile } from "@shared/types"
 import { progressProvider } from "../api/provider"
 import { Icon } from "../components/Icon"
+import { useIntroductions } from "../components/useTopicStatus"
+import { getPacksByTopic } from "../content"
+import { TOPIC_STATUS_KEYS } from "../domain/topicStatus"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
 
@@ -17,6 +21,9 @@ export function PracticeHubScreen({ profile }: { profile: Profile }) {
   const { navigate } = useRouter()
   const [exam, setExam] = useState<TopicExam | null>(null)
   const [examError, setExamError] = useState(false)
+  const { introductions, failed: introductionsFailed } = useIntroductions(
+    profile.id,
+  )
 
   useEffect(() => {
     if (profile.currentTopicId === null) {
@@ -47,22 +54,38 @@ export function PracticeHubScreen({ profile }: { profile: Profile }) {
   }, [profile.currentTopicId])
 
   const unlocked = exam?.gate.unlocked === true
-  const completed = exam?.state?.completedAt != null
+  const status =
+    profile.currentTopicId !== null &&
+    introductions !== null &&
+    !introductionsFailed &&
+    !examError &&
+    exam !== null
+      ? deriveTopicStatus({
+          topicId: profile.currentTopicId,
+          packs: getPacksByTopic(profile.currentTopicId),
+          introductions,
+          exams:
+            exam.state === null
+              ? []
+              : [
+                  {
+                    topicId: profile.currentTopicId,
+                    completedAt: exam.state.completedAt,
+                  },
+                ],
+        })
+      : null
   const examHint =
     profile.currentTopicId === null
       ? t("exam.locked")
-      : exam === null
-        ? examError
-          ? t("exam.error")
-          : t("common.loading")
-        : completed
-          ? t("exam.completed")
-          : unlocked
-            ? t("exam.start")
-            : t("exam.gate", {
-                introduced: exam.gate.introduced,
-                total: exam.gate.total,
-              })
+      : examError
+        ? t("exam.error")
+        : exam === null
+          ? t("common.loading")
+          : t("exam.gate", {
+              introduced: exam.gate.introduced,
+              total: exam.gate.total,
+            })
 
   return (
     <section className="word-page">
@@ -117,6 +140,11 @@ export function PracticeHubScreen({ profile }: { profile: Profile }) {
           <span className="feature-copy">
             <small>{t("session.hub.examTitle")}</small>
             <b>{t("session.hub.examBody")}</b>
+            {status === null ? null : (
+              <span className="topic-status" data-status={status}>
+                {t(TOPIC_STATUS_KEYS[status])}
+              </span>
+            )}
             <em>{examHint}</em>
           </span>
           <Icon name="arrow" />
