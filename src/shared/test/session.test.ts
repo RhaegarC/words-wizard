@@ -940,6 +940,33 @@ describe("session reducer", () => {
     expect(result?.words.every((word) => word.firstAttemptCorrect)).toBe(true)
   })
 
+  it("scopes a free session to its pack in the seed and result id", () => {
+    const first = sessionSeed("oid-1", NOW, "free", "dev", "p1")
+    const second = sessionSeed("oid-1", NOW, "free", "dev", "p2")
+    const plan: SessionPlan = {
+      words: [{ wordId: "w1", kind: "review", modes: ["pictureMatch"] }],
+      caughtUp: false,
+      introductions: [],
+    }
+
+    expect(sessionSeedKey(first)).not.toBe(sessionSeedKey(second))
+
+    let state = sessionReducer(createSessionState(plan, first), {
+      type: "start",
+      now: NOW,
+    })
+    state = sessionReducer(state, { type: "answer", correct: true })
+    state = sessionReducer(state, {
+      type: "continueFeedback",
+      now: NOW + 1,
+    })
+
+    const result = buildSessionResult(state)
+
+    expect(result?.kind).toBe("free")
+    expect(result?.id).toContain(":free:p1:")
+  })
+
   it("runs a same-day repeat without intro cards and commits one row per word", () => {
     const words = Array.from({ length: 8 }, (_, index) =>
       makeWord(`n${index + 1}`),

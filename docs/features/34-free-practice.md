@@ -1,6 +1,6 @@
 # Feature 34 — Free Practice
 
-> Priority: Must · Mission 4 · **Status: Specced**
+> Priority: Must · Mission 4 · **Status: Implemented**
 > Depends on: the session engine (features 07–09) and the online commit path (features 23–24).
 > Blocks: 35 (the practice hub and route family), 37 (the summary strip).
 > Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
@@ -71,8 +71,13 @@ Add a pure `buildFreePractice` beside the existing daily and monthly builders:
   `sessions.kind` enum/check in Drizzle.
 - SQLite cannot alter a `CHECK` in place, so migration **0003** rebuilds `sessions` while preserving
   every row, the `(user_id, id)` primary key, the `kind IN ('daily','monthly','free')` check, and
-  the composite target used by `session_metrics`. Review the generated recreate by hand and run
-  `PRAGMA foreign_key_check` in the migration test.
+  the composite target used by `session_metrics`. The generated recreate was **not** safe as-is:
+  dropping `sessions` with foreign keys on cascaded every `session_metrics` row away. The committed
+  migration copies the metric rows to a temporary table, drops the child and parent, renames the new
+  `sessions`, recreates `session_metrics` with its composite FK, and restores the rows. It was
+  verified against a scratch D1 database with an existing session and metric row: both survive, a
+  `free` insert is accepted, `PRAGMA foreign_key_check` is empty, and deleting the user cascades
+  both tables.
 - Rollout order: apply 0003 before the client sends a free session. A queued outbox payload written
   by an older client is unaffected because its kind is already stored in the payload.
 - Fallback if a table rebuild is rejected at review: reuse `"daily"` and record free sessions via a
@@ -104,19 +109,20 @@ Add a pure `buildFreePractice` beside the existing daily and monthly builders:
 
 ## Acceptance criteria
 
-- [ ] The Practice nav opens the hub; Daily, Free Practice and Topic Exam are all reachable.
-- [ ] The picker shows the current topic's unlocked packs, one selectable, with introduced/total
+- [x] The Practice nav opens the hub; Daily and Free Practice are reachable, and the Topic Exam card
+      is present but disabled until feature 35 supplies its gate.
+- [x] The picker shows the current topic's unlocked packs, one selectable, with introduced/total
       counts; a pack with no introduced words is disabled.
-- [ ] A free session contains only introduced words from the selected pack, in pack order, capped
+- [x] A free session contains only introduced words from the selected pack, in pack order, capped
       at 40.
-- [ ] All five modes rotate deterministically; listen-choose is omitted without an English voice.
-- [ ] No introduction card appears, and the commit adds no introduction rows.
-- [ ] The commit writes progress deltas, answer XP, +5 completion XP, streak, completed sessions and
+- [x] All five modes rotate deterministically; listen-choose is omitted without an English voice.
+- [x] No introduction card appears, and the commit adds no introduction rows.
+- [x] The commit writes progress deltas, answer XP, +5 completion XP, streak, completed sessions and
       Care Token cadence exactly as a daily session does.
-- [ ] `word.learned` stays 0 and no new progress row is created; today's daily plan is unchanged.
-- [ ] The session survives a reload on the same pack and stays inside its own route family.
-- [ ] `sessions.kind = "free"` persists and a replayed commit is idempotent.
-- [ ] The hub, picker and summary read content at render time.
+- [x] `word.learned` stays 0 and no new progress row is created; today's daily plan is unchanged.
+- [x] The session survives a reload on the same pack and stays inside its own route family.
+- [x] `sessions.kind = "free"` persists and a replayed commit is idempotent.
+- [x] The hub, picker and summary read content at render time.
 
 ## Test plan
 
@@ -147,6 +153,32 @@ and the session kind land.
   `MAX_COMMIT_ROWS`.
 - The hub adds a click before the daily session for nav users while Home keeps a one-tap start; the
   product copy must make the three choices obvious.
+
+## Implementation notes
+
+- The practice hub lives at `#/session/hub`; the free family is `#/session/free`,
+  `#/session/free/:packId`, `.../exercise` and `.../summary`. `SessionProvider` derives the `free`
+  kind and scopes the seed and result id to the pack.
+- `buildFreePractice` filters by introduction **and** an existing progress row, so a committed free
+  session cannot create a new progress row. Tests cover locked and foreign packs, pack order, the
+  40-word cap, mode rotation and the empty introductions.
+- `buildSessionCommit` is unchanged: a free result pays the same answer XP, +5 completion, streak,
+  completed-session and Care Token accounting, and reports no `word.learned` metric when the words
+  already have rows.
+- The Topic Exam card is intentionally disabled in this feature; feature 35 wires its gate and
+  entry.
+- Migration 0003 is the hand-adjusted rebuild described above.
+
+## Verification
+
+- `pnpm typecheck` — clean.
+- `pnpm test` — 80 files passed, 1 skipped; 1095 tests passed, 5 skipped (the credential-gated
+  remote tier).
+- `pnpm build`, `pnpm build:portal`, `pnpm check:dist` — pass.
+- Database tier — migration 0003 applies to real local D1; `free` is accepted and an unknown kind is
+  refused.
+- Host tier — a `free` session commits with no introductions and stores `kind = 'free'`.
+- Manual browser pass (daily plan → free pack → summary; reload mid-session) is still pending.
 
 ## Out of scope
 

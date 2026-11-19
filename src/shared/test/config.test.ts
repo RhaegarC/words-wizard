@@ -41,6 +41,10 @@ describe("config", () => {
     })
   })
 
+  it("caps free practice to the session commit row limit", () => {
+    expect(config.freePractice).toEqual({ cap: 40 })
+  })
+
   it("matches the PRD §7.1 streak and §7.2 dormancy rules", () => {
     expect(config.streak).toEqual({ graceDays: 7, tokenCoversDays: 1 })
     expect(config.dormancy).toEqual({

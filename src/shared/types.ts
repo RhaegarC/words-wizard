@@ -148,7 +148,7 @@ export interface CharacterState {
   stage: StageId
 }
 
-export type SessionKind = "daily" | "monthly"
+export type SessionKind = "daily" | "monthly" | "free"
 
 export interface SessionAttempt {
   wordId: string

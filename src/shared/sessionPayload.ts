@@ -176,7 +176,7 @@ const MAX_COMMIT_ROWS = 40
  */
 const MAX_SESSION_ID_LENGTH = 128
 const MAX_SESSION_XP = 10_000
-const SESSION_KINDS: readonly SessionKind[] = ["daily", "monthly"]
+const SESSION_KINDS: readonly SessionKind[] = ["daily", "monthly", "free"]
 const PROGRESS_STATUSES: readonly ProgressStatus[] = [
   "new",
   "learning",

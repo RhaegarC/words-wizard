@@ -29,6 +29,10 @@ export const config = {
     /** Used only to turn a session's screen count into a rough time estimate. */
     secondsPerScreen: 25,
   },
+  freePractice: {
+    /** One pack per session; keep the commit under the 40-row payload limit. */
+    cap: 40,
+  },
   exercise: {
     /** Answer plus up to three distractors. */
     options: 4,

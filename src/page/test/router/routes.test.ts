@@ -82,6 +82,38 @@ describe("parseHash / buildHash", () => {
     expect(parentOf({ id: "review-exercise" })).toEqual({ id: "review" })
   })
 
+  it("builds and parses the practice hub and free-practice family", () => {
+    expect(buildHash({ id: "session-hub" })).toBe("#/session/hub")
+    expect(parseHash("#/session/hub")).toEqual({ id: "session-hub" })
+    expect(buildHash({ id: "session-free" })).toBe("#/session/free")
+    expect(parseHash("#/session/free")).toEqual({ id: "session-free" })
+
+    const pack = { id: "session-free-pack" as const, packId: "craft-1" }
+    const exercise = { id: "session-free-exercise" as const, packId: "craft-1" }
+    const summary = { id: "session-free-summary" as const, packId: "craft-1" }
+
+    expect(buildHash(pack)).toBe("#/session/free/craft-1")
+    expect(parseHash("#/session/free/craft-1")).toEqual(pack)
+    expect(buildHash(exercise)).toBe("#/session/free/craft-1/exercise")
+    expect(parseHash("#/session/free/craft-1/exercise")).toEqual(exercise)
+    expect(buildHash(summary)).toBe("#/session/free/craft-1/summary")
+    expect(parseHash("#/session/free/craft-1/summary")).toEqual(summary)
+
+    expect(parentOf({ id: "session-hub" })).toEqual({ id: "home" })
+    expect(parentOf({ id: "session-free" })).toEqual({ id: "session-hub" })
+    expect(parentOf(pack)).toEqual({ id: "session-free" })
+    expect(parentOf(exercise)).toEqual(pack)
+    expect(parentOf(summary)).toEqual(pack)
+  })
+
+  it("decodes a free-practice pack id and rejects an empty one", () => {
+    expect(parseHash("#/session/free/craft%201")).toEqual({
+      id: "session-free-pack",
+      packId: "craft 1",
+    })
+    expect(parseHash("#/session/free/%20")).toBeNull()
+  })
+
   it("carries the settings origin through the topic picker", () => {
     expect(buildHash({ id: "topics", from: "settings" })).toBe(
       "#/topics?from=settings",

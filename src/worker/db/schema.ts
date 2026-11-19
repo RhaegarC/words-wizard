@@ -262,7 +262,7 @@ export const sessions = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.oid, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["daily", "monthly"] }).notNull(),
+    kind: text("kind", { enum: ["daily", "monthly", "free"] }).notNull(),
     localDate: text("local_date").notNull(),
     contentVersion: text("content_version").notNull(),
     xpEarned: integer("xp_earned").notNull(),
@@ -271,7 +271,7 @@ export const sessions = sqliteTable(
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.id] }),
-    check("sessions_kind", sql`${table.kind} IN ('daily', 'monthly')`),
+    check("sessions_kind", sql`${table.kind} IN ('daily', 'monthly', 'free')`),
   ],
 )
 
