@@ -22,12 +22,19 @@ import { useLocale } from "./i18n/LocaleProvider"
 import { UpdateProvider } from "./pwa/UpdateProvider"
 import { resolveRoute, type RouteState } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
-import { buildHash, titleKeyFor } from "./router/routes"
+import { buildHash, titleKeyFor, type Route } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
+import { BadgesScreen } from "./screens/BadgesScreen"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
+import { ExamLandingScreen } from "./screens/ExamLandingScreen"
+import { ExamPartScreen } from "./screens/ExamPartScreen"
+import { ExamSummaryScreen } from "./screens/ExamSummaryScreen"
+import { FreePracticeLandingScreen } from "./screens/FreePracticeLandingScreen"
+import { FreePracticePickerScreen } from "./screens/FreePracticePickerScreen"
 import { HomeScreen } from "./screens/HomeScreen"
 import { InstallScreen } from "./screens/InstallScreen"
+import { PracticeHubScreen } from "./screens/PracticeHubScreen"
 import { PlaceholderScreen } from "./screens/PlaceholderScreen"
 import { ReviewLandingScreen } from "./screens/ReviewLandingScreen"
 import { ReviewSummaryScreen } from "./screens/ReviewSummaryScreen"
@@ -42,6 +49,7 @@ import { WordDetailScreen } from "./screens/WordDetailScreen"
 import { WordsScreen } from "./screens/WordsScreen"
 import { SessionProvider } from "./session/SessionProvider"
 import { AppShell } from "./shell/AppShell"
+import { ExamProvider } from "./exam/ExamProvider"
 
 const DEV_ROUTE_TABLE_HASH = "#/__routes"
 
@@ -112,6 +120,27 @@ async function boot(deps: BootDeps): Promise<BootOutcome> {
   })
 
   return { result, legacyImport }
+}
+
+/** The session family a route belongs to; a free pack gets its own mount. */
+function sessionProviderKey(route: Route): string {
+  if (
+    route.id === "review" ||
+    route.id === "review-exercise" ||
+    route.id === "review-summary"
+  ) {
+    return "monthly"
+  }
+
+  if (
+    route.id === "session-free-pack" ||
+    route.id === "session-free-exercise" ||
+    route.id === "session-free-summary"
+  ) {
+    return `free:${route.packId}`
+  }
+
+  return "daily"
 }
 
 export default function App() {
@@ -314,6 +343,8 @@ export default function App() {
       <WordsScreen profile={profile} tab={route.tab} />
     ) : route.id === "word-detail" && profile ? (
       <WordDetailScreen profile={profile} wordId={route.wordId} />
+    ) : route.id === "badges" && profile ? (
+      <BadgesScreen profile={profile} />
     ) : route.id === "session" ? (
       <SessionLandingScreen />
     ) : route.id === "session-intro" ? (
@@ -322,6 +353,22 @@ export default function App() {
       <SessionExerciseScreen />
     ) : route.id === "session-summary" ? (
       <SessionSummaryScreen />
+    ) : route.id === "session-hub" && profile ? (
+      <PracticeHubScreen profile={profile} />
+    ) : route.id === "session-free" && profile ? (
+      <FreePracticePickerScreen profile={profile} />
+    ) : route.id === "session-free-pack" ? (
+      <FreePracticeLandingScreen packId={route.packId} />
+    ) : route.id === "session-free-exercise" ? (
+      <SessionExerciseScreen />
+    ) : route.id === "session-free-summary" ? (
+      <SessionSummaryScreen />
+    ) : route.id === "session-exam" ? (
+      <ExamLandingScreen />
+    ) : route.id === "session-exam-part" ? (
+      <ExamPartScreen key={route.index} index={route.index} />
+    ) : route.id === "session-exam-summary" ? (
+      <ExamSummaryScreen />
     ) : route.id === "review" ? (
       <ReviewLandingScreen />
     ) : route.id === "review-exercise" ? (
@@ -359,25 +406,34 @@ export default function App() {
     route.id === "session-intro" ||
     route.id === "session-exercise" ||
     route.id === "session-summary" ||
+    route.id === "session-free-pack" ||
+    route.id === "session-free-exercise" ||
+    route.id === "session-free-summary" ||
     route.id === "review" ||
     route.id === "review-exercise" ||
     route.id === "review-summary"
+
+  const inExam =
+    route.id === "session-exam" ||
+    route.id === "session-exam-part" ||
+    route.id === "session-exam-summary"
 
   // The provider sits outside the shell so its exit dialog covers the whole
   // frame, and stays mounted as the session moves between its own routes.
   return (
     <UpdateProvider>
       <RouterProvider value={router}>
-        {inSession && profile ? (
+        {inExam && profile ? (
+          <ExamProvider
+            key={profile.currentTopicId ?? "no-topic"}
+            profile={profile}
+          >
+            {shell}
+          </ExamProvider>
+        ) : inSession && profile ? (
           <SessionProvider
-            // A switch between the daily and monthly families starts clean.
-            key={
-              route.id === "review" ||
-              route.id === "review-exercise" ||
-              route.id === "review-summary"
-                ? "monthly"
-                : "daily"
-            }
+            // A switch between session families or free packs starts clean.
+            key={sessionProviderKey(route)}
             profile={profile}
             route={route}
             onProfileUpdated={(next) =>

@@ -1,5 +1,6 @@
 import type { Hono, MiddlewareHandler } from "hono"
 
+import { parseExamSubmission } from "../shared/exam"
 import { MAX_IMPORT_BODY_BYTES, parseLegacyImport } from "../shared/legacyImport"
 import { validateServerSessionPayload } from "../shared/sessionPayload"
 import type { ServerSessionCommitPayload } from "../shared/sessionPayload"
@@ -15,6 +16,7 @@ import type { TokenVerifier } from "./auth"
 import type { WorkerConfig } from "./config"
 import { requireAvatars, requireDb } from "./config"
 import type { AppEnv } from "./context"
+import { readExamStates, readTopicExam, submitExam } from "./db/exams"
 import {
   avatarExists,
   clearUserAvatar,
@@ -152,6 +154,57 @@ export function registerMeRoutes(
     await ensureUser(db, oid, principal, now)
     return c.json(
       await commitSession(db, oid, payload as ServerSessionCommitPayload, now),
+    )
+  })
+
+  app.get("/v1/me/exams", async (c) => {
+    const db = requireDb(c.env)
+    const principal = c.get("principal")
+    const now = Date.now()
+
+    await ensureUser(db, principal.oid, principal, now)
+    if ((await readProfile(db, principal.oid)) === null) {
+      throw new ProfileNotFoundError()
+    }
+
+    return c.json({ exams: await readExamStates(db, principal.oid) })
+  })
+
+  app.get("/v1/me/exams/:topicId", async (c) => {
+    const db = requireDb(c.env)
+    const principal = c.get("principal")
+    const now = Date.now()
+    const topicId = c.req.param("topicId")
+
+    await ensureUser(db, principal.oid, principal, now)
+    if ((await readProfile(db, principal.oid)) === null) {
+      throw new ProfileNotFoundError()
+    }
+    if (!(await topicExists(db, topicId))) {
+      throw new ValidationFailedError("Unknown topic.")
+    }
+
+    return c.json(await readTopicExam(db, principal.oid, topicId))
+  })
+
+  app.post("/v1/me/exams", async (c) => {
+    const parsed = parseExamSubmission(await readBody(c))
+    if (!parsed.ok) throw new ValidationFailedError(describe(parsed.issues))
+
+    const db = requireDb(c.env)
+    const principal = c.get("principal")
+    const now = Date.now()
+
+    await ensureUser(db, principal.oid, principal, now)
+    if ((await readProfile(db, principal.oid)) === null) {
+      throw new ProfileNotFoundError()
+    }
+    if (!(await topicExists(db, parsed.value.topicId))) {
+      throw new ValidationFailedError("Unknown topic.")
+    }
+
+    return c.json(
+      await submitExam(db, principal.oid, parsed.value, now),
     )
   })
 

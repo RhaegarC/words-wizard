@@ -13,17 +13,22 @@ stores, where it lives, and how deletion works. The same notice is published at
   `preferred_username` when `email` is absent). It is used to contact the account
   holder about their data and is not shown in the app.
 - The **app role** from the sign-in token (`user`, `teacher`, or `admin`). It
-  authorises nothing in the current release; it is stored for the planned
-  teacher/admin portal.
+  gates the teacher/admin portal; no child-facing screen uses it.
 - A **profile photo**, only if the user chooses to upload one. It is stored in a
   private Cloudflare R2 bucket and served from a public read-only address; the
   photo can be removed from Settings at any time.
 - The buddy name, chosen buddy avatar, current topic, locale, XP, streak, Care
   Token state, and progress through the vocabulary.
 - Session history and the per-user counters shown in Settings (for example
-  sessions completed, words learned, and words mastered).
+  sessions completed, words learned, and words mastered). A free-practice
+  session is ordinary session history.
 - Pack introductions, which record that a word was introduced in a particular
   pack so the next pack can unlock.
+- **Topic exam progress**: the parts passed, the number of attempts, the content
+  version the exam covered, when a topic was completed, and the id of the word
+  that ended a failed part. We do not store the spelling answers the child
+  types. Badges and topic status are calculated from data already listed here;
+  they add no new personal data.
 - A small set of device flags in the browser, such as whether the app is
   installed and whether read-aloud is available. These stay in `localStorage`;
   they are not sent to the API.
@@ -33,8 +38,8 @@ is not personal data.
 
 ## Where it lives
 
-- **Cloudflare D1** stores the `oid`, the email address, the role, and the
-  per-user rows.
+- **Cloudflare D1** stores the `oid`, the email address, the role, the per-user
+  rows, and topic exam progress and attempts.
 - **Cloudflare R2** stores an uploaded profile photo, if there is one. Cloudflare
   also serves the Worker API and the Pages app.
 - **Microsoft** handles sign-in. The app never sees the account password.
@@ -69,10 +74,10 @@ against production:
 4. Run `PRAGMA foreign_key_check`.
 5. Record the date and `oid` in the operations log, without the child's name.
 
-Deletion removes the profile, photo, progress, sessions, metrics, and pack
-introductions. It does not remove the content tables. There is no user-facing
-delete or reset control; deletion is an operator procedure, recorded in
-[operations.md](operations.md).
+Deletion removes the profile, photo, progress, sessions, topic exam progress and
+attempts, metrics, and pack introductions. It does not remove the content tables.
+There is no user-facing delete or reset control; deletion is an operator
+procedure, recorded in [operations.md](operations.md).
 
 ## Children's privacy
 
@@ -80,7 +85,9 @@ The app collects the minimum needed for a child's progress to follow them to
 another device. The email address comes from the Microsoft sign-in the parent or
 account holder completes; the app never asks for a school or any contact list.
 The profile photo is optional and can be removed at any time in Settings. The
-buddy name is a nickname chosen by the child.
+buddy name is a nickname chosen by the child. Exam records are topic-level —
+which parts passed and which word ended a failed part — and never contain the
+child's typed answers.
 
 ## Contact
 

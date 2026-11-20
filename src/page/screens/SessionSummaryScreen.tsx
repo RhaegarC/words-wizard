@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 
 import { config } from "@shared/config"
+import { NewBadgeStrip } from "../components/NewBadgeStrip"
 import { useLocale } from "../i18n/LocaleProvider"
 import { stageMessageKey } from "../i18n/stages"
 import { useRouter } from "../router/RouterContext"
@@ -16,7 +17,8 @@ import { SessionFallback } from "./SessionFallback"
 export function SessionSummaryScreen() {
   const { t } = useLocale()
   const { navigate } = useRouter()
-  const { state, result, commitStatus, summary, retryCommit } = useSession()
+  const { state, result, commitStatus, summary, newBadges, retryCommit } =
+    useSession()
   const backRef = useRef<HTMLButtonElement>(null)
   const retryRef = useRef<HTMLButtonElement>(null)
 
@@ -85,6 +87,8 @@ export function SessionSummaryScreen() {
           <small>{t("home.careTokens")}</small>
         </span>
       </div>
+
+      <NewBadgeStrip ids={newBadges} />
 
       <div className="summary-stage">
         <div className="growth-label">

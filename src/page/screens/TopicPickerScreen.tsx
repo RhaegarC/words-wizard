@@ -3,9 +3,12 @@ import { useState } from "react"
 import { Brand } from "../components/Brand"
 import { Icon } from "../components/Icon"
 import { topicTone } from "../components/tone"
-import { getPacksByTopic, getTopics } from "../content"
+import { useTopicStatus } from "../components/useTopicStatus"
+import { getAllPacks, getPacksByTopic, getTopics } from "../content"
 import { progressProvider } from "../api/provider"
+import { TOPIC_STATUS_KEYS } from "../domain/topicStatus"
 import { resolveTopicChoice } from "@/domain/firstRun"
+import { deriveTopicStatus } from "@shared/topicStatus"
 import type { Profile } from "@shared/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import { useRouter } from "../router/RouterContext"
@@ -28,7 +31,21 @@ export function TopicPickerScreen({
   const { navigate } = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
+  const { introductions, exams, failed: statusFailed } = useTopicStatus(
+    profile.id,
+  )
   const topics = getTopics()
+  const packs = getAllPacks()
+
+  const backAction = fromSettings ? (
+    <button
+      type="button"
+      className="back-action"
+      onClick={() => navigate({ id: "settings" })}
+    >
+      ← {t("common.back")}
+    </button>
+  ) : null
 
   const choose = (topicId: string) => {
     if (pendingId !== null) {
@@ -55,19 +72,35 @@ export function TopicPickerScreen({
       })
   }
 
+  if (statusFailed) {
+    return (
+      <main className="setup-page topic-setup">
+        <Brand />
+        {backAction}
+        <p className="form-error" role="alert">
+          {t("errors.generic")}
+        </p>
+      </main>
+    )
+  }
+
+  if (introductions === null || exams === null) {
+    return (
+      <main className="setup-page topic-setup">
+        <Brand />
+        {backAction}
+        <p role="status" className="words-loading">
+          {t("common.loading")}
+        </p>
+      </main>
+    )
+  }
+
   return (
     <main className="setup-page topic-setup">
       <Brand />
 
-      {fromSettings ? (
-        <button
-          type="button"
-          className="back-action"
-          onClick={() => navigate({ id: "settings" })}
-        >
-          ← {t("common.back")}
-        </button>
-      ) : null}
+      {backAction}
 
       <header className="setup-head">
         <span className="eyebrow">{t("topics.eyebrow")}</span>
@@ -79,6 +112,12 @@ export function TopicPickerScreen({
         {topics.map((topic, index) => {
           const packCount = getPacksByTopic(topic.id).length
           const selected = profile.currentTopicId === topic.id
+          const status = deriveTopicStatus({
+            topicId: topic.id,
+            packs,
+            introductions,
+            exams,
+          })
 
           return (
             <li key={topic.id}>
@@ -105,6 +144,9 @@ export function TopicPickerScreen({
                   {selected
                     ? t("topics.selected")
                     : t("topics.packCount", { count: packCount })}
+                </span>
+                <span className="topic-status" data-status={status}>
+                  {t(TOPIC_STATUS_KEYS[status])}
                 </span>
                 <i className="topic-arrow">
                   <Icon name="arrow" size={17} />

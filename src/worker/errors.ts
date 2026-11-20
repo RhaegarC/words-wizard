@@ -21,6 +21,8 @@ export type ErrorCode =
   | "care_unavailable"
   | "conflict"
   | "archived"
+  | "exam_locked"
+  | "exam_stale"
 
 type ErrorStatus = 400 | 401 | 403 | 404 | 405 | 409 | 422 | 500
 
@@ -117,6 +119,24 @@ export class ConflictError extends AppError {
     message = "The content changed since it was loaded. Refresh and try again.",
   ) {
     super("conflict", 409, message)
+  }
+}
+
+/** The topic exam is not available yet, or that part is not the next one. */
+export class ExamLockedError extends AppError {
+  constructor(message = "The topic exam is not available yet.") {
+    super("exam_locked", 409, message)
+  }
+}
+
+/** The exam's content version changed; an unfinished exam resets. */
+export class ExamStaleError extends AppError {
+  constructor() {
+    super(
+      "exam_stale",
+      409,
+      "The word list changed. Start the exam again.",
+    )
   }
 }
 

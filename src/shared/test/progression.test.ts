@@ -549,6 +549,28 @@ describe("buildSessionCommit", () => {
     expect(summary.progress.stage).toBe("hatchling")
   })
 
+  it("commits a free result with normal accounting and no learned word", () => {
+    const existing = makeProgress({ wordId: "w-bag" })
+    const result = makeResult(
+      [makeWord("w-bag", [makeAttempt({ wordId: "w-bag", xp: 2 })])],
+      2,
+      "free",
+    )
+    const { payload } = buildSessionCommit(
+      result,
+      makeProfile(),
+      [existing],
+      NOW,
+    )
+
+    expect(payload.session.kind).toBe("free")
+    expect(payload.xpEarned).toBe(2 + config.xp.sessionComplete)
+    expect(payload.profile.completedSessions).toBe(8)
+    expect(payload.introductions).toEqual([])
+    expect(payload.progress).toHaveLength(1)
+    expect(payload.metrics[METRIC_NAMES.wordLearned]).toBeUndefined()
+  })
+
   it("preserves firstSeenAt and updates lastSeenAt on an existing row", () => {
     const existing = makeProgress({
       wordId: "w-key",

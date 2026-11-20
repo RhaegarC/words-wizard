@@ -22,6 +22,9 @@ export const METRIC_NAMES = {
   reviewStrengthDelta: "monthlyReview.strengthDelta",
   revivalSession: "revival.session",
   revivalQuickWake: "revival.quickWake",
+  examPartPassed: "exam.partPassed",
+  examPartFailed: "exam.partFailed",
+  examTopicCompleted: "exam.topicCompleted",
 } as const
 
 export type MetricName = (typeof METRIC_NAMES)[keyof typeof METRIC_NAMES]

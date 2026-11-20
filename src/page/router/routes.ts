@@ -25,6 +25,12 @@ export type TopicsRoute = {
   from?: "settings"
 }
 
+/** One free-practice session pinned to the pack it practises. */
+export type FreePracticeRoute = {
+  id: "session-free-pack" | "session-free-exercise" | "session-free-summary"
+  packId: string
+}
+
 export type Route =
   | { id: "home" }
   | TopicsRoute
@@ -32,12 +38,19 @@ export type Route =
   | { id: "session-intro" }
   | { id: "session-exercise" }
   | { id: "session-summary" }
+  | { id: "session-hub" }
+  | { id: "session-free" }
+  | FreePracticeRoute
+  | { id: "session-exam" }
+  | { id: "session-exam-part"; index: number }
+  | { id: "session-exam-summary" }
   | WordsRoute
   | WordDetailRoute
   | { id: "character" }
   | { id: "review" }
   | { id: "review-exercise" }
   | { id: "review-summary" }
+  | { id: "badges" }
   | { id: "settings" }
   | { id: "create" }
   | { id: "install" }
@@ -54,6 +67,14 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "session-intro" },
   { id: "session-exercise" },
   { id: "session-summary" },
+  { id: "session-hub" },
+  { id: "session-free" },
+  { id: "session-free-pack", packId: "craft-1" },
+  { id: "session-free-exercise", packId: "craft-1" },
+  { id: "session-free-summary", packId: "craft-1" },
+  { id: "session-exam" },
+  { id: "session-exam-part", index: 0 },
+  { id: "session-exam-summary" },
   { id: "words", tab: "collection" },
   { id: "words", tab: "wordbook" },
   { id: "word-detail", wordId: "w-build" },
@@ -61,29 +82,45 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "review" },
   { id: "review-exercise" },
   { id: "review-summary" },
+  { id: "badges" },
   { id: "settings" },
   { id: "create" },
   { id: "install" },
   { id: "signin" },
 ]
 
-const SIMPLE_HASHES: Record<Exclude<RouteId, "words" | "word-detail">, string> =
-  {
-    home: "#/home",
-    topics: "#/topics",
-    session: "#/session",
-    "session-intro": "#/session/intro",
-    "session-exercise": "#/session/exercise",
-    "session-summary": "#/session/summary",
-    character: "#/character",
-    review: "#/review",
-    "review-exercise": "#/review/exercise",
-    "review-summary": "#/review/summary",
-    settings: "#/settings",
-    create: "#/create",
-    install: "#/install",
-    signin: "#/signin",
-  }
+const SIMPLE_HASHES: Record<
+  Exclude<
+    RouteId,
+    | "words"
+    | "word-detail"
+    | "session-free-pack"
+    | "session-free-exercise"
+    | "session-free-summary"
+    | "session-exam-part"
+  >,
+  string
+> = {
+  home: "#/home",
+  topics: "#/topics",
+  session: "#/session",
+  "session-intro": "#/session/intro",
+  "session-exercise": "#/session/exercise",
+  "session-summary": "#/session/summary",
+  "session-hub": "#/session/hub",
+  "session-free": "#/session/free",
+  "session-exam": "#/session/exam",
+  "session-exam-summary": "#/session/exam/summary",
+  character: "#/character",
+  review: "#/review",
+  "review-exercise": "#/review/exercise",
+  "review-summary": "#/review/summary",
+  badges: "#/badges",
+  settings: "#/settings",
+  create: "#/create",
+  install: "#/install",
+  signin: "#/signin",
+}
 
 const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   home: "common.screen.home",
@@ -92,11 +129,20 @@ const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   "session-intro": "common.screen.sessionIntro",
   "session-exercise": "common.screen.sessionExercise",
   "session-summary": "common.screen.sessionSummary",
+  "session-hub": "common.screen.sessionHub",
+  "session-free": "common.screen.sessionFree",
+  "session-free-pack": "common.screen.sessionFree",
+  "session-free-exercise": "common.screen.sessionFree",
+  "session-free-summary": "common.screen.sessionFree",
+  "session-exam": "common.screen.sessionExam",
+  "session-exam-part": "common.screen.sessionExam",
+  "session-exam-summary": "common.screen.sessionExamSummary",
   "word-detail": "common.screen.wordDetail",
   character: "common.screen.character",
   review: "common.screen.review",
   "review-exercise": "common.screen.review",
   "review-summary": "common.screen.reviewSummary",
+  badges: "common.screen.badges",
   settings: "common.screen.settings",
   create: "common.screen.create",
   install: "common.screen.install",
@@ -118,6 +164,26 @@ export function buildHash(route: Route): string {
     return route.from === "settings"
       ? "#/topics?from=settings"
       : SIMPLE_HASHES.topics
+  }
+
+  if (route.id === "session-exam-part") {
+    return `#/session/exam/part/${route.index}`
+  }
+
+  if (
+    route.id === "session-free-pack" ||
+    route.id === "session-free-exercise" ||
+    route.id === "session-free-summary"
+  ) {
+    const base = `#/session/free/${encodeURIComponent(route.packId)}`
+
+    if (route.id === "session-free-pack") {
+      return base
+    }
+
+    return `${base}/${
+      route.id === "session-free-exercise" ? "exercise" : "summary"
+    }`
   }
 
   return SIMPLE_HASHES[route.id]
@@ -171,6 +237,8 @@ export function parseHash(hash: string): Route | null {
       }
     case "settings":
       return onlyOneSegment(segments) ? { id: "settings" } : null
+    case "badges":
+      return onlyOneSegment(segments) ? { id: "badges" } : null
     case "create":
       return onlyOneSegment(segments) ? { id: "create" } : null
     case "install":
@@ -208,6 +276,20 @@ export function parentOf(route: Route): Route | null {
     case "session-intro":
     case "session-exercise":
       return { id: "session" }
+    case "session-hub":
+      return { id: "home" }
+    case "session-exam":
+      return { id: "session-hub" }
+    case "session-exam-part":
+    case "session-exam-summary":
+      return { id: "session-exam" }
+    case "session-free":
+      return { id: "session-hub" }
+    case "session-free-pack":
+      return { id: "session-free" }
+    case "session-free-exercise":
+    case "session-free-summary":
+      return { id: "session-free-pack", packId: route.packId }
     case "review-exercise":
       return { id: "review" }
     case "topics":
@@ -220,6 +302,7 @@ export function parentOf(route: Route): Route | null {
     case "character":
     case "review":
     case "review-summary":
+    case "badges":
     case "settings":
     case "install":
       return { id: "home" }
@@ -267,6 +350,10 @@ function parseSession(segments: string[]): Route | null {
 
   if (segments.length === 2) {
     switch (segments[1]) {
+      case "hub":
+        return { id: "session-hub" }
+      case "free":
+        return { id: "session-free" }
       case "intro":
         return { id: "session-intro" }
       case "exercise":
@@ -276,7 +363,68 @@ function parseSession(segments: string[]): Route | null {
     }
   }
 
+  if (segments[1] === "free" && (segments.length === 3 || segments.length === 4)) {
+    const phase =
+      segments.length === 3
+        ? "pack"
+        : segments[3] === "exercise"
+          ? "exercise"
+          : segments[3] === "summary"
+            ? "summary"
+            : null
+
+    return phase === null ? null : freePracticeRoute(segments[2], phase)
+  }
+
+  if (segments[1] === "exam") {
+    if (segments.length === 2) {
+      return { id: "session-exam" }
+    }
+
+    if (segments.length === 3 && segments[2] === "summary") {
+      return { id: "session-exam-summary" }
+    }
+
+    if (segments.length === 4 && segments[2] === "part") {
+      if (!/^\d+$/.test(segments[3])) {
+        return null
+      }
+
+      const index = Number(segments[3])
+
+      return Number.isSafeInteger(index) && index >= 0
+        ? { id: "session-exam-part", index }
+        : null
+    }
+  }
+
   return null
+}
+
+function freePracticeRoute(
+  rawPackId: string,
+  phase: "pack" | "exercise" | "summary",
+): Route | null {
+  let packId: string
+
+  try {
+    packId = decodeURIComponent(rawPackId)
+  } catch {
+    return null
+  }
+
+  if (packId.trim() === "") {
+    return null
+  }
+
+  const id =
+    phase === "pack"
+      ? "session-free-pack"
+      : phase === "exercise"
+        ? "session-free-exercise"
+        : "session-free-summary"
+
+  return { id, packId }
 }
 
 function parseWords(segments: string[], query: string): Route | null {

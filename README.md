@@ -9,7 +9,10 @@ ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (s
 teacher/admin content portal, shipped as features 28–31, recorded in
 [docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
 under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
-and Worker API. The production app is
+and Worker API. Mission 4 is **in progress** — features 34 (Free Practice), 35 (Exam Mode) and 36
+(Topic Status) are done and archived, and badges (feature 37) are implemented and awaiting review,
+in [docs/features/00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md).
+Buddy remains a live feature. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
 and its toolchain is independent of the production app.
@@ -43,7 +46,7 @@ and its toolchain is independent of the production app.
 | Path | Purpose |
 |---|---|
 | [docs/PRD.md](docs/PRD.md) | v0.3 product requirements — the document of record |
-| [docs/features/](docs/features/) | Mission 1–3 sprint indexes, the ordered feature specs, the backlog, and completed features under `archive/` |
+| [docs/features/](docs/features/) | Mission 1–4 sprint indexes (Mission 4 is live in [00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md); Missions 1–3 are under `archive/`), the ordered feature specs, the backlog, and completed features |
 | [docs/sample_data/](docs/sample_data/) | Inputs kept for reference, not the v1 content set: `Init/` (historical discovery notes, superseded by the PRD), the Cambridge 2025 word-list PDF, the early 36-word `words.json`, and `content/` (scaffold topics, packs, and words) |
 | [src/](src/) | **Everything both apps need**: the package, `pnpm-lock.yaml`, TypeScript/Vite configs, `src/page/` (child React SPA and assets), `src/portal/` (admin portal SPA), `src/shared/` (pure domain), `src/worker/` (API, added in feature 21), and the generated `src/dist/` and `src/dist-portal/` builds |
 | Repository root | Only `README.md`, `LICENSE`, `.gitignore`, `docs/`, and `figma/` |

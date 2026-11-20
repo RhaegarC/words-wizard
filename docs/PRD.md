@@ -3,10 +3,11 @@
 
 **Version:** 0.3 (Mission 2 online architecture)
 **Status:** Approved for implementation
-**Last Updated:** 2026-10-30
+**Last Updated:** 2026-11-19
 
 > This version supersedes the exploratory notes in `docs/sample_data/Init/`. Where they
-> disagree, this document governs.
+> disagree, this document governs. Amended by Mission 4 (features 34–37, 2026-11-19): free
+> practice, exam mode, topic status, and badges are added without changing the online architecture.
 
 > **Mission 2 supersedes the offline-first, no-backend posture of v0.2.** The app is
 > online-only, signs in with Microsoft Entra ID, and stores content and learner data in
@@ -57,7 +58,7 @@ or cached-content fallback (§8.5).
 - Parent accounts, remote dashboards, or notifications.
 - A content CMS or admin portal (Mission 3).
 - Custom word lists or JSON import.
-- Badges, Tricky Words, story mode, or timed challenges.
+- Tricky Words, story mode, or timed challenges. (Badges are Mission 4, §7.9.)
 
 ---
 
@@ -178,6 +179,13 @@ done. Both choices are deterministic for a profile, local day, and content versi
 
 The Monthly Review gives each selected word one mode from all five, with a
 deterministic rotation.
+
+**Mission 4 modes.** The Practice hub adds two entry points beside the daily session.
+**Free Practice** revisits the introduced words of one unlocked pack of the current
+topic and rotates all five modes; it is a normal session for XP, scheduling, streak and
+Care Tokens. **Exam Mode** is a topic-level, spelling-only assessment: every word in the
+topic, split into parts of fewer than 50 words, one typed attempt per word, no hints or
+reveal, and no progress or reward accounting. See §7.7–§7.8.
 
 **Speech fallback:** if no English voice is available, *Listen & choose* is removed
 from the comprehensive pool and from the monthly rotation. IPA is always visible.
@@ -397,7 +405,8 @@ Pack {
   - A Care Token can cover one missed day (§7.5).
 - **Pack unlocks:** sequential by completion, as in §6.1 — the next pack opens when every word of
   the previous pack has been introduced to this user. Mastery counts do not gate packs.
-- **Badges:** deferred to Phase 2.
+- **Badges:** Mission 4 (§7.9).
+- **Topic status:** None / Learning / Completed, with Completed earned by the topic exam (§7.8).
 - **Character customization:** avatar re-selection in Settings. The stage name and
   progress bar are the growth layer; the buddy portrait does not change per stage.
 
@@ -576,6 +585,78 @@ One token type, one currency, two spend options.
   word moves from the mastered tally to the learning tally but does not reduce the total
   collected count.
 
+### 7.7 Free Practice
+
+- **Entry:** the Practice nav opens a hub with Daily session, Free Practice and Topic Exam.
+  Free Practice targets the **current topic**.
+- **Selection:** the child chooses exactly **one unlocked pack** of that topic.
+- **Word set:** only words already introduced in that pack. Free Practice never introduces a
+  word, shows no intro card, and does not consume the daily new-word quota.
+- **Modes:** all five practice modes rotate, one per word, deterministically.
+- **Accounting:** a normal session. Strength and next review update; answer XP and the +5
+  completion bonus apply; the streak, `completedSessions` and Care Token cadence advance.
+  It creates no new progress row and no `word.learned` event.
+- **Cap:** up to 40 words per free session (currently one pack is 20), matching the session
+  commit's row limit.
+- **Kind:** the session is stored as `kind = 'free'` so history distinguishes it from a daily
+  session.
+
+### 7.8 Exam Mode and Topic Status
+
+**Exam availability.** A topic exam is available only when **every distinct word in the topic
+has been introduced** to the user (all packs unlocked, including the final pack's words). The
+exam targets the current topic; its state is per topic and resumes across sittings and topic
+switches.
+
+**Coverage and parts.** The exam covers **every word in the topic**, spelling only. Words are
+ordered deterministically by pack order and pack position, deduplicated by word id, and split
+into parts of **fewer than 50 words**, as evenly as possible (for example 60 → 30 + 30). Parts
+are taken in order. A passed part stays passed; a reload resumes at the next unpassed part.
+
+**Attempt.** The child types the spelling once, with no letter tiles, hints or reveal. Any wrong
+submission fails the part immediately. The fail screen shows the missed word and its correct
+spelling, then offers Retake; the part restarts from its first word, while earlier parts stay
+passed. The server compares the answer and stores only the pass/fail result and the missed word
+id, never the typed spelling.
+
+**Accounting.** The exam is assessment only: it changes no progress, strength, next-review date,
+XP, streak, `completedSessions`, Care Token state or `lastPracticeAt`.
+
+**Completion.** Passing every part marks the topic **Completed** on first pass; a later retake is
+allowed and keeps it Completed. Completion is sticky: adding words to the topic later does not
+clear it. An unfinished exam whose content version changes resets its part progress and must be
+started again on the new word set.
+
+**Topic status.** Each topic is **None**, **Learning**, or **Completed**:
+
+- **None:** no word in the topic has been introduced.
+- **Learning:** at least one introduction exists and the exam is not completed.
+- **Completed:** the exam has been passed; persisted and never cleared by demotion, a retake or
+  content growth.
+
+The status appears on the topic picker and on the Practice hub's exam card. Exam state is stored
+in `topic_exam_progress` and `exam_attempts` (§8.3); completion is the only status fact that is
+persisted.
+
+### 7.9 Badges and Achievements
+
+- **Twenty badges**, built on the progression facts the app already records. There is no badge
+  currency, no second level system, and no `achievements` table.
+- **Fifteen medals** in five categories with bronze / silver / gold tiers:
+  - Collection: 10 / 50 / 100 words learned (cumulative `word.learned`).
+  - Mastery: 1 / 10 / 50 words mastered (cumulative `word.mastered`).
+  - Streak: 3 / 7 / 30 best streak days.
+  - Sessions: 10 / 50 / 100 completed sessions.
+  - Reviews: 1 / 5 / 12 completed Monthly Reviews.
+- **Five trophies**, one per current topic, earned when that topic is Completed. A future topic
+  adds a trophy; it never re-locks an earned one. A completed topic keeps its trophy if the topic
+  is later archived.
+- **Derived, not stored.** A pure evaluator reads monotonic facts; no earned dates or seen state
+  are kept, so a badge cannot un-earn. "Latest" is a presentation choice (highest unlocked tier),
+  not a chronology.
+- **Surfaces:** a Home badge card (featured badge and next goal) opens a dedicated Badges screen
+  grouped by category. Session and exam summaries show badges newly earned by that result.
+
 ---
 
 ## 8. Technical Architecture
@@ -618,12 +699,19 @@ the API returns and commits finished sessions back to it. See the
 | Group | Tables |
 |---|---|
 | Content | `topics`, `packs`, `words`, `pack_words`, `avatars`, `avatar_stages`, `content_meta` |
-| User | `users`, `profiles`, `progress`, `pack_introductions`, `sessions`, `session_metrics`, `metrics`, `metric_events` |
+| User | `users`, `profiles`, `progress`, `pack_introductions`, `sessions`, `session_metrics`, `metrics`, `metric_events`, `topic_exam_progress`, `exam_attempts` |
 
 `users.oid` is the Entra object id and the only user key. Every user-owned table
 declares `ON DELETE cascade` to `users(oid)`. `profiles` has one row per user;
 `progress` has one row per `(user_id, word_id)`; `pack_introductions` has one row per
 `(user_id, pack_id, word_id)` and drives pack unlock.
+
+`sessions.kind` is `daily`, `monthly`, or `free`. `topic_exam_progress` has one row per
+`(user_id, topic_id)`: `passed_parts`, `part_count`, `content_version`, `attempts`,
+`last_attempt_at`, `completed_at` (sticky) and `updated_at`. `exam_attempts` has one row per
+submitted part keyed by `(user_id, attempt_id)`, recording the topic, part index, pass flag and
+missed word id for idempotency; **the typed spelling is never stored**. Badges are derived from
+the existing counters and add no table.
 
 **Identity facts** are copied from the verified access token on every authenticated
 request and are never writable from a request body:
@@ -850,6 +938,14 @@ After sign-in, the app calls `GET /v1/me`.
 
 **Monthly Review builder:** separate; up to 20 learned words, selected per §7.4.
 
+**Free Practice builder:** one unlocked pack of the current topic, introduced words only, in pack
+order, capped at 40, rotating all five modes. It applies the same scheduler deltas and completion
+accounting as a daily session, and creates no new progress row.
+
+**Exam Mode:** spelling-only, one clean typed attempt per word, and **no scheduler updates at all**.
+Exam answers neither raise nor lower strength; the exam records only part pass state, topic
+completion and its metrics.
+
 ---
 
 ## 10. Accessibility & Age-Appropriateness
@@ -941,7 +1037,8 @@ export const config = {
 | Phase | Scope |
 |-------|-------|
 | **MVP** | Character creation gate; strong install prompt; topics and day-sized packs with no fixed counts; bilingual content and UI; all 5 practice modes; per-pack word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); D1 content and user storage; Web Speech + IPA fallback; word images (R2 URL) with emoji fallback and 8 buddy portraits; JSON export; per-user metrics and diagnostics; Cloudflare Pages and Worker hosting; hash routing; Vitest domain, model, database, and host tiers. |
-| **Phase 2** | Badges; Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
+| **Mission 4** | Free Practice (feature 34), Exam Mode (35), Topic Status (36), and Badges (37) per this amendment. |
+| **Phase 2** | Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
 | **Phase 3** | Facilitator panel (focus list, custom words, import); story mode; timed challenges; speaking practice; phrases and sentences; native packaging. |
 | **Future** | Co-op/team mode; parent/teacher reporting over the Mission 3 admin portal. |
 
@@ -977,6 +1074,10 @@ export const config = {
 | 24 | Admin write model (Mission 3, 2026-11-06) | Topics and packs are created, edited, ordered, archived, and restored through `/v1/admin` routes. Ids are server-generated (`slugify(title)`; packs `<topicId>-<n>`) and immutable; a collision suffixes `-2`, `-3`, … across live and archived rows. The body is parsed against an allowlist before any database access. A request may send `If-Match: "<contentVersion>"`; a stale version is `409 conflict`. The change is validated against the shared validator in memory before writing — structural errors are `422` with an `issues` array, and `topic-no-packs`/`pack-no-words` are warnings because editing is incremental. The row write and the `content_version` bump share one `db.batch`, so the public `ETag` changes exactly when content does; a rejected or no-op change bumps nothing. Archive is soft and idempotent, and an archived row refuses edits (`409 archived`). Ordering is a full permutation of the live ids renumbered 1..N. |
 | 25 | Word library and membership (Mission 3, 2026-11-06) | Words are master records shared by every pack: `POST /v1/admin/words` (optional `packId` places the word in that pack in the same atomic batch) and `PATCH /v1/admin/words/:id` (rejects `id` and `image`). Word ids are `w-<slugify(headword)>`, suffixed on collision across live and archived rows and never reused. The headword is unique case-insensitively across all words including archived ones; a duplicate is `409 conflict` naming the colliding id, not a server error. Words are never deleted or archived — no such route exists — and a word in no live pack is omitted from `/v1/content` while remaining in the admin snapshot. `PUT /v1/admin/packs/:id/membership` takes the full ordered id list and replaces membership delete-then-insert at positions `1..N` in one atomic batch; duplicate ids, unknown or archived words, an archived pack or topic, and a list over 500 are rejected with nothing written. Every accepted change bumps the pack's `updated_at` and the content version; a no-op save bumps nothing. |
 | 26 | Word images (Mission 3, 2026-11-06) | Word pictures live in a dedicated R2 bucket, `words-wizard-images` (`WORD_IMAGES`), separate from avatars. `POST /v1/admin/words/:id/image` takes multipart `file` (JPEG/PNG/WebP by magic bytes, ≤2 MiB), stores `word-images/<wordId>/<uuid>.<ext>`, sets `words.image` to `<request origin>/v1/images/<key>`, deletes the previous object after the row update, and bumps the content version; `DELETE` clears the field and removes the object (a no-op without one). `GET /v1/images/*` is public, validates the key shape before reading R2, and serves the stored type with a one-year immutable cache. Create and edit still reject `image`, so only these routes write it. The child app caches `/v1/images/` cache-first. |
+| 27 | Free Practice (Mission 4, 2026-11-19) | The Practice nav opens a hub: Daily, Free Practice, Topic Exam. Free Practice selects **one unlocked pack of the current topic**, uses only its **introduced** words (no introductions, no daily-quota effect), rotates all five modes, caps at 40 words, and stores `sessions.kind = 'free'`. It counts fully: strength and next review, XP including +5 completion, streak, completed sessions and Care Token cadence. Home keeps a one-tap daily Practice button. |
+| 28 | Exam Mode (Mission 4, 2026-11-19) | One exam per topic over **every topic word**, spelling only, gated on **every distinct word having an introduction** (all packs unlocked). Parts hold **fewer than 50 words**, balanced and deterministically ordered; parts are taken in order and resume server-side. **One clean typed attempt per word**, no tiles, hints or reveal; a wrong spelling fails the part, which restarts from its first word, while earlier parts stay passed. **Assessment only**: no progress, scheduling, XP, streak, completed sessions or Care Token change. Passing every part marks the topic Completed (sticky); retakes are allowed and keep it Completed. A completed topic survives content growth; an unfinished exam resets when the content version changes. State lives in `topic_exam_progress`/`exam_attempts`; typed answers are never stored. |
+| 29 | Topic Status (Mission 4, 2026-11-19) | Topics are **None**, **Learning**, or **Completed**. None and Learning are derived from introductions; Completed is the exam's sticky `completed_at`. No status column or second table. The status appears on the topic picker and the hub exam card. |
+| 30 | Badges (Mission 4, 2026-11-19) | **Twenty badges**: 15 medals (Collection 10/50/100, Mastery 1/10/50, Streak 3/7/30, Sessions 10/50/100, Reviews 1/5/12) plus **one trophy per topic** (currently five), earned when the topic is Completed. Derived from monotonic counters and sticky completion — **no achievements table, earned dates or badge currency**. A Home card opens a Badges screen; session and exam summaries show newly earned badges. Per-topic trophies mean content growth adds a trophy and never re-locks one. |
 
 **Additional v0.3 decisions:**
 
@@ -1008,8 +1109,14 @@ signed-in user. Product decisions rely on moderated testing and exported evidenc
 | Collection and Word Book opens | Whether "seeing what you earned" motivates. |
 | Monthly Reviews offered / completed | Checkpoint engagement. |
 | Strength delta after Monthly Review | Whether the review catches decay in time. |
+| Free practice sessions | Whether children revisit packs beyond the daily plan. |
+| Exam parts passed / failed | Where the spelling gate bites, and how often a part is retried. |
+| Topics completed | How many topics have been proved by exam. |
 | Revivals (session vs quick wake) | Dormancy recovery rate. |
 | Speech unavailable | Web Speech coverage on real devices. |
+
+Badges are derived from these counters and topic completion; they add no stored metric of their
+own.
 
 **Not measurable in v1:** global install rate, retention cohorts, and class/teacher
 reporting. There is no aggregate view across users.
@@ -1025,9 +1132,9 @@ reporting. There is no aggregate view across users.
 | 0 | **Sign-in** | Microsoft Entra sign-in | Boot; expired session | MVP |
 | 1 | **Character Creation** | Name + avatar | No profile after sign-in | MVP |
 | 2 | **Install Prompt** | Add to Home Screen | After creation; each boot until installed | MVP |
-| 3 | **Topic Picker** | Choose a topic | After install; Home "change topic" | MVP |
-| 4 | **Home** | Hub: character, streak, today's session, cards | After setup / boot | MVP |
-| 5 | **Session Intro** | Preview of today's session | Home "Practice" | MVP |
+| 3 | **Topic Picker** | Choose a topic; shows None/Learning/Completed (Mission 4) | After install; Home "change topic" | MVP |
+| 4 | **Home** | Hub: character, streak, today's session, cards, badge card (Mission 4) | After setup / boot | MVP |
+| 5 | **Session Intro** | Preview of today's session | Home "Practice" or the Practice hub | MVP |
 | 6 | **Word Introduction** | Card: word, IPA, audio, image, bilingual meaning/example | Within session | MVP |
 | 7 | **Practice Exercise** | One of the five exercise modules | Within session | MVP |
 | 8 | **Feedback** | Encouraging overlay + hint | After each answer | MVP |
@@ -1042,6 +1149,11 @@ reporting. There is no aggregate view across users.
 | 17 | **Settings** | Locale toggle, re-customize, export, install status, diagnostics, sign out | Home gear | MVP |
 | 18 | **Tricky Words** | Auto-populated from mistakes | Home card or Settings | Phase 2 |
 | 19 | **Facilitator Panel** | Focus list, custom words, import | Settings (gated) | Phase 3 |
+| 20 | **Practice Hub** | Choose Daily session, Free Practice, or Topic Exam | Practice nav | Mission 4 |
+| 21 | **Free Practice Picker** | Choose one unlocked pack of the current topic | Practice hub | Mission 4 |
+| 22 | **Exam Part** | Typed spelling, one clean attempt per word | Practice hub / resume | Mission 4 |
+| 23 | **Exam Summary** | Parts passed, topic status, newly earned badges | End of exam | Mission 4 |
+| 24 | **Badges** | Medals by category and one trophy per topic | Home badge card | Mission 4 |
 
 There is no profile switcher in v1.
 
@@ -1057,10 +1169,13 @@ Boot
                               └─yes─> [4] Home
 
 #/home ──> #/topics
-        ──> #/session ──> #/session/intro ──> #/session/exercise ⇄ feedback
-                                                 └──> #/session/summary ──> #/home
+        ──> #/session/hub ──> #/session ──> #/session/intro ──> #/session/exercise ⇄ feedback
+        │                                                        └──> #/session/summary ──> #/home
+        ├──> #/session/free ──> #/session/free/:packId ──> exercise ⇄ feedback ──> summary
+        └──> #/session/exam ──> #/session/exam/part/:index ──> #/session/exam/summary
         ──> #/words?tab=collection | #/words?tab=wordbook ──> #/words/:wordId ──> back
         ──> #/character
+        ──> #/badges (from the Home badge card)
         ──> #/review (when due) ──> #/review/summary
         ──> #/settings ──> export / diagnostics / re-customize / locale / sign out
 ```
@@ -1080,6 +1195,10 @@ Sign-in; it never falls through to Character Creation.
 | Monthly Review | ≥20 learned | "Time for a monthly check-in!" | 20-word sample per §7.4 |
 | Session | Today's five already learned | "Practice again" | Replay the same five words |
 | Session | No new words left in the topic | "You're all caught up!" | CTA → My Words or change topic |
+| Free Practice | No introduced words in the chosen pack | "Practise this pack in a daily session first." | Daily session CTA |
+| Free Practice | No unlocked pack | "A daily session unlocks your first pack." | Daily session CTA |
+| Topic Exam | Gate not met | "Learn every word in this topic to unlock the exam." | Show introduced / total; card disabled |
+| Badges | No badge unlocked | "Your first medal is one session away." | Home card invites practice |
 | Speech | No English voice | "Listen is unavailable on this device." | Show IPA; substitute a non-audio mode |
 | Tricky Words (P2) | 0 | "No tricky words yet — nice!" | — |
 

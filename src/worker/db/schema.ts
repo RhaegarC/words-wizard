@@ -262,7 +262,7 @@ export const sessions = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.oid, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["daily", "monthly"] }).notNull(),
+    kind: text("kind", { enum: ["daily", "monthly", "free"] }).notNull(),
     localDate: text("local_date").notNull(),
     contentVersion: text("content_version").notNull(),
     xpEarned: integer("xp_earned").notNull(),
@@ -271,7 +271,7 @@ export const sessions = sqliteTable(
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.id] }),
-    check("sessions_kind", sql`${table.kind} IN ('daily', 'monthly')`),
+    check("sessions_kind", sql`${table.kind} IN ('daily', 'monthly', 'free')`),
   ],
 )
 
@@ -304,4 +304,57 @@ export const metricEvents = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.eventId] })],
+)
+
+/** Feature 35. One resumable exam state per user and topic. */
+export const topicExamProgress = sqliteTable(
+  "topic_exam_progress",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    topicId: text("topic_id")
+      .notNull()
+      .references(() => topics.id),
+    passedParts: integer("passed_parts").notNull(),
+    partCount: integer("part_count").notNull(),
+    contentVersion: text("content_version").notNull(),
+    attempts: integer("attempts").notNull(),
+    lastAttemptAt: integer("last_attempt_at"),
+    /** Sticky: set on the first full pass and never cleared by a retake. */
+    completedAt: integer("completed_at"),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.topicId] }),
+    check(
+      "topic_exam_passed_parts",
+      sql`${table.passedParts} >= 0 AND ${table.passedParts} <= ${table.partCount}`,
+    ),
+    check("topic_exam_part_count", sql`${table.partCount} > 0`),
+  ],
+)
+
+/** Feature 35. Idempotency and a minimal audit trail; never the typed answer. */
+export const examAttempts = sqliteTable(
+  "exam_attempts",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.oid, { onDelete: "cascade" }),
+    attemptId: text("attempt_id").notNull(),
+    topicId: text("topic_id")
+      .notNull()
+      .references(() => topics.id),
+    partIndex: integer("part_index").notNull(),
+    passed: integer("passed").notNull(),
+    missedWordId: text("missed_word_id").references(() => words.id),
+    at: integer("at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.attemptId] }),
+    check("exam_attempt_passed", sql`${table.passed} IN (0, 1)`),
+    check("exam_attempt_part", sql`${table.partIndex} >= 0`),
+    index("exam_attempts_topic").on(table.userId, table.topicId),
+  ],
 )
