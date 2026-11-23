@@ -24,7 +24,6 @@ import { resolveRoute, type RouteState } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, titleKeyFor, type Route } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
-import { BadgesScreen } from "./screens/BadgesScreen"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
 import { ExamLandingScreen } from "./screens/ExamLandingScreen"
@@ -343,8 +342,6 @@ export default function App() {
       <WordsScreen profile={profile} tab={route.tab} />
     ) : route.id === "word-detail" && profile ? (
       <WordDetailScreen profile={profile} wordId={route.wordId} />
-    ) : route.id === "badges" && profile ? (
-      <BadgesScreen profile={profile} />
     ) : route.id === "session" ? (
       <SessionLandingScreen />
     ) : route.id === "session-intro" ? (

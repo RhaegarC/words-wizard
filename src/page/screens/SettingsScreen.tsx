@@ -2,24 +2,17 @@ import { useEffect, useState, type FormEvent } from "react"
 import { avatarInitials, avatarUrl } from "../avatar"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
+import { BadgeShelf } from "../components/BadgeShelf"
 import { Icon } from "../components/Icon"
 import { LegacyImportCard } from "../components/LegacyImportCard"
-import { SettingsDiagnostics } from "../components/SettingsDiagnostics"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { getAvatarSet, getContentMeta, getTopic } from "../content"
 import { progressProvider } from "../api/provider"
 import { Outbox } from "../api/outbox"
 import { useAuth } from "../auth/AuthProvider"
-import { DEVICE_KEYS } from "@shared/device"
-import {
-  APP_VERSION,
-  buildExport,
-  EXPORT_SCHEMA_VERSION,
-  exportFileName,
-} from "@shared/export"
+import { APP_VERSION } from "@shared/app"
 import { buildRecustomizePatch, type RecustomizeError } from "@/domain/settings"
-import type { Device, Profile } from "@shared/types"
-import { downloadJson } from "../download"
+import type { Profile } from "@shared/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import type { Locale } from "../i18n/locale"
 import type { MessageKey } from "../i18n/messages"
@@ -41,9 +34,9 @@ const LOCALE_CHOICES: readonly LocaleChoice[] = [
 ]
 
 /**
- * Feature 14. Settings edits the profile, opens the existing topic picker,
- * downloads a backup, reports facts, and signs out. There is no delete, reset,
- * or account-removal control.
+ * Feature 14, consolidated by feature 38. Profile edits the name, photo and
+ * topic, shows the badge shelf, opens the legacy import card, and signs out.
+ * There is no export, diagnostics, delete, reset, or account-removal control.
  */
 export function SettingsScreen({
   profile,
@@ -65,8 +58,6 @@ export function SettingsScreen({
   const [saving, setSaving] = useState(false)
   const [localeFailed, setLocaleFailed] = useState(false)
   const [localeSaving, setLocaleSaving] = useState(false)
-  const [exporting, setExporting] = useState(false)
-  const [exportFailed, setExportFailed] = useState(false)
   const [signOutOpen, setSignOutOpen] = useState(false)
   const [pendingCommit, setPendingCommit] = useState(false)
 
@@ -204,44 +195,6 @@ export function SettingsScreen({
         )
       })
       .finally(() => setSaving(false))
-  }
-
-  const exportBackup = () => {
-    if (exporting) {
-      return
-    }
-
-    const now = Date.now()
-
-    setExporting(true)
-    setExportFailed(false)
-
-    void Promise.all([
-      progressProvider.getAllProgress(profile.id),
-      progressProvider.getMetrics(profile.id),
-      readDeviceRows(),
-    ])
-      .then(([progress, metrics, device]) => {
-        const payload = buildExport({
-          profile,
-          progress,
-          metrics,
-          device,
-          meta: {
-            schemaVersion: EXPORT_SCHEMA_VERSION,
-            contentVersion: getContentMeta().contentVersion,
-            appVersion: APP_VERSION,
-          },
-          now,
-        })
-
-        downloadJson(exportFileName(now), payload)
-      })
-      .catch((reason: unknown) => {
-        console.error("[settings] Could not prepare the backup", reason)
-        setExportFailed(true)
-      })
-      .finally(() => setExporting(false))
   }
 
   const requestSignOut = () => {
@@ -445,31 +398,12 @@ export function SettingsScreen({
           </button>
         </article>
 
-        <article className="settings-card" aria-labelledby="settings-backup">
-          <header>
-            <Icon name="download" />
-            <div>
-              <h3 id="settings-backup">{t("settings.export")}</h3>
-              <p>{t("settings.exportHint")}</p>
-            </div>
-          </header>
-
-          <button
-            type="button"
-            className="button primary"
-            disabled={exporting}
-            onClick={exportBackup}
-          >
-            <Icon name="download" size={17} />{" "}
-            {exporting ? t("settings.exporting") : t("settings.export")}
-          </button>
-
-          {exportFailed ? (
-            <p role="alert" className="form-error">
-              {t("settings.exportError")}
-            </p>
-          ) : null}
-        </article>
+        <section
+          className="settings-card settings-card-wide"
+          aria-labelledby="settings-badges"
+        >
+          <BadgeShelf profile={profile} />
+        </section>
 
         <LegacyImportCard />
 
@@ -500,8 +434,6 @@ export function SettingsScreen({
             {t("auth.signOut")}
           </button>
         </article>
-
-        <SettingsDiagnostics profileId={profile.id} />
 
         <article className="settings-card" aria-labelledby="settings-about">
           <header>
@@ -576,15 +508,5 @@ export function SettingsScreen({
         </div>
       ) : null}
     </section>
-  )
-}
-
-/** Known device keys, read as plain rows for the backup builder. */
-async function readDeviceRows(): Promise<Device[]> {
-  return Promise.all(
-    Object.values(DEVICE_KEYS).map(async (key) => ({
-      key,
-      value: await progressProvider.getDevice(key),
-    })),
   )
 }

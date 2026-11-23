@@ -315,17 +315,39 @@ a:focus-visible,
   cursor: not-allowed;
 }
 
-.icon-button {
-  width: 43px;
-  height: 43px;
-  margin-top: 4px;
+.profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.profile-link-photo,
+.profile-link-initials {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-link-initials {
   display: grid;
   place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  color: var(--muted);
-  background: white;
-  cursor: pointer;
+  color: var(--purple);
+  background: var(--pale-purple);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.profile-link:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
+  border-radius: 999px;
 }
 
 .quiet-action {
@@ -1043,7 +1065,8 @@ a:focus-visible,
   padding: 42px 55px 55px;
 }
 
-/* Display-only identity chip: the sidebar mini-profile is the Settings entry. */
+/* The top-right identity link to Profile; the sidebar mini-profile is the
+   second entry. */
 .shell-topbar {
   display: flex;
   align-items: center;
@@ -3053,6 +3076,14 @@ img.buddy-stage {
   background: white;
 }
 
+.settings-card-wide {
+  grid-column: 1 / -1;
+}
+
+.settings-card .badges-screen {
+  max-width: none;
+}
+
 .settings-card > header {
   margin-bottom: 18px;
   display: flex;
@@ -3404,26 +3435,7 @@ img.buddy-stage {
   animation: screen-in 180ms ease-out;
 }
 
-/* Feature 37 — the badge shelf. */
-
-.badge-card {
-  width: 100%;
-  margin-top: 20px;
-  background: linear-gradient(145deg, #fffdf8, #fdf1ff);
-}
-
-.feature-icon-badges {
-  color: #b08418;
-  background: #fff3c9;
-  font-size: 27px;
-}
-
-.badge-next {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-}
+/* Feature 37 — the badge shelf, embedded in the Profile page by feature 38. */
 
 .badges-screen {
   max-width: 900px;

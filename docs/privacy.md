@@ -2,7 +2,7 @@
 
 Words Wizard is a children's vocabulary app. This page explains what the app
 stores, where it lives, and how deletion works. The same notice is published at
-`/privacy.html` and linked from Settings.
+`/privacy.html` and linked from Profile.
 
 ## What we store
 
@@ -16,11 +16,12 @@ stores, where it lives, and how deletion works. The same notice is published at
   gates the teacher/admin portal; no child-facing screen uses it.
 - A **profile photo**, only if the user chooses to upload one. It is stored in a
   private Cloudflare R2 bucket and served from a public read-only address; the
-  photo can be removed from Settings at any time.
+  photo can be removed from Profile at any time.
 - The buddy name, chosen buddy avatar, current topic, locale, XP, streak, Care
   Token state, and progress through the vocabulary.
-- Session history and the per-user counters shown in Settings (for example
-  sessions completed, words learned, and words mastered). A free-practice
+- Session history and the per-user counters (for example sessions completed,
+  words learned, and words mastered). The counters are stored for badges and
+  server-side rules; the app no longer shows a diagnostics view. A free-practice
   session is ordinary session history.
 - Pack introductions, which record that a word was introduced in a particular
   pack so the next pack can unlock.
@@ -50,7 +51,7 @@ is not personal data.
   database (`WordsWizardDB` in IndexedDB). On the first sign-in after upgrading,
   the app reads it once and imports that profile and progress into the signed-in
   account. The old database is deleted only after the import succeeds or the
-  user chooses to discard it in Settings; if the import fails it stays on the
+  user chooses to discard it in Profile; if the import fails it stays on the
   device and is retried on the next visit.
 
 ## What we do not do
@@ -84,7 +85,7 @@ procedure, recorded in [operations.md](operations.md).
 The app collects the minimum needed for a child's progress to follow them to
 another device. The email address comes from the Microsoft sign-in the parent or
 account holder completes; the app never asks for a school or any contact list.
-The profile photo is optional and can be removed at any time in Settings. The
+The profile photo is optional and can be removed at any time in Profile. The
 buddy name is a nickname chosen by the child. Exam records are topic-level —
 which parts passed and which word ended a failed part — and never contain the
 child's typed answers.

@@ -305,6 +305,97 @@ exact-matched. `https://admin.words.nioh.uk` and `http://localhost:8444` must be
 - `pnpm worker:typecheck` type-checks the Worker alone. `pnpm test` runs the Worker tests against
   their own temporary D1 directories and never touches this local database.
 
+## Initialise the database from scratch
+
+A fresh D1 is not usable until the migrations have run and the content has been seeded. The
+migrations create the schema and seed the avatars and the single `content_meta` row; **they do not
+seed vocabulary**. The vocabulary is authored SQL under `docs/develop/content/scripts/`.
+
+### Local
+
+1. From `src`, apply the committed migrations:
+
+   ```bash
+   cd src
+   pnpm exec wrangler d1 migrations apply DB --local --config worker/wrangler.jsonc
+   ```
+
+   `0000_content_schema` creates the content tables, `0001_seed_avatars` inserts the eight avatars
+   and the one `content_meta` row (`0.3.0`), and `0002`–`0004` add the user, free-session and exam
+   tables.
+
+2. Seed the vocabulary in this order — `pack_words` references the word ids:
+
+   ```bash
+   pnpm exec wrangler d1 execute DB --local --config worker/wrangler.jsonc \
+     --file=../docs/develop/content/scripts/words.sql
+   pnpm exec wrangler d1 execute DB --local --config worker/wrangler.jsonc \
+     --file=../docs/develop/content/scripts/InitData.sql
+   ```
+
+   `InitData.sql` is re-runnable and sets `content_meta` to `0.4.0`/`dev`.
+
+3. Start the Worker (`pnpm worker:dev`) and verify it:
+
+   ```bash
+   curl http://localhost:8787/health
+   curl -s http://localhost:8787/v1/content | head
+   ```
+
+   `/health` reports the version seeded above, and `/v1/content` contains topics, packs and words.
+
+4. To reset, stop the Worker, delete `src/worker/.wrangler/state/`, then repeat the migration and
+   seed commands. The earlier “Apply migrations to the local database” section has the same reset
+   in more detail.
+
+### Production
+
+1. Create the database and put its id into `src/worker/wrangler.jsonc`:
+
+   ```bash
+   pnpm exec wrangler d1 create words-wizard
+   ```
+
+   Set `d1_databases[0].database_id`, then configure the Entra vars and R2 buckets as “Before the
+   first build” describes.
+
+2. Apply the migrations and vocabulary remotely. The Workers Builds deploy command applies pending
+   migrations before every deploy; for a manual run:
+
+   ```bash
+   pnpm exec wrangler d1 migrations apply DB --remote --config worker/wrangler.jsonc
+   pnpm exec wrangler d1 execute DB --remote --config worker/wrangler.jsonc \
+     --file=../docs/develop/content/scripts/words.sql
+   pnpm exec wrangler d1 execute DB --remote --config worker/wrangler.jsonc \
+     --file=../docs/develop/content/scripts/InitData.sql
+   ```
+
+   Alternatively, populate the content through the admin portal or the feature 17 authoring flow.
+
+3. Check the foreign keys, deploy, and verify with the version you seeded:
+
+   ```bash
+   pnpm exec wrangler d1 execute DB --remote --config worker/wrangler.jsonc \
+     --command "PRAGMA foreign_key_check;"
+   EXPECTED_CONTENT_VERSION=<seeded-version> pnpm check:deploy
+   ```
+
+   See [operations.md → D1](../operations.md#d1) for the production procedure and [Debug](#debug)
+   above for the local inspection commands.
+
+### Things that catch people out
+
+- `--local` and `--remote` are different databases; never use the remote command to test a local
+  change.
+- Migrations are forward-only; never edit an applied migration. Add a new one and bump
+  `content_version`.
+- `content_meta` must contain exactly one row (`id = 1`). An empty table makes `/health` and
+  `/v1/content` return `500`.
+- The committed migrations contain no vocabulary; a fresh database serves the avatars and no words
+  until the scripts or the portal populate it.
+- **Do not** use `docs/develop/content/backup/20261118.sql` as a seed: it is a version-specific
+  snapshot that contains real user and profile rows, not a canonical dataset.
+
 ## Before the first build
 
 1. Create the production database and note the returned id:
