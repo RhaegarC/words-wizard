@@ -432,6 +432,8 @@
 
   "settings.eyebrow": "Your profile",
   "settings.heading": "Profile",
+  "settings.expand": "Expand",
+  "settings.collapse": "Collapse",
   "settings.customiseHint": "Change their name or look",
   "settings.language": "Language",
   "settings.languageHint": "Choose the language for the app.",

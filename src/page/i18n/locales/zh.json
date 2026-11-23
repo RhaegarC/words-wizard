@@ -432,6 +432,8 @@
 
   "settings.eyebrow": "你的资料",
   "settings.heading": "个人资料",
+  "settings.expand": "展开",
+  "settings.collapse": "收起",
   "settings.customiseHint": "更改名字或外观",
   "settings.language": "语言",
   "settings.languageHint": "选择应用使用的语言。",

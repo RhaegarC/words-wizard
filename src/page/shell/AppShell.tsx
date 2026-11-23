@@ -1,10 +1,10 @@
 import { useEffect, useRef, type ReactNode } from "react"
 
-import { AvatarPortrait } from "../components/AvatarPortrait"
 import { Brand } from "../components/Brand"
 import { Icon, type IconName } from "../components/Icon"
 import { ProfileLink } from "../components/ProfileLink"
-import { getAvatarSet } from "../content"
+import { avatarInitials, avatarUrl } from "../avatar"
+import { useAuth } from "../auth/AuthProvider"
 import type { Profile } from "@shared/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import type { MessageKey } from "../i18n/messages"
@@ -98,9 +98,13 @@ export function AppShell({
 }: AppShellProps) {
   const { t } = useLocale()
   const { navigate } = useRouter()
+  const auth = useAuth()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const active = activeNav(route)
-  const avatar = getAvatarSet().find((entry) => entry.id === profile.avatar)
+  const photo =
+    auth.config === null
+      ? null
+      : avatarUrl(auth.config.avatarBaseUrl, profile.userAvatarKey)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -133,11 +137,11 @@ export function AppShell({
           onClick={() => navigate({ id: "settings" })}
           aria-current={route.id === "settings" ? "page" : undefined}
         >
-          {avatar ? (
-            <AvatarPortrait avatar={avatar} />
+          {photo !== null ? (
+            <img className="mini-profile-photo" src={photo} alt="" />
           ) : (
-            <span className="avatar-tile" aria-hidden="true">
-              {profile.characterName.charAt(0)}
+            <span className="mini-profile-initials" aria-hidden="true">
+              {avatarInitials(profile.name)}
             </span>
           )}
           <span className="mini-profile-copy">

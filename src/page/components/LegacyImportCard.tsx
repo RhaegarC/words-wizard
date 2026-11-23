@@ -15,7 +15,7 @@ import {
   type LegacyReadResult,
 } from "../db/localData"
 import { useLocale } from "../i18n/LocaleProvider"
-import { Icon } from "./Icon"
+import { ProfileCard } from "./ProfileCard"
 
 /**
  * The Settings fallback for the Mission 1 import (feature 27).
@@ -113,15 +113,12 @@ export function LegacyImportCard() {
   const blocked = deleteBlocked || imported?.deleted === "blocked"
 
   return (
-    <article className="settings-card" aria-labelledby="settings-legacy">
-      <header>
-        <Icon name="download" />
-        <div>
-          <h3 id="settings-legacy">{t("settings.legacy.title")}</h3>
-          <p>{t("settings.legacy.hint")}</p>
-        </div>
-      </header>
-
+    <ProfileCard
+      id="settings-legacy"
+      icon="download"
+      title={t("settings.legacy.title")}
+      hint={t("settings.legacy.hint")}
+    >
       {unreadable ? (
         <p className="settings-copy">{t("settings.legacy.unreadableBody")}</p>
       ) : imported !== null ? (
@@ -240,6 +237,6 @@ export function LegacyImportCard() {
           </div>
         </div>
       ) : null}
-    </article>
+    </ProfileCard>
   )
 }

@@ -19,7 +19,14 @@ import { useLocale } from "../i18n/LocaleProvider"
  * and one trophy per live topic. It lives on the Profile page now, so it is a
  * section rather than a route.
  */
-export function BadgeShelf({ profile }: { profile: Profile }) {
+export function BadgeShelf({
+  profile,
+  showHeader = true,
+}: {
+  profile: Profile
+  /** The Profile card supplies the title when the shelf is embedded. */
+  showHeader?: boolean
+}) {
   const { t } = useLocale()
   const { facts, failed } = useBadgeFacts(profile)
 
@@ -51,15 +58,22 @@ export function BadgeShelf({ profile }: { profile: Profile }) {
     isBadgeUnlocked(definition, facts),
   ).length
 
+  const progressLabel = t("badges.progress", {
+    current: earned,
+    target: catalogue.length,
+  })
+
   return (
     <section className="badges-screen">
-      <header className="badges-header">
-        <span className="eyebrow">{t("badges.title")}</span>
-        <h2>{t("badges.subtitle")}</h2>
-        <p className="badges-count">
-          {t("badges.progress", { current: earned, target: catalogue.length })}
-        </p>
-      </header>
+      {showHeader ? (
+        <header className="badges-header">
+          <span className="eyebrow">{t("badges.title")}</span>
+          <h2>{t("badges.subtitle")}</h2>
+          <p className="badges-count">{progressLabel}</p>
+        </header>
+      ) : (
+        <p className="badges-count">{progressLabel}</p>
+      )}
 
       {MEDAL_CATEGORIES.map((category) => (
         <section
