@@ -1,13 +1,12 @@
 import { useEffect, useRef } from "react"
 
 import { AvatarStage } from "../components/AvatarStage"
-import { BadgeShelfCard } from "../components/BadgeShelfCard"
 import { Icon } from "../components/Icon"
 import { InstallPromptSlot } from "../components/InstallPromptSlot"
+import { ProfileLink } from "../components/ProfileLink"
 import { SleepOverlay } from "../components/SleepOverlay"
 import { topicTone } from "../components/tone"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
-import { useBadgeFacts } from "../components/useBadgeFacts"
 import { useProfileProgress } from "../components/useProfileProgress"
 import { config } from "@shared/config"
 import { getHomeContent, getTopic } from "../content"
@@ -42,7 +41,6 @@ export function HomeScreen({
   const { navigate, replace } = useRouter()
   const { progress, introductions, failed: loadFailed } =
     useProfileProgress(profile.id)
-  const { facts: badgeFacts } = useBadgeFacts(profile)
 
   const view =
     progress === null || introductions === null
@@ -150,14 +148,7 @@ export function HomeScreen({
             </b>
             <small>{t("home.careTokens")}</small>
           </span>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label={t("home.settings")}
-            onClick={() => navigate({ id: "settings" })}
-          >
-            <Icon name="settings" />
-          </button>
+          <ProfileLink profile={profile} />
         </div>
       </header>
 
@@ -395,12 +386,6 @@ export function HomeScreen({
         </button>
       </section>
 
-      {badgeFacts === null ? null : (
-        <BadgeShelfCard
-          facts={badgeFacts}
-          onOpen={() => navigate({ id: "badges" })}
-        />
-      )}
     </section>
   )
 }

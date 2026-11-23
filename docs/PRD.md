@@ -6,8 +6,10 @@
 **Last Updated:** 2026-11-19
 
 > This version supersedes the exploratory notes in `docs/sample_data/Init/`. Where they
-> disagree, this document governs. Amended by Mission 4 (features 34–37, 2026-11-19): free
-> practice, exam mode, topic status, and badges are added without changing the online architecture.
+> disagree, this document governs. Amended by Mission 4 (features 34–38, 2026-11-19/2026-11-23):
+> free practice, exam mode, topic status, and badges are added without changing the online
+> architecture; feature 38 consolidates the profile page and removes the in-app export and
+> diagnostics views.
 
 > **Mission 2 supersedes the offline-first, no-backend posture of v0.2.** The app is
 > online-only, signs in with Microsoft Entra ID, and stores content and learner data in
@@ -67,10 +69,10 @@ or cached-content fallback (§8.5).
 | User | Description |
 |------|-------------|
 | **Primary learner** | Chinese-speaking ESL child aged 9–12, roughly Cambridge Starters–Flyers level. Uses iPad (installed PWA) or desktop/Edge. |
-| **Secondary (facilitator)** | Parent or teacher who sets up the device, may export a backup, or reads the diagnostics view. Not a daily user. |
+| **Secondary (facilitator)** | Parent or teacher who sets up the device and may review the profile and progress. Not a daily user. |
 
 One Entra identity maps to one profile. The same identity on another device sees the
-same buddy, XP, streak, progress, and settings. There is no guest mode and no profile
+same buddy, XP, streak, progress, and profile settings. There is no guest mode and no profile
 switcher; two siblings need two accounts.
 
 ---
@@ -98,8 +100,8 @@ switcher; two siblings need two accounts.
    **Collection** (countable, filterable) and **Word Book** (illustrated,
    mastered-only).
 9. A single unified **Care Token** covers both streak freeze and character care.
-10. A JSON export exists as an optional facilitator tool. It is produced from the API,
-    not from a local database.
+10. There is no in-app JSON export or diagnostics view. The API remains the source of
+    record; feature 38 removed both facilitator surfaces from the profile page.
 11. Pronunciation uses the **Web Speech API** (`speechSynthesis`), with an IPA fallback.
     No bundled audio files in v1. If no voice is available, the app shows IPA and
     substitutes a non-audio mode.
@@ -107,14 +109,14 @@ switcher; two siblings need two accounts.
     bucket through the Worker; `words.image` holds that URL, and an emoji/first-letter tile fills
     in until one exists. Buddy portraits remain bundled with the app.
 13. The UI and content are **fully bilingual (EN/中文)**. Chinese is the default on
-    zh-CN devices; a Settings toggle switches languages.
+    zh-CN devices; a Profile toggle switches languages.
 14. The app is hosted on **Cloudflare Pages** at `words.nioh.uk`; the API is a
     **Cloudflare Worker** at `wordsapi.nioh.uk`. Navigation uses hash routes, so every
     route is a fragment and no server rewrite is required.
 15. **All five practice modes** ship in the MVP: picture match, word → meaning,
     spelling builder, fill-the-blank, listen & choose.
-16. Product metrics are **per-user counters in D1**, surfaced in diagnostics and
-    included in export. No telemetry or third-party analytics.
+16. Product metrics are **per-user counters in D1**, used for badges and server-side
+    rules. No telemetry, third-party analytics, diagnostics view, or in-app export.
 17. Identity is **Microsoft Entra ID** through a SPA registration using authorization
     code + PKCE and no client secret. The Entra `oid` is the only user key the API
     stores or accepts.
@@ -230,7 +232,7 @@ Creation** before practice.
 - **Avatar:** choose one of eight bundled buddy portraits; the file name is the
   character's name (Alex, Cody, Creeper, Malenia, May, Radahn, Steve, Warden).
 - Confirm sets `createdAt = lastPracticeAt = now` and starts the dormancy clock.
-- Re-customization in Settings does not reset the clock.
+- Re-customization in Profile does not reset the clock.
 
 Creation is the only blocking gate. Install guidance and topic selection are separate,
 non-fused steps that follow.
@@ -390,7 +392,7 @@ Pack {
   or a profile that no longer exists — see §8.4).
 - Fields: `characterName` (string), `avatar` (id from bundled `avatars[]`).
 - `createdAt` is set at creation and is the origin of the dormancy clock.
-- Re-customization (name, avatar) is available in Settings; it does not reset the clock.
+- Re-customization (name, avatar) is available in Profile; it does not reset the clock.
 
 ### 7.1 Collection & Progress
 
@@ -407,7 +409,7 @@ Pack {
   the previous pack has been introduced to this user. Mastery counts do not gate packs.
 - **Badges:** Mission 4 (§7.9).
 - **Topic status:** None / Learning / Completed, with Completed earned by the topic exam (§7.8).
-- **Character customization:** avatar re-selection in Settings. The stage name and
+- **Character customization:** avatar re-selection in Profile. The stage name and
   progress bar are the growth layer; the buddy portrait does not change per stage.
 
 ### 7.2 Virtual Character
@@ -479,7 +481,7 @@ No stored `characterStage` or `vitality`.
 | Correct after a hint/retry | +1 | Still progress, less reward |
 | Word reaches `mastered` (first time only) | +10 | The real milestone |
 | Completing a session | +5 | Keeps short sessions worthwhile |
-| Opening the app / browsing / changing settings | 0 | Prevents idle farming |
+| Opening the app / browsing / changing profile settings | 0 | Prevents idle farming |
 
 Wrong answers cost nothing. Re-mastering a demoted word does not award the +10 again;
 `Progress.masteryXpAwarded` prevents farming.
@@ -489,7 +491,7 @@ Wrong answers cost nothing. Re-mastering a demoted word does not award the +10 a
 - The dormancy clock is anchored at `createdAt`, `lastPracticeAt`, or `lastWakeAt`,
   whichever is latest, minus any frozen days.
 - **Activity means completing a session.** Opening the app, browsing, or changing
-  settings does not reset `lastPracticeAt` or earn XP.
+  profile changes do not reset `lastPracticeAt` or earn XP.
 - Completing a session resets `lastPracticeAt`, restores vitality, clears `frozenDays`,
   and updates the streak.
 - Day 4–5: the character shows a **sleepy** warning in-app.
@@ -654,8 +656,8 @@ persisted.
 - **Derived, not stored.** A pure evaluator reads monotonic facts; no earned dates or seen state
   are kept, so a badge cannot un-earn. "Latest" is a presentation choice (highest unlocked tier),
   not a chronology.
-- **Surfaces:** a Home badge card (featured badge and next goal) opens a dedicated Badges screen
-  grouped by category. Session and exam summaries show badges newly earned by that result.
+- **Surfaces:** the full shelf lives on the Profile page, grouped by category. Session and exam
+  summaries show badges newly earned by that result; there is no separate Badges screen.
 
 ---
 
@@ -772,8 +774,8 @@ Progress {
 ```
 
 `sessions`, `session_metrics`, `metrics`, and `metric_events` carry session history and
-the counters shown in Settings. The API computes them; the client does not write an
-`oid` of its own.
+the per-user counters used by badges and server-side rules. The API computes them; the
+client does not write an `oid` of its own, and there is no diagnostics view.
 
 **Legacy import** (feature 27) merges Mission 1 IndexedDB rows into these tables and is
 never additive:
@@ -791,7 +793,7 @@ never additive:
 The same payload can therefore be replayed without changing a row. Unknown word ids and
 metric names are skipped and counted, not failed.
 
-The Settings screen edits `Profile.locale`, `Profile.characterName`, and
+The Profile screen edits `Profile.locale`, `Profile.characterName`, and
 `Profile.avatar`, and can upload or remove the photo behind
 `Profile.userAvatarKey` (JPEG/PNG/WebP, 2 MiB, stored in R2). `role` and `email` are
 server-owned and are not displayed. Install-prompt dismissal is per-session UI state
@@ -824,15 +826,15 @@ After sign-in, the app calls `GET /v1/me`.
   it does not lose committed progress.
 - **Mission 1 upgrade:** on the first boot of the new version after sign-in, the app reads
   the legacy `WordsWizardDB` and imports it automatically, then deletes it. A failed
-  import leaves the database untouched and retries on the next boot; Settings carries a
+  import leaves the database untouched and retries on the next boot; Profile carries a
   fallback card with Retry and Discard. Nothing is deleted before a successful import or
   an explicit discard.
 - The install prompt remains a strong onboarding step, but installation is not a
   durability requirement: the profile follows the Entra account.
 - Clock tampering and timezone changes are accepted: the client computes local day
   boundaries from the device clock.
-- **Export Progress (JSON)** in Settings is an optional facilitator tool built from the
-  API data. Import is Phase 3.
+- There is no in-app JSON export or diagnostics view (feature 38). The API remains the
+  source of record; import is Phase 3.
 
 ### 8.6 Platform Notes
 
@@ -859,7 +861,7 @@ After sign-in, the app calls `GET /v1/me`.
 - UI strings live in `locales/en.json` and `locales/zh.json`. A test asserts key
   completeness between the two files.
 - Default locale: `navigator.language` starting with `zh` → `zh`; otherwise `en`.
-  Stored per profile and editable in Settings.
+  Stored per profile and editable in Profile.
 - Word content uses `definitionEn` / `definitionZh` and paired examples. The
   introduction card and Word Detail show both language versions of the meaning and
   definition; the example follows the UI language, and Word Detail shows both example
@@ -965,12 +967,9 @@ completion and its metrics.
 
 ## 11. Facilitator (Parent/Teacher) Features
 
-Kept small and optional; not the default experience.
-
-**MVP:**
-- **JSON export** of the signed-in profile, built from the API.
-- **Diagnostics view:** install status, content version, pending outbox count, and the
-  per-user counters.
+The app is child-facing. There is no facilitator panel, JSON export, or diagnostics view;
+feature 38 removed the export and diagnostics cards. Data access and deletion follow the
+operator procedure in [privacy.md](privacy.md) and [operations.md](operations.md).
 
 **Phase 2:**
 - Tricky Words view for the child.
@@ -1036,7 +1035,7 @@ export const config = {
 
 | Phase | Scope |
 |-------|-------|
-| **MVP** | Character creation gate; strong install prompt; topics and day-sized packs with no fixed counts; bilingual content and UI; all 5 practice modes; per-pack word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); D1 content and user storage; Web Speech + IPA fallback; word images (R2 URL) with emoji fallback and 8 buddy portraits; JSON export; per-user metrics and diagnostics; Cloudflare Pages and Worker hosting; hash routing; Vitest domain, model, database, and host tiers. |
+| **MVP** | Character creation gate; strong install prompt; topics and day-sized packs with no fixed counts; bilingual content and UI; all 5 practice modes; per-pack word introductions; escalating hints; Collection + Word Book tabs; streaks with 7-day grace; derived character with XP/stage and sleep/wake; Care Tokens (freeze and quick wake); SM-2-lite and daily session builder; Monthly Review (28 days, cap 20); D1 content and user storage; Web Speech + IPA fallback; word images (R2 URL) with emoji fallback and 8 buddy portraits; per-user metrics for badges; Cloudflare Pages and Worker hosting; hash routing; Vitest domain, model, database, and host tiers. |
 | **Mission 4** | Free Practice (feature 34), Exam Mode (35), Topic Status (36), and Badges (37) per this amendment. |
 | **Phase 2** | Tricky Words; additional topics/packs; richer stage animations; spaced-repetition refinements; notification-free reminders. |
 | **Phase 3** | Facilitator panel (focus list, custom words, import); story mode; timed challenges; speaking practice; phrases and sentences; native packaging. |
@@ -1060,7 +1059,7 @@ export const config = {
 | 10 | XP tuning | First-try 2, hint 1, mastery 10, session 5; 50/300/900/2000. |
 | 11 | Monthly Review cadence | Rolling 28 days; ≥5 learned; cap 20. |
 | 12 | Mastery demotion | Strength < 0.5. |
-| 13 | Repository visibility | Child-facing; facilitator sees export and diagnostics only. |
+| 13 | Repository visibility | Child-facing; no facilitator UI. |
 | 14 | Multi-profile | One profile per Entra identity; no profile switcher. `users.oid` is the key. |
 | 15 | Streak reset | 7-day grace; token covers one missed day; best streak kept. |
 | 16 | Word Detail language | Meaning and definition appear in both English and Chinese; surrounding labels follow the UI language. Feature 20 reverses feature 19's English-only detail. |
@@ -1077,7 +1076,8 @@ export const config = {
 | 27 | Free Practice (Mission 4, 2026-11-19) | The Practice nav opens a hub: Daily, Free Practice, Topic Exam. Free Practice selects **one unlocked pack of the current topic**, uses only its **introduced** words (no introductions, no daily-quota effect), rotates all five modes, caps at 40 words, and stores `sessions.kind = 'free'`. It counts fully: strength and next review, XP including +5 completion, streak, completed sessions and Care Token cadence. Home keeps a one-tap daily Practice button. |
 | 28 | Exam Mode (Mission 4, 2026-11-19) | One exam per topic over **every topic word**, spelling only, gated on **every distinct word having an introduction** (all packs unlocked). Parts hold **fewer than 50 words**, balanced and deterministically ordered; parts are taken in order and resume server-side. **One clean typed attempt per word**, no tiles, hints or reveal; a wrong spelling fails the part, which restarts from its first word, while earlier parts stay passed. **Assessment only**: no progress, scheduling, XP, streak, completed sessions or Care Token change. Passing every part marks the topic Completed (sticky); retakes are allowed and keep it Completed. A completed topic survives content growth; an unfinished exam resets when the content version changes. State lives in `topic_exam_progress`/`exam_attempts`; typed answers are never stored. |
 | 29 | Topic Status (Mission 4, 2026-11-19) | Topics are **None**, **Learning**, or **Completed**. None and Learning are derived from introductions; Completed is the exam's sticky `completed_at`. No status column or second table. The status appears on the topic picker and the hub exam card. |
-| 30 | Badges (Mission 4, 2026-11-19) | **Twenty badges**: 15 medals (Collection 10/50/100, Mastery 1/10/50, Streak 3/7/30, Sessions 10/50/100, Reviews 1/5/12) plus **one trophy per topic** (currently five), earned when the topic is Completed. Derived from monotonic counters and sticky completion — **no achievements table, earned dates or badge currency**. A Home card opens a Badges screen; session and exam summaries show newly earned badges. Per-topic trophies mean content growth adds a trophy and never re-locks one. |
+| 30 | Badges (Mission 4, 2026-11-19) | **Twenty badges**: 15 medals (Collection 10/50/100, Mastery 1/10/50, Streak 3/7/30, Sessions 10/50/100, Reviews 1/5/12) plus **one trophy per topic** (currently five), earned when the topic is Completed. Derived from monotonic counters and sticky completion — **no achievements table, earned dates or badge currency**. Session and exam summaries show newly earned badges. Per-topic trophies mean content growth adds a trophy and never re-locks one. |
+| 31 | Profile cleanup (Mission 4, 2026-11-23) | Settings is presented as **Profile** (the `#/settings` route and `settings.*` keys stay). **Export my data** and **Diagnostics** are removed with their implementation. The full badge shelf moves from the Home card and the `#/badges` screen into Profile; `#/badges` is removed and `NewBadgeStrip` stays on summaries. Home's settings gear is replaced by a top-right photo/initial link, and the shared shell chip becomes the same link. worker.md gains a database-initialisation section. |
 
 **Additional v0.3 decisions:**
 
@@ -1098,7 +1098,7 @@ export const config = {
 ## 15. Success Metrics (per-user)
 
 There is no telemetry pipeline: counters live in D1 per `oid` and are shown only to the
-signed-in user. Product decisions rely on moderated testing and exported evidence.
+signed-in user. Product decisions rely on moderated testing and observed evidence.
 
 | Per-user counter | What it tells you |
 |---|---|
@@ -1133,7 +1133,7 @@ reporting. There is no aggregate view across users.
 | 1 | **Character Creation** | Name + avatar | No profile after sign-in | MVP |
 | 2 | **Install Prompt** | Add to Home Screen | After creation; each boot until installed | MVP |
 | 3 | **Topic Picker** | Choose a topic; shows None/Learning/Completed (Mission 4) | After install; Home "change topic" | MVP |
-| 4 | **Home** | Hub: character, streak, today's session, cards, badge card (Mission 4) | After setup / boot | MVP |
+| 4 | **Home** | Hub: character, streak, today's session, cards | After setup / boot | MVP |
 | 5 | **Session Intro** | Preview of today's session | Home "Practice" or the Practice hub | MVP |
 | 6 | **Word Introduction** | Card: word, IPA, audio, image, bilingual meaning/example | Within session | MVP |
 | 7 | **Practice Exercise** | One of the five exercise modules | Within session | MVP |
@@ -1146,14 +1146,13 @@ reporting. There is no aggregate view across users.
 | 14 | **Sleepy / Sleeping** | Gentle wake screen + how to wake | Auto when `state !== 'awake'` | MVP |
 | 15 | **Monthly Review Intro** | "20 words want a visit" | Home card, when due | MVP |
 | 16 | **Monthly Review Summary** | Strong vs needs-a-look counts | End of Monthly Review | MVP |
-| 17 | **Settings** | Locale toggle, re-customize, export, install status, diagnostics, sign out | Home gear | MVP |
-| 18 | **Tricky Words** | Auto-populated from mistakes | Home card or Settings | Phase 2 |
-| 19 | **Facilitator Panel** | Focus list, custom words, import | Settings (gated) | Phase 3 |
+| 17 | **Profile** | Locale toggle, badge shelf, re-customize, sign out | Top-right profile link or sidebar mini-profile | MVP |
+| 18 | **Tricky Words** | Auto-populated from mistakes | Home card or Profile | Phase 2 |
+| 19 | **Facilitator Panel** | Focus list, custom words, import | Profile (gated) | Phase 3 |
 | 20 | **Practice Hub** | Choose Daily session, Free Practice, or Topic Exam | Practice nav | Mission 4 |
 | 21 | **Free Practice Picker** | Choose one unlocked pack of the current topic | Practice hub | Mission 4 |
 | 22 | **Exam Part** | Typed spelling, one clean attempt per word | Practice hub / resume | Mission 4 |
 | 23 | **Exam Summary** | Parts passed, topic status, newly earned badges | End of exam | Mission 4 |
-| 24 | **Badges** | Medals by category and one trophy per topic | Home badge card | Mission 4 |
 
 There is no profile switcher in v1.
 
@@ -1175,9 +1174,8 @@ Boot
         └──> #/session/exam ──> #/session/exam/part/:index ──> #/session/exam/summary
         ──> #/words?tab=collection | #/words?tab=wordbook ──> #/words/:wordId ──> back
         ──> #/character
-        ──> #/badges (from the Home badge card)
         ──> #/review (when due) ──> #/review/summary
-        ──> #/settings ──> export / diagnostics / re-customize / locale / sign out
+        ──> #/settings (Profile: badge shelf / re-customize / locale / sign out)
 ```
 
 Hash routes only; no server rewrite. Signing out or a rejected token returns to `[0]`
@@ -1198,7 +1196,7 @@ Sign-in; it never falls through to Character Creation.
 | Free Practice | No introduced words in the chosen pack | "Practise this pack in a daily session first." | Daily session CTA |
 | Free Practice | No unlocked pack | "A daily session unlocks your first pack." | Daily session CTA |
 | Topic Exam | Gate not met | "Learn every word in this topic to unlock the exam." | Show introduced / total; card disabled |
-| Badges | No badge unlocked | "Your first medal is one session away." | Home card invites practice |
+| Badges | No badge unlocked | "Your first medal is one session away." | Profile shelf invites practice |
 | Speech | No English voice | "Listen is unavailable on this device." | Show IPA; substitute a non-audio mode |
 | Tricky Words (P2) | 0 | "No tricky words yet — nice!" | — |
 

@@ -1,7 +1,8 @@
 # Mission 4 — Sprint Goal: "Practice freely, prove mastery, collect the proof"
 
 > Status: **In progress — features 34–37 are done and archived; feature 38 (Profile cleanup and
-> database bootstrap) is specced.** Each feature moves to Done as its implementation PR merges.
+> database bootstrap) is implemented.** Each feature moves to Done as its implementation PR
+> merges.
 > Depends on: Mission 2 (features 21–27) and Mission 3 (features 28–31) repository work complete.
 > Buddy removal (backlog item 01) is deliberately not part of this mission; Buddy remains a live
 > online feature.
@@ -88,7 +89,7 @@ Features 32–33 remain reserved and deferred by Mission 3.
 | 35 | [Exam Mode](archive/mission-4/35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Done | 34 |
 | 36 | [Topic Status](archive/mission-4/36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Done | 35 |
 | 37 | [Badges and achievements](archive/mission-4/37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Done | 34–36 |
-| 38 | [Profile cleanup and database bootstrap](38-profile-cleanup.md) — remove export/diagnostics, move the badge shelf into the Profile page, add the top-right profile link, document database bootstrap | Specced | 14, 26, 37 |
+| 38 | [Profile cleanup and database bootstrap](38-profile-cleanup.md) — remove export/diagnostics, move the badge shelf into the Profile page, add the top-right profile link, document database bootstrap | Implemented | 14, 26, 37 |
 
 Features 34–37 now live in `archive/mission-4/`; feature 38 remains beside this index while active.
 

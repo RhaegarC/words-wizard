@@ -9,17 +9,17 @@ import {
 } from "@shared/badges"
 import type { Profile } from "@shared/types"
 
-import { useBadgeFacts } from "../components/useBadgeFacts"
+import { useBadgeFacts } from "./useBadgeFacts"
 import { BADGE_CATEGORY_KEYS } from "../domain/badges"
 import { badgeCatalogueFor, badgeCopy } from "../domain/badgeView"
 import { useLocale } from "../i18n/LocaleProvider"
 
 /**
- * Feature 37. The shelf itself: every medal grouped by the fact it counts, and
- * one trophy per live topic. Nothing here is stored, so the screen simply
- * derives the whole page from the same facts Home reads.
+ * Feature 37/38. The shelf itself: every medal grouped by the fact it counts,
+ * and one trophy per live topic. It lives on the Profile page now, so it is a
+ * section rather than a route.
  */
-export function BadgesScreen({ profile }: { profile: Profile }) {
+export function BadgeShelf({ profile }: { profile: Profile }) {
   const { t } = useLocale()
   const { facts, failed } = useBadgeFacts(profile)
 

@@ -3,9 +3,8 @@ import { useEffect, useRef, type ReactNode } from "react"
 import { AvatarPortrait } from "../components/AvatarPortrait"
 import { Brand } from "../components/Brand"
 import { Icon, type IconName } from "../components/Icon"
+import { ProfileLink } from "../components/ProfileLink"
 import { getAvatarSet } from "../content"
-import { avatarInitials, avatarUrl } from "../avatar"
-import { useAuth } from "../auth/AuthProvider"
 import type { Profile } from "@shared/types"
 import { useLocale } from "../i18n/LocaleProvider"
 import type { MessageKey } from "../i18n/messages"
@@ -99,15 +98,9 @@ export function AppShell({
 }: AppShellProps) {
   const { t } = useLocale()
   const { navigate } = useRouter()
-  const auth = useAuth()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const active = activeNav(route)
   const avatar = getAvatarSet().find((entry) => entry.id === profile.avatar)
-
-  const photo =
-    auth.config === null
-      ? null
-      : avatarUrl(auth.config.avatarBaseUrl, profile.userAvatarKey)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -158,16 +151,11 @@ export function AppShell({
       <main key={routeKey} className="content">
         <div className="shell-topbar">
           <Brand />
-          <div className="user-chip">
-            {photo !== null ? (
-              <img className="user-chip-photo" src={photo} alt="" />
-            ) : (
-              <span className="user-chip-initials" aria-hidden="true">
-                {avatarInitials(profile.name)}
-              </span>
-            )}
-            <span className="user-chip-name">{profile.name}</span>
-          </div>
+          <ProfileLink
+            profile={profile}
+            variant="chip"
+            active={route.id === "settings"}
+          />
         </div>
         <h1 ref={headingRef} tabIndex={-1} className="sr-only">
           {title}

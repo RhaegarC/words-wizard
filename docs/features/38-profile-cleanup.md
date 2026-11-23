@@ -1,6 +1,6 @@
 # Feature 38 — Profile cleanup and database bootstrap
 
-> Priority: Must · Mission 4 · **Status: Specced**
+> Priority: Must · Mission 4 · **Status: Implemented**
 > Depends on: 14 (Settings), 26 (top-right identity chip), 37 (badge shelf), 17 and 22 (content and
 > database setup).
 > Blocks: none.
@@ -137,24 +137,24 @@ The existing deploy-command line asserted by
 
 ## Acceptance criteria
 
-- [ ] The page reads **Profile** in both locales; `#/settings`, `SettingsScreen` and the
+- [x] The page reads **Profile** in both locales; `#/settings`, `SettingsScreen` and the
       `settings.*` keys still work, including the topic-picker `from=settings` round trip.
-- [ ] Export and Diagnostics are gone from the UI, their implementation modules and tests are
+- [x] Export and Diagnostics are gone from the UI, their implementation modules and tests are
       deleted, and no dead imports or i18n keys remain.
-- [ ] `APP_VERSION` is still available to the About card after `@shared/export` is deleted.
-- [ ] The full Badge Shelf (medals and per-topic trophies) renders inside Profile; Home has no badge
+- [x] `APP_VERSION` is still available to the About card after `@shared/export` is deleted.
+- [x] The full Badge Shelf (medals and per-topic trophies) renders inside Profile; Home has no badge
       card; the `#/badges` route/screen is gone; `NewBadgeStrip` still appears on session and exam
       summaries.
-- [ ] The Home gear is gone; the top-right photo/initial link opens Profile on Home and in the
+- [x] The Home gear is gone; the top-right photo/initial link opens Profile on Home and in the
       shared shell top bar, with an accessible Profile label and `aria-current`.
-- [ ] The sidebar mini-profile still opens the same page.
-- [ ] `docs/develop/worker.md` has the new database-initialisation section covering local and
+- [x] The sidebar mini-profile still opens the same page.
+- [x] `docs/develop/worker.md` has the new database-initialisation section covering local and
       production from scratch, migration seeds versus vocabulary scripts, `content_meta`, reset,
       verification and the backup-file warning.
-- [ ] The existing deploy-command assertion and stable anchors in worker.md still hold.
-- [ ] PRD, privacy, README, page.md and the feature/sprint indexes are updated; archived feature
+- [x] The existing deploy-command assertion and stable anchors in worker.md still hold.
+- [x] PRD, privacy, README, page.md and the feature/sprint indexes are updated; archived feature
       docs are treated as historical.
-- [ ] `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm build:portal` and `pnpm check:dist` pass.
+- [x] `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm build:portal` and `pnpm check:dist` pass.
 
 ## Test plan
 
@@ -197,6 +197,36 @@ The existing deploy-command line asserted by
   not present the user-data backup as a seed.
 - **Doc assertions**: worker.md's exact deploy command and the README/PRD/privacy strings tested by
   `deployment-config.test.ts` must survive.
+
+## Implementation notes
+
+- `APP_VERSION` moved to `src/shared/app.ts`; `src/shared/export.ts` and the rest of the export
+  chain are deleted. The About card still shows the app version.
+- Export and diagnostics are removed end-to-end: `SettingsDiagnostics`, `page/db/diagnostics`,
+  `shared/diagnostics`, `page/i18n/metrics`, `page/download`, their tests and the export card are
+  gone. The `metrics` table, `METRIC_NAMES` and `POST /v1/me/import` stay.
+- `BadgeShelf` (`src/page/components/BadgeShelf.tsx`) is the catalogue from the old
+  `BadgesScreen`, embedded in a full-width Profile card. `BadgesScreen`, `BadgeShelfCard` and the
+  `#/badges` route are removed; `NewBadgeStrip` is unchanged.
+- `ProfileLink` renders the uploaded photo or name initial. Home uses the compact variant in its
+  top stats; the shell chip uses the same component and is now a link with `aria-current` on
+  `#/settings`. The sidebar mini-profile remains.
+- The Settings screen keeps language, buddy/name/photo, topic, Legacy Import, account and About;
+  its visible copy is Profile, while `#/settings`, `SettingsScreen` and the `settings.*` keys stay.
+- `docs/develop/worker.md` gains “Initialise the database from scratch” with local and production
+  steps, the vocabulary script order, `content_meta`/`foreign_key_check` checks, the reset and the
+  user-data-backup warning; the doc-asserted deploy command is unchanged.
+- PRD, privacy (md + published HTML), page.md, README and the sprint index are updated.
+
+## Verification
+
+- `pnpm typecheck` — clean.
+- `pnpm test` — 87 files passed, 1 skipped; 1177 tests passed, 5 skipped (the credential-gated
+  remote tier). `src/page/test/scripts/profile-cleanup.test.ts` asserts the removed modules/keys,
+  the Profile copy, the badge route removal and the worker.md section.
+- `pnpm build`, `pnpm build:portal`, `pnpm check:dist` — pass.
+- Manual browser pass (top-right links, Profile shelf, no export/diagnostics, badge strip still on
+  summaries) and a fresh-DB run of the new worker.md commands are still pending.
 
 ## Out of scope
 

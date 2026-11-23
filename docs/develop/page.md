@@ -107,9 +107,9 @@ including how to re-apply migrations and reset the local database, is in
   app uses and clears local state (the unsent outbox, device flags, and the legacy Mission 1
   database), but it cannot reset the D1 profile. Use the `wrangler d1 execute` commands in [worker.md](worker.md#debug) for that.
 - The Mission 1 IndexedDB database `WordsWizardDB` is imported once on the first boot after
-  sign-in and deleted only after a successful import or an explicit discard in Settings. If this
+  sign-in and deleted only after a successful import or an explicit discard in Profile. If this
   browser holds the prototype's incompatible version-1 schema, the import reports it as unreadable
-  and Settings can discard it; otherwise clear site data for `http://localhost:8443` once.
+  and Profile can discard it; otherwise clear site data for `http://localhost:8443` once.
 - `pnpm typecheck` covers the page, test, and worker projects; `pnpm test` runs the whole suite.
   Neither starts either dev server.
 
@@ -118,14 +118,14 @@ including how to re-apply migrations and reset the local database, is in
 `GET /v1/me` carries `email`, `profile.role`, and `profile.userAvatarKey`. The page shows the
 name and photo; role and email are server-owned and are never rendered.
 
-**Top-right chip.** `AppShell` renders a display-only name chip inside `<main>`: the stored photo
-when `userAvatarKey` is set, otherwise the display name's first code point. `src/page/avatar.ts`
-owns both helpers — `avatarUrl(baseUrl, key)` returns `null` for a missing or malformed key, so a
-bad value degrades to initials instead of a broken image, and `avatarInitials(name)` handles
-CJK and empty names. The chip is not a link; the sidebar mini-profile remains the entry to
-Settings.
+**Profile link.** `AppShell` renders the top-right identity chip as a link to the Profile page
+(`#/settings`), and Home keeps a compact version in its top stats; the sidebar mini-profile is the
+second entry. Both show the stored photo when `userAvatarKey` is set, otherwise the display name's
+first code point. `ProfileLink` reuses the helpers in `src/page/avatar.ts`: `avatarUrl(baseUrl,
+key)` returns `null` for a missing or malformed key, so a bad value degrades to initials instead of
+a broken image, and `avatarInitials(name)` handles CJK and empty names.
 
-**Settings photo.** The photo field accepts JPEG, PNG, or WebP. The browser preview comes from
+**Profile photo.** The photo field accepts JPEG, PNG, or WebP. The browser preview comes from
 `URL.createObjectURL` and is revoked when the file changes or the screen unmounts. Choosing a
 new file replaces the pending preview; **Remove** marks the stored photo for deletion. Neither
 action calls the API on its own.

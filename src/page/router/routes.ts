@@ -50,7 +50,6 @@ export type Route =
   | { id: "review" }
   | { id: "review-exercise" }
   | { id: "review-summary" }
-  | { id: "badges" }
   | { id: "settings" }
   | { id: "create" }
   | { id: "install" }
@@ -82,7 +81,6 @@ export const ROUTE_SAMPLES: readonly Route[] = [
   { id: "review" },
   { id: "review-exercise" },
   { id: "review-summary" },
-  { id: "badges" },
   { id: "settings" },
   { id: "create" },
   { id: "install" },
@@ -115,7 +113,6 @@ const SIMPLE_HASHES: Record<
   review: "#/review",
   "review-exercise": "#/review/exercise",
   "review-summary": "#/review/summary",
-  badges: "#/badges",
   settings: "#/settings",
   create: "#/create",
   install: "#/install",
@@ -142,7 +139,6 @@ const TITLE_KEYS: Record<Exclude<RouteId, "words">, MessageKey> = {
   review: "common.screen.review",
   "review-exercise": "common.screen.review",
   "review-summary": "common.screen.reviewSummary",
-  badges: "common.screen.badges",
   settings: "common.screen.settings",
   create: "common.screen.create",
   install: "common.screen.install",
@@ -237,8 +233,6 @@ export function parseHash(hash: string): Route | null {
       }
     case "settings":
       return onlyOneSegment(segments) ? { id: "settings" } : null
-    case "badges":
-      return onlyOneSegment(segments) ? { id: "badges" } : null
     case "create":
       return onlyOneSegment(segments) ? { id: "create" } : null
     case "install":
@@ -302,7 +296,6 @@ export function parentOf(route: Route): Route | null {
     case "character":
     case "review":
     case "review-summary":
-    case "badges":
     case "settings":
     case "install":
       return { id: "home" }
