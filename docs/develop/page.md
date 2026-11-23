@@ -37,6 +37,12 @@ database are in [worker.md](worker.md); the full topology is in [operations.md](
 Do not add a deployment workflow or a `CLOUDFLARE_API_TOKEN` secret: the Git integration owns
 deployment, and `src/page/test/scripts/deployment-config.test.ts` asserts it.
 
+**PWA icons.** `src/page/public/icons` is copied verbatim. `/icons/*` is cached for seven days and
+the service worker precaches the files, so replacing artwork in place leaves the old image in
+browsers. Bump the filename (`icon-192-v3.png`), update `manifest.webmanifest` and
+`check-dist.mjs`, and keep `generate-icons.mjs` in step. An installed app can keep its old icon
+until it is reinstalled.
+
 ## Local development
 
 ### Configure
