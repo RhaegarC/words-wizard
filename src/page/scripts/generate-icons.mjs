@@ -2,7 +2,7 @@
 // Replaced by the approved brand artwork in feature 17 (content production).
 //
 // Run with: node scripts/generate-icons.mjs
-// Writes src/page/public/icons/icon-192.png, icon-512.png, and maskable-512.png.
+// Writes src/page/public/icons/icon-192-v2.png, icon-512-v2.png, and maskable-512-v2.png.
 
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -145,9 +145,9 @@ function drawIcon(size, scale) {
 mkdirSync(outputDir, { recursive: true })
 
 for (const [name, size, scale] of [
-  ["icon-192.png", 192, 1],
-  ["icon-512.png", 512, 1],
-  ["maskable-512.png", 512, 0.85],
+  ["icon-192-v2.png", 192, 1],
+  ["icon-512-v2.png", 512, 1],
+  ["maskable-512-v2.png", 512, 0.85],
 ]) {
   writeFileSync(
     join(outputDir, name),

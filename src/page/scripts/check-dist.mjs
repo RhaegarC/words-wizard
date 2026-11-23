@@ -115,9 +115,9 @@ for (const file of [
   "_headers",
   "locales/en.json",
   "locales/zh.json",
-  "icons/icon-192.png",
-  "icons/icon-512.png",
-  "icons/maskable-512.png",
+  "icons/icon-192-v2.png",
+  "icons/icon-512-v2.png",
+  "icons/maskable-512-v2.png",
 ]) {
   requireFile(file)
 }
