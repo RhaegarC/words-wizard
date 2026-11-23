@@ -3122,14 +3122,14 @@ img.buddy-stage {
 }
 
 .settings-card > header {
-  margin-bottom: 0;
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
   gap: 11px;
 }
 
-.settings-card[data-open="true"] > header {
-  margin-bottom: 18px;
+.settings-card[data-open="false"] > header {
+  margin-bottom: 0;
 }
 
 .settings-card > header > div {

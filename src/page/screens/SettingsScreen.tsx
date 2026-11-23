@@ -3,6 +3,7 @@ import { avatarInitials, avatarUrl } from "../avatar"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
 import { BadgeShelf } from "../components/BadgeShelf"
+import { Icon } from "../components/Icon"
 import { LegacyImportCard } from "../components/LegacyImportCard"
 import { ProfileCard } from "../components/ProfileCard"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
@@ -229,12 +230,15 @@ export function SettingsScreen({
 
       <div className="settings-grid">
         <div className="settings-stack">
-          <ProfileCard
-            id="settings-language"
-            icon="globe"
-            title={t("settings.language")}
-            hint={t("settings.languageHint")}
-          >
+          <article className="settings-card" aria-labelledby="settings-language">
+            <header>
+              <Icon name="globe" />
+              <div>
+                <h3 id="settings-language">{t("settings.language")}</h3>
+                <p>{t("settings.languageHint")}</p>
+              </div>
+            </header>
+
             <div
               className="language-toggle"
               role="group"
@@ -263,14 +267,17 @@ export function SettingsScreen({
                 {t("settings.localeError")}
               </p>
             ) : null}
-          </ProfileCard>
+          </article>
 
-          <ProfileCard
-            id="settings-topic"
-            icon="image"
-            title={t("settings.changeTopic")}
-            hint={t("settings.currentTopic", { topic: topicTitle })}
-          >
+          <article className="settings-card" aria-labelledby="settings-topic">
+            <header>
+              <Icon name="image" />
+              <div>
+                <h3 id="settings-topic">{t("settings.changeTopic")}</h3>
+                <p>{t("settings.currentTopic", { topic: topicTitle })}</p>
+              </div>
+            </header>
+
             <p className="settings-copy">{t("settings.changeTopicHint")}</p>
             <button
               type="button"
@@ -279,23 +286,25 @@ export function SettingsScreen({
             >
               {t("settings.changeTopic")}
             </button>
-          </ProfileCard>
+          </article>
         </div>
 
-        <ProfileCard
-          id="settings-buddy"
-          icon="user"
-          title={t("settings.customise")}
-          hint={t("settings.customiseHint")}
+        <form
+          className="settings-card"
+          aria-labelledby="settings-buddy"
+          onSubmit={(event) => {
+            event.preventDefault()
+            saveCharacter()
+          }}
+          noValidate
         >
-          <form
-            id="settings-buddy-form"
-            onSubmit={(event) => {
-              event.preventDefault()
-              saveCharacter()
-            }}
-            noValidate
-          >
+          <header>
+            <Icon name="user" />
+            <div>
+              <h3 id="settings-buddy">{t("settings.customise")}</h3>
+              <p>{t("settings.customiseHint")}</p>
+            </div>
+          </header>
 
           <div className="setting-photo">
             {photo !== null ? (
@@ -399,8 +408,7 @@ export function SettingsScreen({
                     : t(ERROR_KEYS[saveError])}
             </p>
           ) : null}
-          </form>
-        </ProfileCard>
+        </form>
 
         <ProfileCard
           id="settings-badges"
@@ -414,12 +422,15 @@ export function SettingsScreen({
 
         <LegacyImportCard />
 
-        <ProfileCard
-          id="settings-account"
-          icon="user"
-          title={t("auth.account")}
-          hint={t("auth.signedInAs", { name: auth.displayName || "—" })}
-        >
+        <article className="settings-card" aria-labelledby="settings-account">
+          <header>
+            <Icon name="user" />
+            <div>
+              <h3 id="settings-account">{t("auth.account")}</h3>
+              <p>{t("auth.signedInAs", { name: auth.displayName || "—" })}</p>
+            </div>
+          </header>
+
           <p className="settings-copy">{t("auth.privacyNotice")}</p>
           <a
             className="settings-link"
@@ -437,14 +448,17 @@ export function SettingsScreen({
           >
             {t("auth.signOut")}
           </button>
-        </ProfileCard>
+        </article>
 
-        <ProfileCard
-          id="settings-about"
-          icon="shield"
-          title={t("settings.about")}
-          hint={t("settings.aboutBody")}
-        >
+        <article className="settings-card" aria-labelledby="settings-about">
+          <header>
+            <Icon name="shield" />
+            <div>
+              <h3 id="settings-about">{t("settings.about")}</h3>
+              <p>{t("settings.aboutBody")}</p>
+            </div>
+          </header>
+
           <dl className="settings-facts">
             <div>
               <dt>{t("settings.appVersion")}</dt>
@@ -464,7 +478,7 @@ export function SettingsScreen({
           >
             {t("settings.licence")}
           </a>
-        </ProfileCard>
+        </article>
       </div>
 
       {signOutOpen ? (
