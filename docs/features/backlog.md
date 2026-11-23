@@ -24,5 +24,5 @@ link to their feature doc.
 **Offline practice** is not planned: the app is online-only, and a failed call shows retry rather
 than cached progress (PRD decision 20).
 
-Mission 4, covering features 34–37, is specced in
+Mission 4, covering features 34–38, is specced in
 [00-mission-4-sprint.md](00-mission-4-sprint.md).
