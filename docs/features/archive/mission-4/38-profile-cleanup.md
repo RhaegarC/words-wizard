@@ -1,10 +1,10 @@
 # Feature 38 — Profile cleanup and database bootstrap
 
-> Priority: Must · Mission 4 · **Status: Implemented**
+> Priority: Must · Mission 4 · **Status: Done — merged in [PR #120](https://github.com/RhaegarC/words-wizard/pull/120)**
 > Depends on: 14 (Settings), 26 (top-right identity chip), 37 (badge shelf), 17 and 22 (content and
 > database setup).
 > Blocks: none.
-> Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
+> Source of truth: [Mission 4 sprint](../../00-mission-4-sprint.md).
 
 ## Summary
 
