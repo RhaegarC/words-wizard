@@ -20,8 +20,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "words-wizard",
-      "database_id": "66f18da9-7155-4306-ac09-8fba93fc3a1b",
+      "database_name": "words-wizard-prd",
+      "database_id": "0b5bc850-8142-4907-b804-4a92a1f84360",
       "migrations_dir": "drizzle"
     }
   ],
