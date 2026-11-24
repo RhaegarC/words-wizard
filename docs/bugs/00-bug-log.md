@@ -11,3 +11,4 @@ Bugs are tracked separately from features. One file per bug; resolved bugs move 
 | 04 | [Sign-in fails for an account from another Entra tenant](archive/04-out-of-tenant-signin.md) | Normal | Fixed — [PR #93](https://github.com/RhaegarC/words-wizard/pull/93) merged |
 | 05 | [Admin portal signs in personal and other-tenant accounts](archive/05-admin-portal-common-authority.md) | Normal | Fixed — [PR #96](https://github.com/RhaegarC/words-wizard/pull/96) merged |
 | 06 | [My Words collection stays empty after a session](archive/06-words-collection-empty.md) | Normal | Fixed — [PR #104](https://github.com/RhaegarC/words-wizard/pull/104) merged |
+| 07 | [The app cannot be installed to the home screen](07-pwa-install.md) | Normal | Fixed — local commit; push/PR pending |

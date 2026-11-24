@@ -19,7 +19,6 @@ import {
 import { autoImportLegacy, type LegacyImportStatus } from "./db/legacyImport"
 import { RouteTable } from "./dev/RouteTable"
 import { useLocale } from "./i18n/LocaleProvider"
-import { UpdateProvider } from "./pwa/UpdateProvider"
 import { resolveRoute, type RouteState } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, titleKeyFor, type Route } from "./router/routes"
@@ -418,74 +417,72 @@ export default function App() {
     route.id === "session-exam-part" ||
     route.id === "session-exam-summary"
 
-  // The provider sits outside the shell so its exit dialog covers the whole
-  // frame, and stays mounted as the session moves between its own routes.
+  // The session provider sits outside the shell so its exit dialog covers the
+  // whole frame, and stays mounted as the session moves between its routes.
   return (
-    <UpdateProvider>
-      <RouterProvider value={router}>
-        {inExam && profile ? (
-          <ExamProvider
-            key={profile.currentTopicId ?? "no-topic"}
-            profile={profile}
-          >
-            {shell}
-          </ExamProvider>
-        ) : inSession && profile ? (
-          <SessionProvider
-            // A switch between session families or free packs starts clean.
-            key={sessionProviderKey(route)}
-            profile={profile}
-            route={route}
-            onProfileUpdated={(next) =>
-              setBoot({ status: "present", profile: next })
-            }
-            onProfileLost={() => setBoot({ status: "absent" })}
-          >
-            {shell}
-          </SessionProvider>
-        ) : (
-          shell
-        )}
+    <RouterProvider value={router}>
+      {inExam && profile ? (
+        <ExamProvider
+          key={profile.currentTopicId ?? "no-topic"}
+          profile={profile}
+        >
+          {shell}
+        </ExamProvider>
+      ) : inSession && profile ? (
+        <SessionProvider
+          // A switch between session families or free packs starts clean.
+          key={sessionProviderKey(route)}
+          profile={profile}
+          route={route}
+          onProfileUpdated={(next) =>
+            setBoot({ status: "present", profile: next })
+          }
+          onProfileLost={() => setBoot({ status: "absent" })}
+        >
+          {shell}
+        </SessionProvider>
+      ) : (
+        shell
+      )}
 
-        {legacyImport !== null &&
-        (legacyImport.status === "imported" ||
-          legacyImport.status === "failed") ? (
-          <div className="modal-backdrop">
-            <div
-              className="modal-card"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="legacy-import-title"
-            >
-              <h2 id="legacy-import-title" className="modal-title">
-                {legacyImport.status === "imported"
-                  ? t("notice.legacyImportedTitle")
-                  : t("notice.legacyFailedTitle")}
-              </h2>
-              <p className="modal-body">
-                {legacyImport.status === "imported"
-                  ? legacyImport.deleted === "blocked"
-                    ? t("notice.legacyImportedKeptBody")
-                    : t("notice.legacyImportedBody", {
-                        count: legacyImport.summary.progress.imported,
-                        words: legacyImport.summary.progress.imported,
-                      })
-                  : t("notice.legacyFailedBody")}
-              </p>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={() => setLegacyImport(null)}
-                  autoFocus
-                >
-                  {t("notice.legacyAck")}
-                </button>
-              </div>
+      {legacyImport !== null &&
+      (legacyImport.status === "imported" ||
+        legacyImport.status === "failed") ? (
+        <div className="modal-backdrop">
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="legacy-import-title"
+          >
+            <h2 id="legacy-import-title" className="modal-title">
+              {legacyImport.status === "imported"
+                ? t("notice.legacyImportedTitle")
+                : t("notice.legacyFailedTitle")}
+            </h2>
+            <p className="modal-body">
+              {legacyImport.status === "imported"
+                ? legacyImport.deleted === "blocked"
+                  ? t("notice.legacyImportedKeptBody")
+                  : t("notice.legacyImportedBody", {
+                      count: legacyImport.summary.progress.imported,
+                      words: legacyImport.summary.progress.imported,
+                    })
+                : t("notice.legacyFailedBody")}
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => setLegacyImport(null)}
+                autoFocus
+              >
+                {t("notice.legacyAck")}
+              </button>
             </div>
           </div>
-        ) : null}
-      </RouterProvider>
-    </UpdateProvider>
+        </div>
+      ) : null}
+    </RouterProvider>
   )
 }
