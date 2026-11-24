@@ -3,7 +3,7 @@
 > Priority: Must · Mission 4 · **Status: Done — merged in [PR #109](https://github.com/RhaegarC/words-wizard/pull/109)**
 > Depends on: the session engine (features 07–09) and the online commit path (features 23–24).
 > Blocks: 35 (the practice hub and route family), 37 (the summary strip).
-> Source of truth: [Mission 4 sprint](../../00-mission-4-sprint.md).
+> Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
 
 ## Summary
 

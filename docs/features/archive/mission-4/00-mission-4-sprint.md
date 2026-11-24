@@ -1,11 +1,12 @@
 # Mission 4 — Sprint Goal: "Practice freely, prove mastery, collect the proof"
 
-> Status: **In progress — features 34–38 are done and archived; the mission close is pending.**
+> Status: **Mission 4 is complete.** Features 34–38 are done and archived; features 32–33 remain
+> deliberately unspecced and deferred by Mission 3.
 > Depends on: Mission 2 (features 21–27) and Mission 3 (features 28–31) repository work complete.
 > Buddy removal (backlog item 01) is deliberately not part of this mission; Buddy remains a live
 > online feature.
-> Source of truth: [docs/PRD.md](../PRD.md) as amended by this mission. Where this file and a later
-> Mission 4 feature doc disagree, the feature doc wins once its design is locked.
+> Source of truth: [docs/PRD.md](../../../PRD.md) as amended by this mission. Where this file and a
+> later Mission 4 feature doc disagree, the feature doc wins once its design is locked.
 
 ## Goal
 
@@ -57,24 +58,24 @@ teacher authoring flow are unchanged.
 
 ## Definition of Done
 
-- [ ] The Practice nav opens a hub with Daily, Free Practice and Topic Exam.
-- [ ] Free Practice selects one unlocked pack of the current topic, practises only introduced
+- [x] The Practice nav opens a hub with Daily, Free Practice and Topic Exam.
+- [x] Free Practice selects one unlocked pack of the current topic, practises only introduced
       words, rotates all five modes, and commits a normal session.
-- [ ] A free session creates no introductions and no new progress rows; the daily new-word plan is
+- [x] A free session creates no introductions and no new progress rows; the daily new-word plan is
       unchanged.
-- [ ] The topic exam is available only when every word in the topic has been introduced.
-- [ ] Exam parts hold fewer than 50 words, are taken in order, and resume after a reload.
-- [ ] One clean typed attempt per word; a wrong spelling fails the part and shows the missed word
+- [x] The topic exam is available only when every word in the topic has been introduced.
+- [x] Exam parts hold fewer than 50 words, are taken in order, and resume after a reload.
+- [x] One clean typed attempt per word; a wrong spelling fails the part and shows the missed word
       and spelling; earlier parts stay passed.
-- [ ] An exam changes no progress, strength, review date, XP, streak, completed-session count or
+- [x] An exam changes no progress, strength, review date, XP, streak, completed-session count or
       Care Token cadence.
-- [ ] Passing the last part marks the topic Completed; retakes keep it Completed.
-- [ ] Topic status is visible on the topic picker and the hub exam card.
-- [ ] The badge catalogue has 20 entries and is derived from monotonic facts; a Home card opens
-      the Badges screen; newly earned badges appear on session and exam summaries.
-- [ ] Each feature has tests in its tier, and the PRD, privacy notice and feature docs are updated
+- [x] Passing the last part marks the topic Completed; retakes keep it Completed.
+- [x] Topic status is visible on the topic picker and the hub exam card.
+- [x] The badge catalogue has 20 entries and is derived from monotonic facts; a Badges page linked
+      from Profile holds it; newly earned badges appear on session and exam summaries.
+- [x] Each feature has tests in its tier, and the PRD, privacy notice and feature docs are updated
       with its implementation.
-- [ ] Buddy, its avatars, Care Tokens and `/v1/me/care` are unchanged.
+- [x] Buddy, its avatars, Care Tokens and `/v1/me/care` are unchanged.
 
 ## Features
 
@@ -83,13 +84,17 @@ Features 32–33 remain reserved and deferred by Mission 3.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
-| 34 | [Free Practice](archive/mission-4/34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Done | — |
-| 35 | [Exam Mode](archive/mission-4/35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Done | 34 |
-| 36 | [Topic Status](archive/mission-4/36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Done | 35 |
-| 37 | [Badges and achievements](archive/mission-4/37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Done | 34–36 |
-| 38 | [Profile cleanup and database bootstrap](archive/mission-4/38-profile-cleanup.md) — remove export/diagnostics, move the badge shelf into the Profile page, add the top-right profile link, document database bootstrap | Done | 14, 26, 37 |
+| 34 | [Free Practice](34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Done | — |
+| 35 | [Exam Mode](35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Done | 34 |
+| 36 | [Topic Status](36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Done | 35 |
+| 37 | [Badges and achievements](37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Done | 34–36 |
+| 38 | [Profile cleanup and database bootstrap](38-profile-cleanup.md) — remove export/diagnostics, move the badge shelf into the Profile page, add the top-right profile link, document database bootstrap | Done | 14, 26, 37 |
 
-Features 34–38 now live in `archive/mission-4/`.
+Features 34–38 now live beside this index in `archive/mission-4/`.
+
+A post-mission follow-up (PR #122) moved the badge catalogue from the Profile card to a dedicated
+`#/badges` page linked beside the Profile title; Home has no badge card. The Definition of Done and
+the PRD reflect that final state.
 
 ## Sequencing caveats
 
