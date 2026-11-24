@@ -1,6 +1,6 @@
 # Bug 07 — The app cannot be installed to the home screen
 
-> Severity: Normal · Status: In review — [PR #126](https://github.com/RhaegarC/words-wizard/pull/126)
+> Severity: Normal · Status: Fixed — [PR #126](https://github.com/RhaegarC/words-wizard/pull/126) merged
 > Reported: 2026-11-24 · Feature: 15 (PWA offline / install) and 16 (Cloudflare Pages)
 
 ## Summary
