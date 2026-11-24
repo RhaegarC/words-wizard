@@ -9,10 +9,10 @@ describe("parseHash / buildHash", () => {
     }
   })
 
-  it("opens the badges screen from Home", () => {
+  it("opens the badges page from the Profile title", () => {
     expect(buildHash({ id: "badges" })).toBe("#/badges")
     expect(parseHash("#/badges")).toEqual({ id: "badges" })
-    expect(parentOf({ id: "badges" })).toEqual({ id: "home" })
+    expect(parentOf({ id: "badges" })).toEqual({ id: "settings" })
   })
 
   it("builds the canonical hash for every route", () => {

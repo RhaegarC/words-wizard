@@ -1,9 +1,8 @@
 import { useEffect, useRef, type ReactNode } from "react"
 
-import { AvatarPortrait } from "../components/AvatarPortrait"
 import { Brand } from "../components/Brand"
 import { Icon, type IconName } from "../components/Icon"
-import { getAvatarSet } from "../content"
+import { ProfileLink } from "../components/ProfileLink"
 import { avatarInitials, avatarUrl } from "../avatar"
 import { useAuth } from "../auth/AuthProvider"
 import type { Profile } from "@shared/types"
@@ -102,8 +101,6 @@ export function AppShell({
   const auth = useAuth()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const active = activeNav(route)
-  const avatar = getAvatarSet().find((entry) => entry.id === profile.avatar)
-
   const photo =
     auth.config === null
       ? null
@@ -140,11 +137,11 @@ export function AppShell({
           onClick={() => navigate({ id: "settings" })}
           aria-current={route.id === "settings" ? "page" : undefined}
         >
-          {avatar ? (
-            <AvatarPortrait avatar={avatar} />
+          {photo !== null ? (
+            <img className="mini-profile-photo" src={photo} alt="" />
           ) : (
-            <span className="avatar-tile" aria-hidden="true">
-              {profile.characterName.charAt(0)}
+            <span className="mini-profile-initials" aria-hidden="true">
+              {avatarInitials(profile.name)}
             </span>
           )}
           <span className="mini-profile-copy">
@@ -158,16 +155,11 @@ export function AppShell({
       <main key={routeKey} className="content">
         <div className="shell-topbar">
           <Brand />
-          <div className="user-chip">
-            {photo !== null ? (
-              <img className="user-chip-photo" src={photo} alt="" />
-            ) : (
-              <span className="user-chip-initials" aria-hidden="true">
-                {avatarInitials(profile.name)}
-              </span>
-            )}
-            <span className="user-chip-name">{profile.name}</span>
-          </div>
+          <ProfileLink
+            profile={profile}
+            variant="chip"
+            active={route.id === "settings"}
+          />
         </div>
         <h1 ref={headingRef} tabIndex={-1} className="sr-only">
           {title}

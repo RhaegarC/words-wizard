@@ -301,8 +301,9 @@ export function parentOf(route: Route): Route | null {
     case "words":
     case "character":
     case "review":
-    case "review-summary":
     case "badges":
+      return { id: "settings" }
+    case "review-summary":
     case "settings":
     case "install":
       return { id: "home" }

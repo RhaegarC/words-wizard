@@ -337,14 +337,14 @@ export default function App() {
           )
         }}
       />
+    ) : route.id === "badges" && profile ? (
+      <BadgesScreen profile={profile} />
     ) : route.id === "settings" && profile ? (
       <SettingsScreen profile={profile} onProfileUpdated={updateProfile} />
     ) : route.id === "words" && profile ? (
       <WordsScreen profile={profile} tab={route.tab} />
     ) : route.id === "word-detail" && profile ? (
       <WordDetailScreen profile={profile} wordId={route.wordId} />
-    ) : route.id === "badges" && profile ? (
-      <BadgesScreen profile={profile} />
     ) : route.id === "session" ? (
       <SessionLandingScreen />
     ) : route.id === "session-intro" ? (

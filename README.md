@@ -9,9 +9,8 @@ ID sign-in, a Cloudflare Worker API, and D1 for content and per-user progress (s
 teacher/admin content portal, shipped as features 28–31, recorded in
 [docs/features/archive/mission-3/00-mission-3-sprint.md](docs/features/archive/mission-3/00-mission-3-sprint.md): a second front end
 under [src/portal/](src/portal/) at `admin.words.nioh.uk`, sharing the existing Entra registration
-and Worker API. Mission 4 is **in progress** — features 34 (Free Practice), 35 (Exam Mode) and 36
-(Topic Status) are done and archived, and badges (feature 37) are implemented and awaiting review,
-in [docs/features/00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md).
+and Worker API. Mission 4 is **in progress** — features 34–38 are done and archived, in
+[docs/features/00-mission-4-sprint.md](docs/features/00-mission-4-sprint.md).
 Buddy remains a live feature. The production app is
 scaffolded under [src/](src/), including its package manifest, configs, and build output. The Figma Make
 export in [figma/](figma/) is a **read-only visual reference** — it is never edited, never imported,
@@ -24,7 +23,7 @@ and its toolchain is independent of the production app.
 - **Topics and day-sized packs with no fixed counts**, drawn from the Cambridge
   Starters/Movers/Flyers 2025 allowlist. A word may appear in packs of several topics; each pack
   introduces it anew.
-- **Fully bilingual:** English + 中文 UI and content, with a Settings toggle.
+- **Fully bilingual:** English + 中文 UI and content, with a Profile toggle.
 - **Five practice modes:** picture match, word → meaning, spelling builder,
   fill-the-blank, and listen & choose.
 - **A virtual buddy:** create it, earn XP, grow through five stages, and keep it awake.
@@ -137,7 +136,7 @@ Content integrity is checked by the database-tier tests, not by a prebuild step.
 Mission 1 stored everything in IndexedDB under the database name `WordsWizardDB`. Mission 2
 moves content and progress to D1; feature 27 imports the old data automatically on the first boot
 after sign-in and deletes the database only after a successful import or an explicit discard in
-Settings. A failed import keeps the database and retries on the next boot. The Figma prototype
+Profile. A failed import keeps the database and retries on the next boot. The Figma prototype
 used the same name on the same port with an incompatible version-1 schema (`profiles` only), so if
 you ran the prototype in this browser, **clear site data for `localhost:8443` once**. Demo records
 from the prototype are deliberately not migrated.

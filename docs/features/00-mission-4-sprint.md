@@ -1,8 +1,6 @@
 # Mission 4 — Sprint Goal: "Practice freely, prove mastery, collect the proof"
 
-> Status: **In progress — features 34 (Free Practice), 35 (Exam Mode) and 36 (Topic Status) are
-> done and archived; feature 37 (Badges and Achievements) is implemented and awaiting review.**
-> Each feature moves to Done as its implementation PR merges.
+> Status: **In progress — features 34–38 are done and archived; the mission close is pending.**
 > Depends on: Mission 2 (features 21–27) and Mission 3 (features 28–31) repository work complete.
 > Buddy removal (backlog item 01) is deliberately not part of this mission; Buddy remains a live
 > online feature.
@@ -80,18 +78,18 @@ teacher authoring flow are unchanged.
 
 ## Features
 
-Mission 3 ends at feature 33, so Mission 4 claims **34 onwards**. Features 32–33 remain reserved
-and deferred by Mission 3.
+Mission 3 ends at feature 33, so Mission 4 claims **34 onwards** and now includes feature 38.
+Features 32–33 remain reserved and deferred by Mission 3.
 
 | # | Feature | Status | Depends on |
 |---|---------|--------|------------|
 | 34 | [Free Practice](archive/mission-4/34-free-practice.md) — the practice hub, one unlocked pack, introduced-word sessions, normal accounting | Done | — |
 | 35 | [Exam Mode](archive/mission-4/35-exam-mode.md) — all-word topic exams, staged spelling parts, resumable pass state, assessment-only | Done | 34 |
 | 36 | [Topic Status](archive/mission-4/36-topic-status.md) — None/Learning/Completed on the topic picker and the hub | Done | 35 |
-| 37 | [Badges and achievements](37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Implemented | 34–36 |
+| 37 | [Badges and achievements](archive/mission-4/37-badges-achievements.md) — 15 medals, one trophy per topic, Home card and Badges screen | Done | 34–36 |
+| 38 | [Profile cleanup and database bootstrap](archive/mission-4/38-profile-cleanup.md) — remove export/diagnostics, move the badge shelf into the Profile page, add the top-right profile link, document database bootstrap | Done | 14, 26, 37 |
 
-Features 34–36 now live in `archive/mission-4/`; feature 37 remains beside this index until its
-implementation PR merges.
+Features 34–38 now live in `archive/mission-4/`.
 
 ## Sequencing caveats
 
@@ -106,7 +104,9 @@ implementation PR merges.
 - **Migrations are ordered.** 34 adds `"free"` to the `sessions.kind` check (a SQLite table
   rebuild); 35 adds the exam tables. Each feature PR applies its migration before the client starts
   using it.
-- Features 34–36 have landed and are archived; feature 37 is implemented and awaiting review.
+- **38 last.** A UI/docs consolidation with no schema or Worker API change: Profile naming, the
+  badge shelf move, the top-right profile link, the export/diagnostics removal and the worker.md
+  database-bootstrap section. Features 34–37 have landed and are archived.
 
 ## Out of scope
 

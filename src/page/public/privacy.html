@@ -59,15 +59,16 @@
       </li>
       <li>
         A profile photo, only if you choose to upload one. It is stored in a
-        Cloudflare R2 bucket and can be removed in Settings at any time.
+        Cloudflare R2 bucket and can be removed in Profile at any time.
       </li>
       <li>
         Your chosen buddy name and avatar, your topic, locale, XP, streak, Care
         Token state, and practice progress.
       </li>
       <li>
-        Session history and the counters shown in Settings, such as sessions
-        completed and words learned or mastered.
+        Session history and the counters, such as sessions completed and words
+        learned or mastered. Counters are stored for badges and server-side
+        rules; the app no longer shows a diagnostics view.
       </li>
       <li>
         Topic exam progress: which parts you have passed, how many attempts you
@@ -105,7 +106,7 @@
         database (<code>WordsWizardDB</code> in IndexedDB). On the first sign-in
         after upgrading, the app reads it once and imports that profile and
         progress into the signed-in account. The old database is deleted only
-        after the import succeeds or the user chooses to discard it in Settings;
+        after the import succeeds or the user chooses to discard it in Profile;
         if the import fails it stays on the device and is retried on the next
         visit.
       </li>
@@ -155,9 +156,9 @@
         Microsoft Entra 对象 ID（<code>oid</code>），用于在不同设备间同步学习进度。我们不会保存你的显示名称。
       </li>
       <li>登录令牌携带的电子邮件地址，以及令牌携带的应用角色（<code>user</code>、<code>teacher</code> 或 <code>admin</code>）。该角色用于教师/管理门户的访问控制。</li>
-      <li>只有当你选择上传时才会保存的头像照片。照片保存在 Cloudflare R2 存储桶中，可以随时在设置页移除。</li>
+      <li>只有当你选择上传时才会保存的头像照片。照片保存在 Cloudflare R2 存储桶中，可以随时在个人资料页移除。</li>
       <li>你选择的伙伴名字和头像、当前主题、语言、经验值、连续练习天数、关怀令牌状态，以及练习进度。</li>
-      <li>练习记录，以及设置页显示的计数器，例如完成的练习次数、学会和掌握的单词数。</li>
+      <li>练习记录，以及计数器，例如完成的练习次数、学会和掌握的单词数。计数器用于徽章和服务器规则；应用不再显示诊断页面。</li>
       <li>主题考试进度：通过了哪些部分、尝试次数、主题完成时间，以及导致某一部分失败的那个单词。我们不会保存你输入的拼写答案。徽章根据已有的进度计算。</li>
       <li>浏览器中的少量设备标记，例如是否已安装应用、是否支持朗读。这些不会发送到 API。</li>
     </ul>
