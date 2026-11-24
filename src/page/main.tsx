@@ -5,6 +5,7 @@ import App from "./App"
 import { AuthProvider } from "./auth/AuthProvider"
 import { LocaleProvider } from "./i18n/LocaleProvider"
 import { listenForBeforeInstallPrompt } from "./pwa/beforeInstallPrompt"
+import { UpdateProvider } from "./pwa/UpdateProvider"
 import "./index.css"
 
 // Chromium fires this once, before React mounts; capturing it here is what lets
@@ -19,10 +20,12 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <LocaleProvider>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </LocaleProvider>
+    <UpdateProvider>
+      <LocaleProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </LocaleProvider>
+    </UpdateProvider>
   </StrictMode>,
 )

@@ -43,6 +43,11 @@ browsers. Bump the filename (`icon-192-v3.png`), update `manifest.webmanifest` a
 `check-dist.mjs`, and keep `generate-icons.mjs` in step. An installed app can keep its old icon
 until it is reinstalled.
 
+The manifest is not precached: it is a `no-cache` network resource, and a worker that pins it would
+keep serving the old manifest — and its old icon URLs — after the files behind them change.
+`src/page/test/pwa/registration.test.ts` asserts both halves of that contract, and that
+`UpdateProvider` sits at the application root so the worker registers on the sign-in screen too.
+
 ## Local development
 
 ### Configure

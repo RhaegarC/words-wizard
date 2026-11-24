@@ -73,7 +73,7 @@ export default defineConfig({
         // Shell-only precache. Artwork is fetched at runtime, so a new avatar
         // or word image does not force a worker update.
         globPatterns: [
-          "**/*.{js,css,html,json,webmanifest,svg,woff2}",
+          "**/*.{js,css,html,json,svg,woff2}",
           "icons/*.png",
         ],
         navigateFallback: "index.html",
