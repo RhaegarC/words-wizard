@@ -1041,6 +1041,22 @@ a:focus-visible,
   text-align: left;
 }
 
+.mini-profile-photo,
+.mini-profile-initials {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.mini-profile-initials {
+  display: grid;
+  place-items: center;
+  color: var(--purple);
+  background: white;
+  font-weight: 800;
+}
+
 .mini-profile-copy {
   min-width: 0;
   display: grid;
@@ -3055,11 +3071,48 @@ img.buddy-stage {
 
 /* Settings ---------------------------------------------------------------- */
 
+.settings-head {
+  margin: 7px 0 27px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-head .settings-title {
+  margin: 0;
+}
+
+.settings-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.settings-badges-link {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.badges-page {
+  max-width: 900px;
+}
+
 .settings-page > h2,
 .settings-title {
-  margin: 7px 0 27px;
   font-size: 37px;
   letter-spacing: -1.3px;
+}
+
+.settings-save {
+  flex: 0 0 auto;
+}
+
+.settings-stack {
+  display: grid;
+  align-content: start;
+  gap: 15px;
 }
 
 .settings-grid {
@@ -3089,6 +3142,11 @@ img.buddy-stage {
   display: flex;
   align-items: center;
   gap: 11px;
+}
+
+.settings-card > header > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .settings-card > header > .icon {

@@ -1,8 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useState } from "react"
 import { avatarInitials, avatarUrl } from "../avatar"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
-import { BadgeShelf } from "../components/BadgeShelf"
 import { Icon } from "../components/Icon"
 import { LegacyImportCard } from "../components/LegacyImportCard"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
@@ -131,9 +130,7 @@ export function SettingsScreen({
       .finally(() => setLocaleSaving(false))
   }
 
-  const saveCharacter = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
+  const saveCharacter = () => {
     if (saving) {
       return
     }
@@ -212,55 +209,99 @@ export function SettingsScreen({
 
   return (
     <section className="settings-page">
-      <span className="eyebrow">{t("settings.eyebrow")}</span>
-      <h2 className="settings-title">{t("settings.heading")}</h2>
+      <div className="settings-head">
+        <div>
+          <span className="eyebrow">{t("settings.eyebrow")}</span>
+          <div className="settings-title-row">
+            <h2 className="settings-title">{t("settings.heading")}</h2>
+            <a
+              className="button secondary settings-badges-link"
+              href="#/badges"
+            >
+              {t("badges.title")}
+            </a>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="button primary settings-save"
+          disabled={saving}
+          onClick={saveCharacter}
+        >
+          {saving ? t("create.saving") : t("settings.save")}
+        </button>
+      </div>
 
       <UpdateStatusSlot />
 
       <div className="settings-grid">
-        <article className="settings-card" aria-labelledby="settings-language">
-          <header>
-            <Icon name="globe" />
-            <div>
-              <h3 id="settings-language">{t("settings.language")}</h3>
-              <p>{t("settings.languageHint")}</p>
+        <div className="settings-stack">
+          <article className="settings-card" aria-labelledby="settings-language">
+            <header>
+              <Icon name="globe" />
+              <div>
+                <h3 id="settings-language">{t("settings.language")}</h3>
+                <p>{t("settings.languageHint")}</p>
+              </div>
+            </header>
+
+            <div
+              className="language-toggle"
+              role="group"
+              aria-labelledby="settings-language"
+            >
+              {LOCALE_CHOICES.map((choice) => {
+                const selected = locale === choice.id
+
+                return (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    className={selected ? "active" : undefined}
+                    aria-pressed={selected}
+                    disabled={localeSaving}
+                    onClick={() => chooseLocale(choice.id)}
+                  >
+                    {choice.label}
+                  </button>
+                )
+              })}
             </div>
-          </header>
 
-          <div
-            className="language-toggle"
-            role="group"
-            aria-labelledby="settings-language"
-          >
-            {LOCALE_CHOICES.map((choice) => {
-              const selected = locale === choice.id
+            {localeFailed ? (
+              <p role="alert" className="form-error">
+                {t("settings.localeError")}
+              </p>
+            ) : null}
+          </article>
 
-              return (
-                <button
-                  key={choice.id}
-                  type="button"
-                  className={selected ? "active" : undefined}
-                  aria-pressed={selected}
-                  disabled={localeSaving}
-                  onClick={() => chooseLocale(choice.id)}
-                >
-                  {choice.label}
-                </button>
-              )
-            })}
-          </div>
+          <article className="settings-card" aria-labelledby="settings-topic">
+            <header>
+              <Icon name="image" />
+              <div>
+                <h3 id="settings-topic">{t("settings.changeTopic")}</h3>
+                <p>{t("settings.currentTopic", { topic: topicTitle })}</p>
+              </div>
+            </header>
 
-          {localeFailed ? (
-            <p role="alert" className="form-error">
-              {t("settings.localeError")}
-            </p>
-          ) : null}
-        </article>
+            <p className="settings-copy">{t("settings.changeTopicHint")}</p>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => navigate({ id: "topics", from: "settings" })}
+            >
+              {t("settings.changeTopic")}
+            </button>
+          </article>
+        </div>
 
         <form
           className="settings-card"
           aria-labelledby="settings-buddy"
-          onSubmit={saveCharacter}
+          onSubmit={(event) => {
+            event.preventDefault()
+            saveCharacter()
+          }}
           noValidate
         >
           <header>
@@ -373,37 +414,7 @@ export function SettingsScreen({
                     : t(ERROR_KEYS[saveError])}
             </p>
           ) : null}
-
-          <button type="submit" className="button primary" disabled={saving}>
-            {saving ? t("create.saving") : t("settings.save")}
-          </button>
         </form>
-
-        <article className="settings-card" aria-labelledby="settings-topic">
-          <header>
-            <Icon name="image" />
-            <div>
-              <h3 id="settings-topic">{t("settings.changeTopic")}</h3>
-              <p>{t("settings.currentTopic", { topic: topicTitle })}</p>
-            </div>
-          </header>
-
-          <p className="settings-copy">{t("settings.changeTopicHint")}</p>
-          <button
-            type="button"
-            className="button secondary"
-            onClick={() => navigate({ id: "topics", from: "settings" })}
-          >
-            {t("settings.changeTopic")}
-          </button>
-        </article>
-
-        <section
-          className="settings-card settings-card-wide"
-          aria-labelledby="settings-badges"
-        >
-          <BadgeShelf profile={profile} />
-        </section>
 
         <LegacyImportCard />
 

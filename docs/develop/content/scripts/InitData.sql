@@ -21,6 +21,7 @@
 -- Topics -------------------------------------------------------------
 INSERT OR REPLACE INTO topics (id, title, title_zh, icon, description, description_zh, sort_order, created_at, updated_at) VALUES ('craft-and-build', 'Craft & Build', '手工与建造', '🔨', 'Make things, fix things, and build amazing stuff.', '动手做东西、修东西，建造属于你的世界。', 1, 1793836800000, 1793836800000);
 INSERT OR REPLACE INTO topics (id, title, title_zh, icon, description, description_zh, sort_order, created_at, updated_at) VALUES ('explore-and-discover', 'Explore & Discover', '探索与发现', '🧭', 'Find hidden places and learn about the world.', '寻找隐藏的地方，认识我们的世界。', 2, 1793836800000, 1793836800000);
+INSERT OR REPLACE INTO topics (id, title, title_zh, icon, description, description_zh, sort_order, created_at, updated_at) VALUES ('grade-3-a', 'Grade 3-A', '三年级上', '🏫', 'Words in grade 3-A.', '三年级上册学校单词', 3, 1794899174954, 1794899187049);
 
 -- Packs --------------------------------------------------------------
 INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES ('craft-1', 'craft-and-build', 'My Workshop', '我的工作间', 1, 1793836800000, 1793836800000);
@@ -29,6 +30,26 @@ INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created
 INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES ('explore-1', 'explore-and-discover', 'Wild Places', '野外地方', 1, 1793836800000, 1793836800000);
 INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES ('explore-2', 'explore-and-discover', 'Finding the Way', '找路', 2, 1793836800000, 1793836800000);
 INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES ('explore-3', 'explore-and-discover', 'Curious Minds', '好奇的心', 3, 1793836800000, 1793836800000);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-1','grade-3-a','3A01','3A01',1,1794899273332,1794899747101);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-2','grade-3-a','3A02','3A02',2,1794910283469,1794910394690);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-3','grade-3-a','3A03','3A03',3,1794910413658,1794910615945);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-4','grade-3-a','3A04','3A04',4,1794910628600,1794910922879);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-5','grade-3-a','3A05','3A05',5,1794910946761,1794911028976);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-6','grade-3-a','3A06','3A06',6,1794911228864,1794911332470);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-7','grade-3-a','3A07','3A07',7,1794911426950,1794911502529);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-8','grade-3-a','3A08','3A08',8,1794911543455,1794911590122);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-9','grade-3-a','3A09','3A09',9,1794962735339,1794962812891);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-10','grade-3-a','3A10','3A10',10,1794962829783,1794962884569);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-11','grade-3-a','3A11','3A11',11,1794962898051,1794962946547);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-12','grade-3-a','3A12','3A12',12,1794962963899,1794963021015);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-13','grade-3-a','3A13','3A13',13,1794963042883,1794963106363);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-14','grade-3-a','3A14','3A14',14,1794963143738,1794963219396);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-15','grade-3-a','3A15','3A15',15,1794963254555,1794963297536);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-16','grade-3-a','3A16','3A16',16,1794963315106,1794963354712);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-17','grade-3-a','3A17','3A17',17,1794963372039,1794963413728);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-18','grade-3-a','3A18','3A18',18,1794963435995,1794963547198);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-19','grade-3-a','3A19','3A19',19,1794963569259,1794963712328);
+INSERT OR REPLACE INTO packs (id, topic_id, title, title_zh, sort_order, created_at, updated_at) VALUES('grade-3-a-20','grade-3-a','3A20','3A20',20,1794963624185,1794963685110);
 
 -- Pack membership ---------------------------------------------------
 INSERT OR REPLACE INTO pack_words (pack_id, word_id, position) VALUES ('craft-1', 'w-box', 1);

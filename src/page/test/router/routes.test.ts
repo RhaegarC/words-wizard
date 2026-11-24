@@ -9,8 +9,10 @@ describe("parseHash / buildHash", () => {
     }
   })
 
-  it("no longer has a standalone badges route", () => {
-    expect(parseHash("#/badges")).toBeNull()
+  it("opens the badges page from the Profile title", () => {
+    expect(buildHash({ id: "badges" })).toBe("#/badges")
+    expect(parseHash("#/badges")).toEqual({ id: "badges" })
+    expect(parentOf({ id: "badges" })).toEqual({ id: "settings" })
   })
 
   it("builds the canonical hash for every route", () => {

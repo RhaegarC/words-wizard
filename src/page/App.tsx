@@ -24,6 +24,7 @@ import { resolveRoute, type RouteState } from "./router/guard"
 import { RouterProvider } from "./router/RouterContext"
 import { buildHash, titleKeyFor, type Route } from "./router/routes"
 import { useHashRoute } from "./router/useHashRoute"
+import { BadgesScreen } from "./screens/BadgesScreen"
 import { CharacterScreen } from "./screens/CharacterScreen"
 import { CreateScreen } from "./screens/CreateScreen"
 import { ExamLandingScreen } from "./screens/ExamLandingScreen"
@@ -336,6 +337,8 @@ export default function App() {
           )
         }}
       />
+    ) : route.id === "badges" && profile ? (
+      <BadgesScreen profile={profile} />
     ) : route.id === "settings" && profile ? (
       <SettingsScreen profile={profile} onProfileUpdated={updateProfile} />
     ) : route.id === "words" && profile ? (
