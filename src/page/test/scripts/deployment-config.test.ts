@@ -201,6 +201,17 @@ describe("documentation truth", () => {
     ).toBe(false)
   })
 
+  it("keeps Mission 4 closed and in the archive", () => {
+    expect(
+      existsSync(
+        new URL("docs/features/archive/mission-4/00-mission-4-sprint.md", repoRoot),
+      ),
+    ).toBe(true)
+    expect(
+      existsSync(new URL("docs/features/00-mission-4-sprint.md", repoRoot)),
+    ).toBe(false)
+  })
+
   it("no longer rejects accounts or cloud sync in the backlog", () => {
     const doc = read(backlog)
 

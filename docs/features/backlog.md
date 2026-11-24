@@ -20,4 +20,4 @@ Open ideas that are not yet features. Completed items are removed once their fea
 than cached progress (PRD decision 20).
 
 Mission 4, covering features 34–38, is recorded in
-[00-mission-4-sprint.md](00-mission-4-sprint.md).
+[archive/mission-4/00-mission-4-sprint.md](archive/mission-4/00-mission-4-sprint.md).

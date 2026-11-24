@@ -3,7 +3,7 @@
 > Priority: Must · Mission 4 · **Status: Done — merged in [PR #111](https://github.com/RhaegarC/words-wizard/pull/111)**
 > Depends on: 34 (the practice hub and route conventions), 22 (content), 23–24 (API and client).
 > Blocks: 36 (topic completion), 37 (topic trophies).
-> Source of truth: [Mission 4 sprint](../../00-mission-4-sprint.md).
+> Source of truth: [Mission 4 sprint](00-mission-4-sprint.md).
 
 ## Summary
 
