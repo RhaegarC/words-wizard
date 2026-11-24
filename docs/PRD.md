@@ -656,8 +656,9 @@ persisted.
 - **Derived, not stored.** A pure evaluator reads monotonic facts; no earned dates or seen state
   are kept, so a badge cannot un-earn. "Latest" is a presentation choice (highest unlocked tier),
   not a chronology.
-- **Surfaces:** the full shelf lives on the Profile page, grouped by category. Session and exam
-  summaries show badges newly earned by that result; there is no separate Badges screen.
+- **Surfaces:** the full catalogue lives on a dedicated Badges page, reached from the link beside
+  the Profile title. Session and exam summaries show badges newly earned by that result; Home has
+  no badge card.
 
 ---
 
@@ -1077,7 +1078,8 @@ export const config = {
 | 28 | Exam Mode (Mission 4, 2026-11-19) | One exam per topic over **every topic word**, spelling only, gated on **every distinct word having an introduction** (all packs unlocked). Parts hold **fewer than 50 words**, balanced and deterministically ordered; parts are taken in order and resume server-side. **One clean typed attempt per word**, no tiles, hints or reveal; a wrong spelling fails the part, which restarts from its first word, while earlier parts stay passed. **Assessment only**: no progress, scheduling, XP, streak, completed sessions or Care Token change. Passing every part marks the topic Completed (sticky); retakes are allowed and keep it Completed. A completed topic survives content growth; an unfinished exam resets when the content version changes. State lives in `topic_exam_progress`/`exam_attempts`; typed answers are never stored. |
 | 29 | Topic Status (Mission 4, 2026-11-19) | Topics are **None**, **Learning**, or **Completed**. None and Learning are derived from introductions; Completed is the exam's sticky `completed_at`. No status column or second table. The status appears on the topic picker and the hub exam card. |
 | 30 | Badges (Mission 4, 2026-11-19) | **Twenty badges**: 15 medals (Collection 10/50/100, Mastery 1/10/50, Streak 3/7/30, Sessions 10/50/100, Reviews 1/5/12) plus **one trophy per topic** (currently five), earned when the topic is Completed. Derived from monotonic counters and sticky completion — **no achievements table, earned dates or badge currency**. Session and exam summaries show newly earned badges. Per-topic trophies mean content growth adds a trophy and never re-locks one. |
-| 31 | Profile cleanup (Mission 4, 2026-11-23) | Settings is presented as **Profile** (the `#/settings` route and `settings.*` keys stay). **Export my data** and **Diagnostics** are removed with their implementation. The full badge shelf moves from the Home card and the `#/badges` screen into Profile; `#/badges` is removed and `NewBadgeStrip` stays on summaries. Home's settings gear is replaced by a top-right photo/initial link, and the shared shell chip becomes the same link. worker.md gains a database-initialisation section. |
+| 31 | Profile cleanup (Mission 4, 2026-11-23) | Settings is presented as **Profile** (the `#/settings` route and `settings.*` keys stay). **Export my data** and **Diagnostics** are removed with their implementation. Home's settings gear is replaced by a top-right photo/initial link, and the shared shell chip becomes the same link. worker.md gains a database-initialisation section. |
+| 32 | Badges page (2026-11-24) | The full badge catalogue lives on a dedicated `#/badges` page, reached from the link beside the **Profile** title. Profile no longer embeds the shelf; Home has no badge card, and `NewBadgeStrip` stays on session and exam summaries. |
 
 **Additional v0.3 decisions:**
 
@@ -1153,6 +1155,7 @@ reporting. There is no aggregate view across users.
 | 21 | **Free Practice Picker** | Choose one unlocked pack of the current topic | Practice hub | Mission 4 |
 | 22 | **Exam Part** | Typed spelling, one clean attempt per word | Practice hub / resume | Mission 4 |
 | 23 | **Exam Summary** | Parts passed, topic status, newly earned badges | End of exam | Mission 4 |
+| 24 | **Badges** | Medals by category and one trophy per topic | Link beside the Profile title | Mission 4 |
 
 There is no profile switcher in v1.
 
@@ -1175,7 +1178,8 @@ Boot
         ──> #/words?tab=collection | #/words?tab=wordbook ──> #/words/:wordId ──> back
         ──> #/character
         ──> #/review (when due) ──> #/review/summary
-        ──> #/settings (Profile: badge shelf / re-customize / locale / sign out)
+        ──> #/settings (Profile) ──> #/badges (from the title link)
+        ──> #/settings ──> re-customize / locale / sign out
 ```
 
 Hash routes only; no server rewrite. Signing out or a rejected token returns to `[0]`
@@ -1196,7 +1200,7 @@ Sign-in; it never falls through to Character Creation.
 | Free Practice | No introduced words in the chosen pack | "Practise this pack in a daily session first." | Daily session CTA |
 | Free Practice | No unlocked pack | "A daily session unlocks your first pack." | Daily session CTA |
 | Topic Exam | Gate not met | "Learn every word in this topic to unlock the exam." | Show introduced / total; card disabled |
-| Badges | No badge unlocked | "Your first medal is one session away." | Profile shelf invites practice |
+| Badges | No badge unlocked | "Your first medal is one session away." | Badges page invites practice |
 | Speech | No English voice | "Listen is unavailable on this device." | Show IPA; substitute a non-audio mode |
 | Tricky Words (P2) | 0 | "No tricky words yet — nice!" | — |
 

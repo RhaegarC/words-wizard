@@ -53,20 +53,21 @@ describe("export and diagnostics are gone", () => {
   })
 })
 
-describe("the badge shelf lives in the profile page", () => {
-  it("moves the catalogue and removes the standalone screen and home card", () => {
+describe("badges have their own page linked from Profile", () => {
+  it("keeps the catalogue on a page and removes the Home card", () => {
     expect(existsSync(join(repoRoot, "src/page/components/BadgeShelf.tsx"))).toBe(
       true,
     )
     expect(
       existsSync(join(repoRoot, "src/page/screens/BadgesScreen.tsx")),
-    ).toBe(false)
+    ).toBe(true)
     expect(
       existsSync(join(repoRoot, "src/page/components/BadgeShelfCard.tsx")),
     ).toBe(false)
 
     const settings = read("src/page/screens/SettingsScreen.tsx")
-    expect(settings).toContain("BadgeShelf")
+    expect(settings).toContain('href="#/badges"')
+    expect(settings).not.toContain("BadgeShelf")
 
     const home = read("src/page/screens/HomeScreen.tsx")
     expect(home).not.toContain("BadgeShelfCard")
@@ -74,10 +75,10 @@ describe("the badge shelf lives in the profile page", () => {
     expect(home).not.toContain('className="icon-button"')
 
     const routes = read("src/page/router/routes.ts")
-    expect(routes).not.toContain('"badges"')
+    expect(routes).toContain('"badges"')
 
     const app = read("src/page/App.tsx")
-    expect(app).not.toContain("BadgesScreen")
+    expect(app).toContain("BadgesScreen")
   })
 })
 
@@ -108,7 +109,6 @@ describe("the profile links and rename", () => {
       "home.badgesTitle",
       "home.badgesEmpty",
       "home.badgesNext",
-      "common.screen.badges",
     ]) {
       expect(en, key).not.toHaveProperty(key)
       expect(zh, key).not.toHaveProperty(key)
@@ -118,6 +118,8 @@ describe("the profile links and rename", () => {
       Object.keys(en).filter((key) => key.startsWith("settings.counter.")),
     ).toEqual([])
     expect(en["badges.title"]).toBeTruthy()
+    expect(en["common.screen.badges"]).toBe("Badges")
+    expect(zh["common.screen.badges"]).toBe("徽章")
   })
 })
 

@@ -28,6 +28,7 @@
   "common.screen.character": "Your buddy",
   "common.screen.review": "Monthly Review",
   "common.screen.reviewSummary": "Review complete",
+  "common.screen.badges": "Badges",
   "common.screen.settings": "Profile",
   "common.screen.create": "Create your buddy",
   "common.screen.install": "Install Words Wizard",
@@ -432,8 +433,6 @@
 
   "settings.eyebrow": "Your profile",
   "settings.heading": "Profile",
-  "settings.expand": "Expand",
-  "settings.collapse": "Collapse",
   "settings.customiseHint": "Change their name or look",
   "settings.language": "Language",
   "settings.languageHint": "Choose the language for the app.",

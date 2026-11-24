@@ -2,10 +2,8 @@ import { useEffect, useState } from "react"
 import { avatarInitials, avatarUrl } from "../avatar"
 
 import { AvatarPortrait } from "../components/AvatarPortrait"
-import { BadgeShelf } from "../components/BadgeShelf"
 import { Icon } from "../components/Icon"
 import { LegacyImportCard } from "../components/LegacyImportCard"
-import { ProfileCard } from "../components/ProfileCard"
 import { UpdateStatusSlot } from "../components/UpdateStatusSlot"
 import { getAvatarSet, getContentMeta, getTopic } from "../content"
 import { progressProvider } from "../api/provider"
@@ -214,7 +212,15 @@ export function SettingsScreen({
       <div className="settings-head">
         <div>
           <span className="eyebrow">{t("settings.eyebrow")}</span>
-          <h2 className="settings-title">{t("settings.heading")}</h2>
+          <div className="settings-title-row">
+            <h2 className="settings-title">{t("settings.heading")}</h2>
+            <a
+              className="button secondary settings-badges-link"
+              href="#/badges"
+            >
+              {t("badges.title")}
+            </a>
+          </div>
         </div>
         <button
           type="button"
@@ -409,16 +415,6 @@ export function SettingsScreen({
             </p>
           ) : null}
         </form>
-
-        <ProfileCard
-          id="settings-badges"
-          icon="sparkle"
-          title={t("badges.title")}
-          hint={t("badges.subtitle")}
-          wide
-        >
-          <BadgeShelf profile={profile} showHeader={false} />
-        </ProfileCard>
 
         <LegacyImportCard />
 

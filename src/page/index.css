@@ -3083,6 +3083,22 @@ img.buddy-stage {
   margin: 0;
 }
 
+.settings-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.settings-badges-link {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.badges-page {
+  max-width: 900px;
+}
+
 .settings-page > h2,
 .settings-title {
   font-size: 37px;
@@ -3128,33 +3144,9 @@ img.buddy-stage {
   gap: 11px;
 }
 
-.settings-card[data-open="false"] > header {
-  margin-bottom: 0;
-}
-
 .settings-card > header > div {
   flex: 1;
   min-width: 0;
-}
-
-.settings-fold {
-  flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  color: var(--muted);
-  background: white;
-  font-size: 20px;
-  font-weight: 900;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.settings-fold:hover {
-  background: #f7f5fa;
 }
 
 .settings-card > header > .icon {
