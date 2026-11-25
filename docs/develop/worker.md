@@ -327,10 +327,7 @@ seed vocabulary**. The vocabulary is authored SQL under `docs/develop/content/sc
 2. Seed the vocabulary in this order — `pack_words` references the word ids:
 
    ```bash
-   pnpm exec wrangler d1 execute DB --local --config worker/wrangler.jsonc \
-     --file=../docs/develop/content/scripts/words.sql
-   pnpm exec wrangler d1 execute DB --local --config worker/wrangler.jsonc \
-     --file=../docs/develop/content/scripts/InitData.sql
+   pnpm exec wrangler d1 execute DB --local --config worker/wrangler.jsonc --file=../docs/develop/content/scripts/InitData.sql
    ```
 
    `InitData.sql` is re-runnable and sets `content_meta` to `0.4.0`/`dev`.

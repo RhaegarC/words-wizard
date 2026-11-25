@@ -202,7 +202,8 @@ the child SPA at <https://words.nioh.uk>, a second serves the admin portal at
 deploy token in this repository. The full production setup is in
 [docs/operations.md](docs/operations.md), with per-project notes in
 [docs/develop/page.md](docs/develop/page.md), [docs/develop/portal.md](docs/develop/portal.md),
-and [docs/develop/worker.md](docs/develop/worker.md).
+[docs/develop/worker.md](docs/develop/worker.md), and the learner-data schema in
+[docs/develop/profile.md](docs/develop/profile.md).
 
 Child app Pages project settings:
 
